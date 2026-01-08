@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Momenty">
         <activity
-            android:name=".MainActivity"
+            android:name=".domain.main.presentation.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
