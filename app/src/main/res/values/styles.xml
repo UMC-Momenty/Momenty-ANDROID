@@ -58,4 +58,16 @@
         <item name="android:lineSpacingMultiplier">1.3</item>
         <item name="android:letterSpacing">-0.02</item>
     </style>
+
+    <!-- EditText Styles -->
+    <style name="Widget.App.EditText" parent="Widget.AppCompat.EditText">
+        <item name="android:background">@drawable/bg_edittext_selector</item>
+        <item name="android:fontFamily">@font/pretendard_regular</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/body_2</item>
+        <item name="android:textColorHint">@color/caption_2</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
 </resources>
