@@ -38,6 +38,10 @@ class LoginPage3Fragment : Fragment() {
         binding.btnGoogleLogin.setOnClickListener {
             handleGoogleLogin()
         }
+
+        binding.btnNaverLogin.setOnClickListener{
+            handleNaverLogin()
+        }
     }
 
     private fun handleKakaoLogin() {
@@ -54,6 +58,16 @@ class LoginPage3Fragment : Fragment() {
         // TODO: 구글 로그인 구현
         // 로그인 성공 후
         val userId = "google_user_id"  // 실제 구글에서 받은 ID
+        val userName = "사용자 이름"    // 실제 구글에서 받은 이름
+
+        (activity as? MainActivity)?.saveLoggedIn(userId, userName)
+        navigateToRecord()
+    }
+
+    private fun handleNaverLogin(){
+        // TODO: 구글 로그인 구현
+        // 로그인 성공 후
+        val userId = "naver_user_id"  // 실제 구글에서 받은 ID
         val userName = "사용자 이름"    // 실제 구글에서 받은 이름
 
         (activity as? MainActivity)?.saveLoggedIn(userId, userName)
