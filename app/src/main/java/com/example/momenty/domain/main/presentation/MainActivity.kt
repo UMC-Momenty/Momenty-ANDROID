@@ -1,109 +1,115 @@
 package com.example.momenty.domain.main.presentation
 
+import android.content.Context
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.example.momenty.R
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.example.momenty.databinding.ActivityMainBinding
+import com.example.momenty.global.security.TokenManager
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var navController: NavController
-    private lateinit var preferenceManager: PreferenceManager
+    private lateinit var binding: ActivityMainBinding
 
-    companion object {
-        private const val SPLASH_DURATION = 2000L
-    }
+    @Inject
+    lateinit var tokenManager: TokenManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        enableEdgeToEdge()
-
-        var keepSplashOnScreen = true
-        splashScreen.setKeepOnScreenCondition { keepSplashOnScreen }
-
-        setContentView(R.layout.activity_main)
-
-        // PreferenceManager 초기화
-        preferenceManager = PreferenceManager.getInstance(this)
-
-        setupWindowInsets()
         setupNavigation()
-
-        lifecycleScope.launch {
-            delay(SPLASH_DURATION)
-            navigateToStartScreen()
-            keepSplashOnScreen = false
-        }
-    }
-
-    private fun setupWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.nav_host_fragment)) { view, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updatePadding(top = systemBars.top)
-            insets
-        }
+        handleIntent()
     }
 
     private fun setupNavigation() {
         val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        navController = navHostFragment.navController
+            .findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+
+        if (navHostFragment != null) {
+            val navController = navHostFragment.navController
+        }
     }
 
-    private fun navigateToStartScreen() {
-        val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
+    /**
+     * SplashActivity에서 전달된 Intent 처리
+     */
+    private fun handleIntent() {
+        val navigateTo = intent.getStringExtra("navigate_to")
 
-        // 사용자 상태에 따른 화면 분기
-        val startDestination = when {
-            // 1. 로그인 완료 → 메인 화면 (자동 로그인)
-            preferenceManager.isLoggedIn -> {
-                R.id.recordFragment
-            }
-            // 2. 로그인 안함 → 항상 약관 화면부터 시작
-            else -> {
-                R.id.termsFragment
+        if (navigateTo != null) {
+            val navHostFragment = supportFragmentManager
+                .findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+
+            navHostFragment?.let {
+                val navController = it.navController
+
+                when (navigateTo) {
+                    "record" -> {
+                        // 로그인 상태 → RecordFragment로 이동
+                        // Navigation Graph의 시작 지점이 이미 설정되어 있으면 자동 이동
+                    }
+                    "terms" -> {
+                        // 비로그인 상태 → TermsFragment로 이동
+                        // Navigation Graph의 시작 지점이 이미 설정되어 있으면 자동 이동
+                    }
+                }
             }
         }
-
-        navGraph.setStartDestination(startDestination)
-        navController.graph = navGraph
     }
 
-    fun saveTermsAgreed() {
-        // 약관 동의는 임시로 저장하지 않음
-        // 로그인 완료 시에만 저장됨
-        // preferenceManager.isTermsAgreed = true
+    /**
+     * 로그인 정보 저장
+     * (기존 SharedPreferences 방식 유지 - UI 표시용)
+     * 실제 JWT 토큰은 TokenManager에서 관리됨
+     */
+    fun saveLoggedIn(userId: String, userName: String) {
+        val prefs = getSharedPreferences("momenty_prefs", Context.MODE_PRIVATE)
+        prefs.edit().apply {
+            putBoolean("is_logged_in", true)
+            putString("user_id", userId)
+            putString("user_name", userName)
+            apply()
+        }
     }
 
-    fun saveLoggedIn(userId: String? = null, userName: String? = null) {
-        // 로그인 성공 시 약관 동의도 함께 저장
-        preferenceManager.isTermsAgreed = true
-        preferenceManager.isLoggedIn = true
-        userId?.let { preferenceManager.userId = it }
-        userName?.let { preferenceManager.userName = it }
+    /**
+     * 로그인 정보 확인
+     */
+    fun isLoggedIn(): Boolean {
+        // TokenManager의 로그인 여부 확인
+        return tokenManager.isLoggedIn()
     }
 
+    /**
+     * 로그아웃
+     */
     fun logout() {
-        preferenceManager.logout()
+        // UI용 SharedPreferences 삭제
+        val prefs = getSharedPreferences("momenty_prefs", Context.MODE_PRIVATE)
+        prefs.edit().clear().apply()
 
-        // 로그아웃 후 약관 화면으로 이동
-        val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
-        navGraph.setStartDestination(R.id.termsFragment)
-        navController.graph = navGraph
+        // JWT 토큰 삭제는 AuthRepository에서 처리
     }
 
-    fun getNavController(): NavController = navController
+    /**
+     * 사용자 ID 가져오기
+     */
+    fun getUserId(): String? {
+        val prefs = getSharedPreferences("momenty_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("user_id", null)
+    }
 
-    fun getPreferenceManager(): PreferenceManager = preferenceManager
+    /**
+     * 사용자 이름 가져오기
+     */
+    fun getUserName(): String? {
+        val prefs = getSharedPreferences("momenty_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("user_name", null)
+    }
 }

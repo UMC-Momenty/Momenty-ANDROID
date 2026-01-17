@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("kotlin-kapt")  // ← kapt 플러그인 추가 (Hilt 사용 위해 필수)
     id("com.google.dagger.hilt.android")  // ← Hilt 플러그인 추가
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -17,6 +18,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // 카카오 네이티브 앱 키 설정
+        manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = "8367190c9f93267d9fb62bc7a6cbc6cb"
     }
 
     buildTypes {
@@ -45,6 +49,15 @@ android {
 }
 
 dependencies {
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.8.0") )
+    implementation("com.google.firebase:firebase-analytics:23.0.0")
+    implementation("com.google.firebase:firebase-auth-ktx:23.2.1")
+    implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
+
+    // 카카오 SDK
+    implementation("com.kakao.sdk:v2-user:2.20.1")
+
     // Retrofit (네트워크 통신)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
