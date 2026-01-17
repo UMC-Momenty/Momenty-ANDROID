@@ -225,6 +225,20 @@
 
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/tv_terms_warning"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="필수 약관에 동의해주세요"
+        android:fontFamily="@font/pretendard_regular"
+        android:textSize="16sp"
+        android:textColor="@color/status_error"
+        android:layout_marginTop="20dp"
+        app:layout_constraintBottom_toTopOf="@id/btn_agree"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"/>
+
     <!-- 하단 동의 버튼 -->
     <Button
         android:id="@+id/btn_agree"

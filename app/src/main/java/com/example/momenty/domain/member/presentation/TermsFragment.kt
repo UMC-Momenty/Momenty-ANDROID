@@ -87,8 +87,11 @@ class TermsFragment : Fragment() {
         // 동의 버튼 클릭
         binding.btnAgree.setOnClickListener {
             if (isRequiredTermsAgreed()) {
+                binding.tvTermsWarning.visibility = View.GONE
                 // 약관 동의 후 로그인 화면으로 이동 (저장하지 않음)
                 findNavController().navigate(R.id.action_termsFragment_to_loginFragment)
+            }else{
+                binding.tvTermsWarning.visibility = View.VISIBLE
             }
         }
     }
