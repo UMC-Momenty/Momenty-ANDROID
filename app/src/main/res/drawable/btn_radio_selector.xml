@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 체크된 상태: 주황색 원 + 흰색 체크 -->
+    <item android:state_checked="true">
+        <layer-list>
+            <!-- 배경 원 -->
+            <item>
+                <shape android:shape="oval">
+                    <solid android:color="#FF9052"/>
+                    <size android:width="24dp" android:height="24dp"/>
+                </shape>
+            </item>
+            <!-- 체크 아이콘 -->
+            <item
+                android:drawable="@drawable/img_check_white"
+                android:width="14dp"
+                android:height="14dp"
+                android:gravity="center"/>
+        </layer-list>
+    </item>
+
+    <!-- 체크 안 된 상태: 주황색 테두리만 -->
+    <item android:state_checked="false">
+        <shape android:shape="oval">
+            <solid android:color="@android:color/transparent"/>
+            <size android:width="24dp" android:height="24dp"/>
+            <stroke android:width="2dp" android:color="#FF9052"/>
+        </shape>
+    </item>
+</selector>

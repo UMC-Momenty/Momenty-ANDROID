@@ -79,6 +79,8 @@ dependencies {
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
+    // 스플래시 화면
+    implementation("androidx.core:core-splashscreen:1.2.0")
 
     // 테스트
     testImplementation(libs.junit)

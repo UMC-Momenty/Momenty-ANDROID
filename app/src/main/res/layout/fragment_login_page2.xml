@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/primary_sub">
+
+    <ImageView
+        android:id="@+id/iv_letter_img"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="200dp"
+        android:src="@drawable/img_login_letter_closed"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_login_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="지금 바로 Momenty를 시작해 보아요"
+        android:textColor="@color/body_1"
+        android:textSize="20sp"
+        android:fontFamily="@font/pretendard_semibold"
+        android:layout_marginTop="30dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_letter_img" />
+
+    <TextView
+        android:id="@+id/tv_login_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="당신과 반려동물의 추억을 기록해 볼까요?"
+        android:textColor="@color/body_2"
+        android:textSize="14sp"
+        android:fontFamily="@font/pretendard_regular"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/tv_login_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+    </TextView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

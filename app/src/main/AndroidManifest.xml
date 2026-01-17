@@ -11,14 +11,23 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Momenty">
+
+        <!-- splash -->
         <activity
-            android:name=".domain.main.presentation.MainActivity"
-            android:exported="true">
+            android:name=".domain.splash.SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".domain.main.presentation.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Momenty">
         </activity>
     </application>
 

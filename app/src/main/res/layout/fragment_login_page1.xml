@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/iv_letter_img"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_marginTop="100dp"
+        android:src="@drawable/img_login_letter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_login_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="매일 한 개씩 오늘의 질문에 답변해요!"
+        android:textColor="@color/body_1"
+        android:textSize="20sp"
+        android:fontFamily="@font/pretendard_semibold"
+        app:layout_constraintStart_toStartOf="@id/iv_letter_img"
+        app:layout_constraintEnd_toEndOf="@id/iv_letter_img"
+        app:layout_constraintTop_toBottomOf="@id/iv_letter_img"/>
+
+    <TextView
+        android:id="@+id/tv_login_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="매일 달라지는 질문을 통해\n반려동물의 하루를 조금 더 깊이 돌아보고,\n다양한 기록이 되고, 기록은 추억이 돼요."
+        android:textColor="@color/body_2"
+        android:textSize="14sp"
+        android:fontFamily="@font/pretendard_regular"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/tv_login_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
