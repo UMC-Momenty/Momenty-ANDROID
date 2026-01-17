@@ -57,10 +57,8 @@ class LoginPage1Fragment : Fragment() {
                         "매일 달라지는 질문을 통해\n반려동물의 하루를 조금 더 깊이 돌아보고,\n다양한 기록이 되고, 기록은 추억이 돼요."
                 } else {
                     binding.tvLoginTitle.text = "특별한 날이 아니어도 괜찮아요."
-
-                    // HTML 텍스트 처리
-                    val htmlText = "사소했던 오늘이,\n가장 소중한 기억이 되니까요.\n<font color='#FFA86B'>Momenty</font>에서 반려동물의 하루를 기록해 보세요."
-                    binding.tvLoginDescription.text = Html.fromHtml(htmlText, Html.FROM_HTML_MODE_LEGACY)
+                    binding.tvLoginDescription.text =
+                        "사소했던 오늘이, 가장 소중한 기억이 되니까요.\nMomenty에서 반려동물의 하루를 기록해 보세요."
                 }
 
                 // Fade in
