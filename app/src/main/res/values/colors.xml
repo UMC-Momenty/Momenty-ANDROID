@@ -29,4 +29,8 @@
     <color name="white">#FFFFFF</color>
 
 
+    <!-- 구글, 카카오, 네이버 버튼 -->
+    <color name="kakao">#FEE500</color>
+    <color name="google">#FFFFFF</color>
+    <color name="naver">#03C75A</color>
 </resources>
