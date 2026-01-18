@@ -2,7 +2,7 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_main"
-    app:startDestination="@id/homeFragment">
+    app:startDestination="@id/termsFragment">
 
     <fragment
         android:id="@+id/recordFragment"
@@ -28,5 +28,17 @@
         android:id="@+id/myPageFragment"
         android:name="com.example.momenty.domain.mypage.MyPageFragment"
         android:label="마이페이지" />
+
+    <fragment
+        android:id="@+id/termsFragment"
+        android:name="com.example.momenty.domain.member.presentation.TermsFragment"
+        android:label="약관" />
+
+    <fragment
+        android:id="@+id/loginPage3Fragment"
+        android:name="com.example.momenty.domain.member.presentation.LoginPage3Fragment"
+        android:label="로그인" />
+
+
 
 </navigation>
