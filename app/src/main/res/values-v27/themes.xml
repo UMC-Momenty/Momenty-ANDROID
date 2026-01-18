@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="Base.Theme.Momenty" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary Colors -->
         <item name="colorPrimary">@color/primary</item>
@@ -23,6 +24,7 @@
 
         <!-- Navigation Bar -->
         <item name="android:navigationBarColor">@color/neutral_bg</item>
+        <item name="android:windowLightNavigationBar">true</item>
 
         <!-- Default Text Styles -->
         <item name="textAppearanceHeadline1">@style/TextAppearance.App.Heading01</item>
@@ -30,22 +32,5 @@
         <item name="textAppearanceBody1">@style/TextAppearance.App.Body01</item>
         <item name="textAppearanceBody2">@style/TextAppearance.App.Body02</item>
         <item name="textAppearanceCaption">@style/TextAppearance.App.Caption01</item>
-
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:fitsSystemWindows">false</item>
     </style>
-
-    <style name="Theme.Splash" parent="Theme.AppCompat.NoActionBar">
-        <item name="android:windowBackground">@color/primary</item>
-        <item name="android:statusBarColor">@color/primary</item>
-        <item name="android:navigationBarColor">@color/primary</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
-        <item name="android:windowFullscreen">true</item>
-
-        <item name="android:windowDisablePreview">true</item>
-    </style>
-
-    <style name="Theme.Momenty" parent="Base.Theme.Momenty" />
-
 </resources>

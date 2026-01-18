@@ -1,8 +1,12 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("kotlin-kapt")  // ← kapt 플러그인 추가 (Hilt 사용 위해 필수)
-    id("com.google.dagger.hilt.android")  // ← Hilt 플러그인 추가
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -17,6 +21,19 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // local.properties에서 카카오 앱 키 읽기
+        val properties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(FileInputStream(localPropertiesFile))
+        }
+
+        val kakaoKey = properties.getProperty("KAKAO_NATIVE_APP_KEY")
+            ?: "8367190c9f93267d9fb62bc7a6cbc6cb"
+
+        buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"$kakaoKey\"")
+        manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = kakaoKey
     }
 
     buildTypes {
@@ -38,47 +55,61 @@ android {
         jvmTarget = "11"
     }
 
-    // ViewBinding 활성화 (UI 작업 시 편리)
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
 dependencies {
-    // Retrofit (네트워크 통신)
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.8.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+
+    // 카카오 SDK
+    implementation("com.kakao.sdk:v2-user:2.20.1")
+
+    // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
-    // OkHttp (HTTP 클라이언트)
+    // OkHttp
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 
-    // Hilt (의존성 주입)
+    // Hilt
     implementation("com.google.dagger:hilt-android:2.48")
     kapt("com.google.dagger:hilt-compiler:2.48")
 
-    // Coroutines (비동기 처리)
+    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // ViewModel & LiveData (MVVM 아키텍처)
+    // ViewModel & LiveData
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     implementation("androidx.activity:activity-ktx:1.8.2")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
 
-    // Navigation Component (화면 전환)
+    // Navigation
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.6")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.6")
 
-    // Android 기본 라이브러리
+    // Android 기본
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
 
+    // Glide
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
+    // Splash
+    implementation("androidx.core:core-splashscreen:1.2.0")
+
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     // 테스트
     testImplementation(libs.junit)
