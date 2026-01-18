@@ -13,6 +13,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+
+
+
+
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -28,9 +32,14 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
+
         setupNavigation()
         handleIntent()
     }
+
+
+
 
     private fun setupNavigation() {
         val navHostFragment =
@@ -44,6 +53,7 @@ class MainActivity : AppCompatActivity() {
                 // 하단 바 숨길 화면들
                 R.id.termsFragment,
                 R.id.loginPage3Fragment,
+                    R.id.recordWriteFragment
                 -> {
                     binding.bottomNav.visibility = View.GONE
                 }

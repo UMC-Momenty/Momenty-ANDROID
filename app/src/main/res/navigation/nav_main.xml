@@ -10,6 +10,12 @@
         android:label="기록" />
 
     <fragment
+        android:id="@+id/recordWriteFragment"
+        android:name="com.example.momenty.domain.record.RecordWriteFragment"
+        android:label="기록 작성" />
+
+
+    <fragment
         android:id="@+id/calendarFragment"
         android:name="com.example.momenty.domain.calendar.CalendarFragment"
         android:label="일정 관리" />
@@ -38,6 +44,8 @@
         android:id="@+id/loginPage3Fragment"
         android:name="com.example.momenty.domain.member.presentation.LoginPage3Fragment"
         android:label="로그인" />
+
+
 
 
 

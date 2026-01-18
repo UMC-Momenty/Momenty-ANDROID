@@ -43,25 +43,6 @@
             app:popUpToInclusive="true" />
     </fragment>
 
-    <!-- 메인 기능 화면들 -->
-    <fragment
-        android:id="@+id/recordFragment"
-        android:name="com.example.momenty.domain.record.RecordFragment"
-        android:label="Record"
-        tools:layout="@layout/fragment_record">
-        <action
-            android:id="@+id/action_recordFragment_to_writeFragment"
-            app:destination="@id/recordWriteFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/recordWriteFragment"
-        android:name="com.example.momenty.domain.record.RecordWriteFragment"
-        android:label="Write"
-        tools:layout="@layout/fragment_record_write">
-        <action
-            android:id="@+id/action_recordWriteFragment_to_recordFragment"
-            app:destination="@id/recordFragment" />
-    </fragment>
+    
 
 </navigation>
