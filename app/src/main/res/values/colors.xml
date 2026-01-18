@@ -24,4 +24,13 @@
     <color name="caption_1">#929292</color>
     <color name="caption_2">#bebebe</color>
     <color name="caption_3">#f5f5f5</color>
+
+
+    <color name="white">#FFFFFF</color>
+
+
+    <!-- 구글, 카카오, 네이버 버튼 -->
+    <color name="kakao">#FEE500</color>
+    <color name="google">#FFFFFF</color>
+    <color name="naver">#03C75A</color>
 </resources>

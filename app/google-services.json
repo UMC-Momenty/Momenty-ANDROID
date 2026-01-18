@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "866926800654",
+    "project_id": "momenty-aa71c",
+    "storage_bucket": "momenty-aa71c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:866926800654:android:db5e6a093b51e7ea31715f",
+        "android_client_info": {
+          "package_name": "com.example.momenty"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjrVGuYn-Nys6ZoPWQjj6VQxqeQVOo0h8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
