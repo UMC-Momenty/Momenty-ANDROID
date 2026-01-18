@@ -1,5 +1,6 @@
 package com.example.momenty.di
 
+import com.example.momenty.BuildConfig
 import com.example.momenty.data.remote.auth.AuthApi
 import com.example.momenty.global.security.AuthInterceptor
 import dagger.Module
@@ -17,13 +18,18 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://api.momenty.com/" // TODO: 실제 백엔드 URL로 변경
+    private const val BASE_URL = "https://api.momenty.com/" // TODO: 실제 URL로 변경
 
     @Provides
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            // 릴리즈 빌드에서는 로깅 비활성화
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
         }
     }
 
@@ -34,11 +40,12 @@ object NetworkModule {
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(authInterceptor)      // JWT 토큰 자동 추가
-            .addInterceptor(loggingInterceptor)   // 로깅
+            .addInterceptor(authInterceptor)
+            .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true) // 연결 실패 시 재시도
             .build()
     }
 

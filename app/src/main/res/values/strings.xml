@@ -1,5 +1,3 @@
 <resources>
     <string name="app_name">Momenty</string>
-    <!-- 카카오 네이티브 앱 키 (카카오 개발자 콘솔에서 발급받은 키) -->
-    <string name="kakao_native_app_key">8367190c9f93267d9fb62bc7a6cbc6cb</string>
 </resources>
