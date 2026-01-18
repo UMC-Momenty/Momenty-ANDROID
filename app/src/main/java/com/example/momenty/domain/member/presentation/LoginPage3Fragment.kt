@@ -143,11 +143,10 @@ class LoginPage3Fragment : Fragment() {
     private fun navigateToRecord() {
         // MainActivity의 NavController를 직접 사용
         val navHostFragment = requireActivity().supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+            .findFragmentById(R.id.nav_host) as? NavHostFragment
 
-        navHostFragment?.navController?.navigate(
-            R.id.action_loginFragment_to_recordFragment
-        )
+        navHostFragment?.navController?.navigate(R.id.homeFragment)
+
     }
 
     override fun onDestroyView() {
