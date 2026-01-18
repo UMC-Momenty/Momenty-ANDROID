@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentLoginPage3Binding
@@ -140,13 +141,13 @@ class LoginPage3Fragment : Fragment() {
     }
 
     private fun navigateToRecord() {
-        // LoginFragment의 부모에서 navController를 찾아서 이동
-        parentFragment?.parentFragment?.let { loginFragment ->
-            if (loginFragment is LoginFragment) {
-                loginFragment.findNavController()
-                    .navigate(R.id.action_loginFragment_to_recordFragment)
-            }
-        }
+        // MainActivity의 NavController를 직접 사용
+        val navHostFragment = requireActivity().supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+
+        navHostFragment?.navController?.navigate(
+            R.id.action_loginFragment_to_recordFragment
+        )
     }
 
     override fun onDestroyView() {
