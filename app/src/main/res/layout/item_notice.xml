@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:background="#FFFFFF"
+    android:paddingHorizontal="24dp">
+
+    <TextView
+        android:id="@+id/tv_notice_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="공지 제목"
+        android:textSize="16sp"
+        android:textColor="@color/body_1"
+        android:fontFamily="@font/pretendard_regular"
+        android:maxLines="1"
+        android:ellipsize="end"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/tv_notice_date"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="10dp"/>
+
+    <TextView
+        android:id="@+id/tv_notice_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1일 전"
+        android:textSize="12sp"
+        android:textColor="@color/caption_1"
+        android:fontFamily="@font/pretendard_regular"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#F0F0F0"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
