@@ -12,11 +12,10 @@
 
         <ImageView
             android:id="@+id/btn_notice_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_arrow_back_my_page"
-            android:layout_centerVertical="true"
-            android:padding="16dp"/>
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/img_arrow_left"
+            android:layout_centerVertical="true"/>
 
         <TextView
             android:layout_width="wrap_content"
