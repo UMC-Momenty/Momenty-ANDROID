@@ -2,27 +2,27 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/recordFragment"
+        android:id="@+id/record_graph"
         android:icon="@drawable/ic_bottom_nav_record"
         android:title="기록" />
 
     <item
-        android:id="@+id/calendarFragment"
+        android:id="@+id/calendar_graph"
         android:icon="@drawable/ic_bottom_nav_calendar"
         android:title="일정 관리" />
 
     <item
-        android:id="@+id/homeFragment"
+        android:id="@+id/home_graph"
         android:icon="@drawable/ic_bottom_nav_home"
         android:title="홈" />
 
     <item
-        android:id="@+id/chatbotFragment"
+        android:id="@+id/chatbot_graph"
         android:icon="@drawable/ic_bottom_nav_chatbot"
         android:title="챗봇" />
 
     <item
-        android:id="@+id/myPageFragment"
+        android:id="@+id/mypage_graph"
         android:icon="@drawable/ic_bottom_nav_mypage"
         android:title="마이페이지" />
 

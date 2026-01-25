@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chatbot_graph"
+    app:startDestination="@id/chatbotFragment">
+
+    <fragment
+        android:id="@+id/chatbotFragment"
+        android:name="com.example.momenty.domain.chatbot.ChatbotFragment"
+        android:label="챗봇"
+        tools:layout="@layout/fragment_chatbot" />
+
+</navigation>

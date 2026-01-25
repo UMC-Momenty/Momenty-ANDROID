@@ -89,7 +89,7 @@ class TermsFragment : Fragment() {
             if (isRequiredTermsAgreed()) {
                 binding.tvTermsWarning.visibility = View.GONE
                 // 약관 동의 후 로그인 화면으로 이동 (저장하지 않음)
-                findNavController().navigate(R.id.loginPage3Fragment)
+                findNavController().navigate(R.id.loginFragment)
 
             }else{
                 binding.tvTermsWarning.visibility = View.VISIBLE

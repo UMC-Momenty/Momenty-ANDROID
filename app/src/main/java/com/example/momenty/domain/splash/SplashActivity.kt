@@ -49,7 +49,7 @@ class SplashActivity : AppCompatActivity() {
 
             if (hasToken && hasFirebaseUser) {
                 // 로그인 상태 → 메인 화면으로 (RecordFragment)
-                intent.putExtra("navigate_to", "record")
+                intent.putExtra("navigate_to", "home")
             } else {
                 // 비로그인 상태 → 약관 동의 화면으로
                 intent.putExtra("navigate_to", "terms")

@@ -145,8 +145,9 @@ class LoginPage3Fragment : Fragment() {
         val navHostFragment = requireActivity().supportFragmentManager
             .findFragmentById(R.id.nav_host) as? NavHostFragment
 
-        navHostFragment?.navController?.navigate(R.id.homeFragment)
-
+        navHostFragment?.navController?.navigate(
+            R.id.action_loginFragment_to_homeFragment
+        )
     }
 
     override fun onDestroyView() {
