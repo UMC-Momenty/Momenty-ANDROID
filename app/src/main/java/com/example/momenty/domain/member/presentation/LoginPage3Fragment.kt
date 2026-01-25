@@ -13,6 +13,8 @@ import androidx.navigation.fragment.findNavController
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentLoginPage3Binding
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.navigation.NavOptions
+
 
 @AndroidEntryPoint
 class LoginPage3Fragment : Fragment() {
@@ -141,14 +143,15 @@ class LoginPage3Fragment : Fragment() {
     }
 
     private fun navigateToRecord() {
-        // MainActivity의 NavController를 직접 사용
-        val navHostFragment = requireActivity().supportFragmentManager
-            .findFragmentById(R.id.nav_host) as? NavHostFragment
+        val options = NavOptions.Builder()
+            .setPopUpTo(R.id.auth_graph, true) // inclusive = true와 동일
+            .setLaunchSingleTop(true)
+            .build()
 
-        navHostFragment?.navController?.navigate(
-            R.id.action_loginFragment_to_homeFragment
-        )
+        findNavController().navigate(R.id.home_graph, null, options)
     }
+
+
 
     override fun onDestroyView() {
         super.onDestroyView()
