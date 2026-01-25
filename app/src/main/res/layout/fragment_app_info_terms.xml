@@ -9,20 +9,26 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="56dp">
-        <ImageView
-            android:id="@+id/btn_notice_detail_back"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/img_arrow_left"
-            android:layout_centerVertical="true"/>
+
         <TextView
+            android:id="@+id/tv_app_info_terms_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="공지사항"
-            android:textSize="20sp"
-            android:textColor="@color/body_1"
+            android:text="서비스 이용 약관"
+            android:textSize="18sp"
             android:fontFamily="@font/pretendard_semibold"
+            android:textColor="@color/body_1"
             android:layout_centerInParent="true"/>
+
+        <ImageView
+            android:id="@+id/btn_app_info_terms_close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_close_app_info"
+            android:padding="16dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"/>
+
     </RelativeLayout>
 
     <ScrollView
@@ -36,26 +42,25 @@
             android:padding="24dp">
 
             <TextView
-                android:id="@+id/tv_notice_detail_title"
+                android:id="@+id/tv_app_info_terms_content_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="공지 제목"
-                android:textSize="20sp"
+                android:text="제 1장 총칙"
+                android:textSize="18sp"
+                android:fontFamily="@font/pretendard_semibold"
                 android:textColor="@color/body_1"
-                android:fontFamily="@font/pretendard_regular"
-                android:gravity="center"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="30dp"/>
+                android:textAlignment="center"
+                android:layout_marginBottom="16dp"/>
 
             <TextView
-                android:id="@+id/tv_notice_detail_content"
+                android:id="@+id/tv_app_info_terms_content_body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:fontFamily="@font/pretendard_regular"
-                android:textColor="@color/body_1"
-                android:lineSpacingExtra="4dp"
-                android:text="공지내용" />
+                android:textColor="@color/body_2"
+                android:lineSpacingExtra="5dp"
+                android:text="약관 전체 내용"/>
 
         </LinearLayout>
     </ScrollView>
