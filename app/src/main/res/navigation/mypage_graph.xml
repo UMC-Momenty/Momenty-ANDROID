@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mypage_graph"
+    app:startDestination="@id/myPageFragment">
+
+    <fragment
+        android:id="@+id/myPageFragment"
+        android:name="com.example.momenty.domain.mypage.MyPageFragment"
+        android:label="마이페이지"
+        tools:layout="@layout/fragment_my_page" />
+
+</navigation>

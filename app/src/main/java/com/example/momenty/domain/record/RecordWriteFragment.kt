@@ -62,7 +62,7 @@ class RecordWriteFragment : Fragment(R.layout.fragment_record_write) {
         binding.btnCancel.setOnClickListener { findNavController().popBackStack() }
 
         binding.btnSave.setOnClickListener {
-            findNavController().navigate(R.id.action_recordWriteFragment_to_recordFragment)
+            findNavController().navigate(R.id.recordFragment)
         }
     }
 

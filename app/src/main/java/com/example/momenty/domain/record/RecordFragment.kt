@@ -37,7 +37,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
         binding.rvRecord.adapter = RecordAdapter(dummyList)
 
         binding.btnRecordWrite.setOnClickListener {
-            findNavController().navigate(R.id.action_recordFragment_to_writeFragment)
+            findNavController().navigate(R.id.recordWriteFragment)
         }
     }
 }
