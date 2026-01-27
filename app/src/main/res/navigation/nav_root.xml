@@ -6,12 +6,17 @@
 
     <include app:graph="@navigation/auth_graph" />
 
+    <action
+        android:id="@+id/action_global_to_community"
+        app:destination="@id/community_graph"
+        />
+
 
     <include app:graph="@navigation/home_graph" />
     <include app:graph="@navigation/record_graph" />
     <include app:graph="@navigation/calendar_graph" />
     <include app:graph="@navigation/chatbot_graph" />
     <include app:graph="@navigation/mypage_graph" />
-    <include app:graph="@navigation/communtiy_graph" />
+    <include app:graph="@navigation/community_graph" />
 
 </navigation>
