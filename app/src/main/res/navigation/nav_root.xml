@@ -12,5 +12,6 @@
     <include app:graph="@navigation/calendar_graph" />
     <include app:graph="@navigation/chatbot_graph" />
     <include app:graph="@navigation/mypage_graph" />
+    <include app:graph="@navigation/communtiy_graph" />
 
 </navigation>

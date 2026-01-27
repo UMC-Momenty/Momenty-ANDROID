@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/community_graph"
+    app:startDestination="@id/communityFragment">
+
+    <fragment
+        android:id="@+id/communityFragment"
+        android:name="com.example.momenty.domain.community.CommunityFragment"
+        android:label="커뮤니티"
+        tools:layout="@layout/fragment_community">
+
+        <action
+            android:id="@+id/action_communityFragment_to_communityWriteFragment"
+            app:destination="@id/communityWriteFragment" />
+
+        <action
+            android:id="@+id/action_communityFragment_to_communityEditFragment"
+            app:destination="@id/communityEditFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/communityWriteFragment"
+        android:name="com.example.momenty.domain.community.CommunityWriteFragment"
+        android:label="글 작성"
+        tools:layout="@layout/fragment_community_write" />
+
+    <fragment
+        android:id="@+id/communityEditFragment"
+        android:name="com.example.momenty.domain.community.CommunityEditFragment"
+        android:label="글 수정"
+        tools:layout="@layout/fragment_community_edit" />
+
+</navigation>
