@@ -33,4 +33,9 @@
     <color name="kakao">#FEE500</color>
     <color name="google">#FFFFFF</color>
     <color name="naver">#03C75A</color>
+
+
+    <!-- Community -->
+    <color name="community_badge">#483628</color>
+
 </resources>
