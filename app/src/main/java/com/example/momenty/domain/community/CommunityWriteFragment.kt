@@ -1,60 +1,70 @@
 package com.example.momenty.domain.community
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.R
+import com.example.momenty.databinding.FragmentCommunityWriteBinding
+import dagger.hilt.android.AndroidEntryPoint
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+@AndroidEntryPoint
+class CommunityWriteFragment : Fragment(R.layout.fragment_community_write) {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [CommunityWriteFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class CommunityWriteFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var binding: FragmentCommunityWriteBinding
+    private val vm: CommunityWriteViewModel by viewModels()
+    private lateinit var photoAdapter: WritePhotoAdapter
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private val pickImages =
+        registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(4)) { uris ->
+            if (uris.isNullOrEmpty()) return@registerForActivityResult
+
+
+            photoAdapter.submitList(uris)
+            vm.addPhotos(uris, max = 4)
         }
-    }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_community_write, container, false)
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding = FragmentCommunityWriteBinding.bind(view)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment CommunityWriteFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            CommunityWriteFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+        binding.vm = vm
+        binding.lifecycleOwner = viewLifecycleOwner
+
+        // 뒤로가기 / 취소
+        binding.btnBack.setOnClickListener { parentFragmentManager.popBackStack() }
+        binding.btnCancel.setOnClickListener { parentFragmentManager.popBackStack() }
+
+        // 등록
+        binding.btnSubmit.setOnClickListener {
+            // TODO: 글 등록 처리
+        }
+
+        // 카테고리
+        binding.chipAll.setOnClickListener { vm.setCategory(CommunityCategory.ALL) }
+        binding.chipQna.setOnClickListener { vm.setCategory(CommunityCategory.QNA) }
+        binding.chipInfo.setOnClickListener { vm.setCategory(CommunityCategory.INFO) }
+        binding.chipReview.setOnClickListener { vm.setCategory(CommunityCategory.REVIEW) }
+
+        // 사진 RecyclerView
+        photoAdapter = WritePhotoAdapter(
+            onAddClick = {
+                pickImages.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            },
+            onRemoveClick = { uri ->
+                vm.removePhoto(uri)
             }
+        )
+
+        binding.rvPhotos.apply {
+            adapter = photoAdapter
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        }
     }
 }

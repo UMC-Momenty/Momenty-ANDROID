@@ -5,8 +5,9 @@
     <data>
         <variable
             name="vm"
-            type="com.example.momenty.domain.community.CommunityWriteFragment" />
+            type="com.example.momenty.domain.community.CommunityWriteViewModel" />
     </data>
+
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -47,9 +48,16 @@
             app:layout_constraintEnd_toEndOf="parent">
 
             <com.example.momenty.presentation.component.UFilterChip
+                android:id="@+id/chipAll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:text="전체"/>
+
+            <com.example.momenty.presentation.component.UFilterChip
                 android:id="@+id/chipQna"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 app:text="질문"/>
 
             <com.example.momenty.presentation.component.UFilterChip
@@ -65,14 +73,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 app:text="후기"/>
-
-            <com.example.momenty.presentation.component.UFilterChip
-                android:id="@+id/chipFree"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                app:text="자유"/>
         </LinearLayout>
+
 
 
 
@@ -91,7 +93,7 @@
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_marginTop="8dp"
-            android:background="@drawable/bg_edit_orange_stroke"
+            android:background="@drawable/bg_edittext_selector"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:hint="제목을 입력해 주세요"
@@ -114,9 +116,9 @@
         <EditText
             android:id="@+id/et_content"
             android:layout_width="0dp"
-            android:layout_height="140dp"
+            android:layout_height="187dp"
             android:layout_marginTop="8dp"
-            android:background="@drawable/bg_edit_orange_stroke"
+            android:background="@drawable/bg_edittext_selector"
             android:gravity="top"
             android:padding="12dp"
             android:hint="내용을 입력해 주세요"
@@ -157,7 +159,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btn_submit"
-            app:layout_constraintHorizontalWeight="1"
+            app:layout_constraintHorizontal_weight="1"
+
             android:layout_marginEnd="8dp" />
 
         <Button
@@ -169,7 +172,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/btn_cancel"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontalWeight="1"
+            app:layout_constraintHorizontal_weight="1"
+
             android:layout_marginStart="8dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
