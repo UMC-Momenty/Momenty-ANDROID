@@ -1,19 +1,26 @@
 package com.example.momenty.domain.member.presentation
 
+import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.NavHostFragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentLoginPage3Binding
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.navigation.NavOptions
+import com.example.momenty.ui.auth.AuthUiState
+import com.example.momenty.ui.auth.AuthViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.api.ApiException
+import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
@@ -23,6 +30,27 @@ class LoginPage3Fragment : Fragment() {
     private val binding get() = _binding!!
 
     private val authViewModel: AuthViewModel by viewModels()
+
+    private val googleSignInLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if(result.resultCode == Activity.RESULT_OK){
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                account?.let {
+                    Log.d(TAG, "Google account received: ${it.email}")
+                    // ViewModel에 위임
+                    authViewModel.loginWithGoogle(it)
+                }
+            } catch (e: ApiException) {
+                Log.e(TAG, "Google sign in failed: statusCode=${e.statusCode}", e)
+                showToast("구글 로그인 실패: ${e.message}")
+            }
+        } else {
+            Log.d(TAG, "Google sign in cancelled")
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,87 +69,59 @@ class LoginPage3Fragment : Fragment() {
     }
 
     private fun setupClickListeners() {
+        // 카카오 로그인 : ViewModel에 위임
         binding.btnKakaoLogin.setOnClickListener {
-            handleKakaoLogin()
+            authViewModel.loginWithKakao()
         }
 
+        // 구글 로그인 : Intent만 실행, 결과는 ViewModel로
         binding.btnGoogleLogin.setOnClickListener {
-            handleGoogleLogin()
+            authViewModel.startGoogleSignIn(googleSignInLauncher)
         }
 
-        binding.btnNaverLogin.setOnClickListener {
-            handleNaverLogin()
-        }
+        binding.btnNaverLogin.setOnClickListener {}
     }
 
     private fun observeLoginState() {
-        authViewModel.loginState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is LoginState.Idle -> {
-                    hideLoading()
-                }
-                is LoginState.Loading -> {
-                    showLoading()
-                }
-                is LoginState.Success -> {
-                    hideLoading()
-                    handleLoginSuccess(state.user.uid, state.user.displayName)
-                }
-                is LoginState.Error -> {
-                    hideLoading()
-                    handleLoginError(state.message, state.code)
+        viewLifecycleOwner.lifecycleScope.launch{
+            authViewModel.uiState.collect { state ->
+                when (state) {
+                    is AuthUiState.Idle -> {
+                        hideLoading()
+                    }
+                    is AuthUiState.Loading -> {
+                        showLoading()
+                    }
+                    is AuthUiState.Success -> {
+                        hideLoading()
+                        handleLoginSuccess(state.userName)
+                    }
+                    is AuthUiState.Error -> {
+                        hideLoading()
+                        handleLoginError(state.message)
+                    }
                 }
             }
         }
     }
 
-    private fun handleKakaoLogin() {
-        authViewModel.loginWithKakao()
-    }
+    private fun handleLoginSuccess(userName: String?) {
+        Log.d(TAG, "로그인 성공: userName=$userName")
 
-    private fun handleGoogleLogin() {
-        // TODO: 구글 로그인 구현
-        Toast.makeText(requireContext(), "구글 로그인 준비 중입니다", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun handleNaverLogin() {
-        // TODO: 네이버 로그인 구현
-        Toast.makeText(requireContext(), "네이버 로그인 준비 중입니다", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun handleLoginSuccess(userId: String, userName: String?) {
-        Log.d(TAG, "로그인 성공: userId=$userId, userName=$userName")
-
-        Toast.makeText(
-            requireContext(),
-            "${userName ?: "사용자"}님, 환영합니다!",
-            Toast.LENGTH_SHORT
-        ).show()
+        showToast("${userName ?: "사용자"}님, 환영합니다!")
 
         // MainActivity에 사용자 정보 저장 (기존 로직 유지)
         (activity as? com.example.momenty.domain.main.presentation.MainActivity)?.apply {
-            saveLoggedIn(userId, userName ?: "사용자")
+            saveLoggedIn("temp_user_id", userName ?: "사용자")
         }
 
         // 메인 화면으로 이동
         navigateToRecord()
     }
 
-    private fun handleLoginError(message: String, code: String?) {
-        Log.e(TAG, "로그인 실패: code=$code, message=$message")
-
-        val errorMessage = when (code) {
-            "MEMBER4001" -> "이미 가입된 사용자입니다"
-            "MEMBER4002" -> "사용자를 찾을 수 없습니다"
-            "MEMBER5001" -> "서버 오류가 발생했습니다"
-            else -> message
-        }
-
-        Toast.makeText(
-            requireContext(),
-            errorMessage,
-            Toast.LENGTH_LONG
-        ).show()
+    private fun handleLoginError(message: String) {
+        Log.e(TAG, "로그인 실패: $message")
+        showToast("로그인 실패: $message")
     }
 
     private fun showLoading() {
@@ -151,7 +151,9 @@ class LoginPage3Fragment : Fragment() {
         findNavController().navigate(R.id.home_graph, null, options)
     }
 
-
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -41,11 +41,15 @@ class SplashActivity : AppCompatActivity() {
             // 스플래시 최소 표시 시간
             delay(1500)
 
-            val intent = Intent(this@SplashActivity, MainActivity::class.java)
+            // 임시 강제 로그아웃
+            tokenManager.clearTokens()
+            firebaseAuth.signOut()
 
             // JWT 토큰과 Firebase 인증 상태 확인
             val hasToken = tokenManager.isLoggedIn()
             val hasFirebaseUser = firebaseAuth.currentUser != null
+
+            val intent = Intent(this@SplashActivity, MainActivity::class.java)
 
             if (hasToken && hasFirebaseUser) {
                 // 로그인 상태 → 메인 화면으로 (RecordFragment)
@@ -53,7 +57,6 @@ class SplashActivity : AppCompatActivity() {
             } else {
                 // 비로그인 상태 → 약관 동의 화면으로
                 intent.putExtra("navigate_to", "terms")
-
                 // 기존 토큰 정리 (불완전한 로그인 상태 방지)
                 tokenManager.clearTokens()
             }
