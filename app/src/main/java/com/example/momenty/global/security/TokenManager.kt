@@ -85,7 +85,8 @@ class TokenManager @Inject constructor(
      * 로그인 여부 확인
      */
     fun isLoggedIn(): Boolean {
-        return getAccessToken() != null
+        val token = getAccessToken()
+        return !token.isNullOrEmpty()
     }
 
     /**

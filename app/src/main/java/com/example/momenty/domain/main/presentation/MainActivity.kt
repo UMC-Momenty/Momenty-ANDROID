@@ -58,16 +58,21 @@ class MainActivity : AppCompatActivity() {
      * SplashActivity에서 전달된 Intent 처리
      */
     private fun handleIntentIfNeeded() {
-        val navigateTo = intent.getStringExtra("navigate_to") ?: return
+        val navigateTo = intent.getStringExtra("navigate_to")
 
         when (navigateTo) {
-            "home" -> runCatching { binding.bottomNav.selectedItemId = R.id.home_graph }
+            "home" -> {
+                // home_graph로 이동
+                navController.navigate(R.id.home_graph)
+                binding.bottomNav.selectedItemId = R.id.home_graph
+            }
 
             "terms" -> {
-                runCatching { navController.navigate(R.id.termsFragment) }
+                if (navController.currentDestination?.id != R.id.termsFragment) {
+                    navController.navigate(R.id.auth_graph)
+                }
             }
         }
-
 
         intent.removeExtra("navigate_to")
     }
