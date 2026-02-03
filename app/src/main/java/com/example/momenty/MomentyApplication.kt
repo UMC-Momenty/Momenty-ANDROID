@@ -28,6 +28,8 @@ class MomentyApplication : Application() {
         if (BuildConfig.DEBUG) {
             val keyHash = Utility.getKeyHash(this)
             Log.d("KAKAO_KEY_HASH", "Key Hash: $keyHash")
+            Log.d("NAVER_CHECK", "ID='${BuildConfig.NAVER_CLIENT_ID}'")
+            Log.d("NAVER_CHECK", "SECRET='${BuildConfig.NAVER_CLIENT_SECRET}'")
         }
     }
 }
