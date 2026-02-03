@@ -1,12 +1,14 @@
-// ui/auth/AuthViewModel.kt
 package com.example.momenty.ui.auth
 
+import android.content.Context
 import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.momenty.data.repository.AuthRepository
 import com.example.momenty.data.repository.AuthResult
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.navercorp.nid.NaverIdLoginSDK
+import com.navercorp.nid.oauth.OAuthLoginCallback
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -71,6 +73,42 @@ class AuthViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    /**
+     * 네이버 로그인
+     */
+    fun loginWithNaver(context: Context) {
+        _uiState.value = AuthUiState.Loading
+
+        val oAuthLoginCallback = object : OAuthLoginCallback {
+            override fun onSuccess() {
+                // 로그인 성공 -> 액세스 토큰으로 사용자 정보 가져옴
+                viewModelScope.launch {
+                    when(val result = authRepository.loginWithNaver()){
+                        is AuthResult.Success -> {
+                            _uiState.value = AuthUiState.Success(result.user.displayName)
+                        }
+                        is AuthResult.Error -> {
+                            _uiState.value = AuthUiState.Error(getErrorMessage(result))
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(httpStatus: Int, message: String) {
+                _uiState.value = AuthUiState.Error("네이버 로그인 실패: $message")
+            }
+
+            override fun onError(errorCode: Int, message: String) {
+                _uiState.value = when(errorCode){
+                    -1 -> AuthUiState.Error("로그인이 취소되었습니다.")
+                    else -> AuthUiState.Error("네이버 로그인 오류: $message")
+                }
+            }
+        }
+
+        NaverIdLoginSDK.authenticate(context, oAuthLoginCallback)
     }
 
     fun resetState() {

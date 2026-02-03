@@ -9,6 +9,7 @@ import com.example.momenty.data.remote.auth.AuthApi
 import com.example.momenty.data.remote.auth.GoogleLoginRequest
 import com.example.momenty.data.remote.auth.KakaoLoginRequest
 import com.example.momenty.data.remote.auth.LoginResponse
+import com.example.momenty.data.remote.auth.NaverLoginRequest
 import com.example.momenty.global.api.ApiException
 import com.example.momenty.global.api.BaseResponse
 import com.example.momenty.global.security.TokenManager
@@ -24,6 +25,9 @@ import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
+import com.navercorp.nid.NaverIdLoginSDK
+import com.navercorp.nid.oauth.NidOAuthLogin
+import com.navercorp.nid.oauth.OAuthLoginCallback
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
@@ -48,6 +52,14 @@ sealed class AuthResult {
         data class Unknown(override val message: String, val throwable: Throwable? = null) : Error(message)
     }
 }
+
+/**
+ * 네이버 토큰 정보
+ */
+data class NaverToken(
+    val accessToken: String,
+    val tokenType: String
+)
 
 /**
  * 인증 관련 Repository
@@ -173,6 +185,34 @@ class AuthRepository @Inject constructor(
             }
         } catch (e: Exception) {
             handleLoginError("Kakao", e)
+        }
+    }
+
+    /**
+     * 네이버 로그인 (카카오와 동일한 방법)
+     */
+    suspend fun loginWithNaver(): AuthResult {
+        return try{
+            withTimeout(LOGIN_TIMEOUT_MS){
+                logLoginAttempt("Naver", null)
+
+                val naverToken = getNaverAccessToken()
+                Log.d(TAG, "네이버 토큰 획득 성공")
+
+                if(USE_MOCK){
+                    return@withTimeout loginWithFirebaseMock()
+                }
+
+                executeLoginFlow(
+                    getIdToken = {naverToken.accessToken},
+                    loginRequest = {accessToken ->
+                        authApi.naverLogin(NaverLoginRequest(accessToken))
+                    },
+                    mockLogin = { loginWithFirebaseMock() }
+                )
+            }
+        } catch (e: Exception) {
+            handleLoginError("Naver", e)
         }
     }
 
@@ -326,6 +366,18 @@ class AuthRepository @Inject constructor(
     }
 
     /**
+     * 네이버 Access Token 가져오기
+     */
+    private fun getNaverAccessToken(): NaverToken {
+        val accessToken = NaverIdLoginSDK.getAccessToken()
+            ?: throw IllegalStateException("네이버 액세스 토큰을 가져올 수 없습니다.")
+
+        val tokenType = NaverIdLoginSDK.getTokenType() ?: "Bearer"
+
+        return NaverToken(accessToken, tokenType)
+    }
+
+    /**
      * Firebase Custom Token으로 로그인
      */
     private suspend fun signInWithFirebaseCustomToken(customToken: String): FirebaseUser {
@@ -399,7 +451,16 @@ class AuthRepository @Inject constructor(
                 errors.add(it)
             }
 
-            // 3. 토큰 정리 및 Firebase 로그아웃 (항상 실행)
+            // 3. 네이버 로그아웃
+            runCatching {
+                NaverIdLoginSDK.logout()
+                Log.d(TAG, "네이버 로그아웃 성공")
+            }.onFailure {
+                Log.e(TAG, "네이버 로그아웃 실패", it)
+                errors.add(it)
+            }
+
+            // 4. 토큰 정리 및 Firebase 로그아웃 (항상 실행)
             tokenManager.clearTokens()
             firebaseAuth.signOut()
 
@@ -469,7 +530,36 @@ class AuthRepository @Inject constructor(
                 errors.add(it)
             }
 
-            // 4. 토큰 정리 (항상 실행)
+            // 4. 네이버 연결 끊기
+            runCatching {
+                suspendCoroutine<Unit> { continuation ->
+                    NidOAuthLogin().callDeleteTokenApi(object : OAuthLoginCallback {
+                        override fun onSuccess() {
+                            Log.d(TAG, "네이버 연결 끊기 성공")
+                            continuation.resume(Unit)
+                        }
+
+                        override fun onFailure(httpStatus: Int, message: String) {
+                            val error = Exception("네이버 연결 끊기 실패: $message")
+                            Log.e(TAG, error.message, error)
+                            errors.add(error)
+                            continuation.resume(Unit)
+                        }
+
+                        override fun onError(errorCode: Int, message: String) {
+                            val error = Exception("네이버 연결 끊기 오류: $message")
+                            Log.e(TAG, error.message, error)
+                            errors.add(error)
+                            continuation.resume(Unit)
+                        }
+                    })
+                }
+            }.onFailure {
+                Log.e(TAG, "네이버 연결 끊기 처리 중 오류", it)
+                errors.add(it)
+            }
+
+            // 5. 토큰 정리 (항상 실행)
             tokenManager.clearTokens()
 
             if (errors.isNotEmpty()) {

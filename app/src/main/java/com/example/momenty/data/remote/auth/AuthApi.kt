@@ -15,6 +15,11 @@ interface AuthApi {
     suspend fun googleLogin(
         @Body request: GoogleLoginRequest
     ): BaseResponse<LoginResponse>
+
+    @POST("auth/naver/login")
+    suspend fun naverLogin(
+        @Body request: NaverLoginRequest
+    ): BaseResponse<LoginResponse>
 }
 
 data class LoginResponse(
