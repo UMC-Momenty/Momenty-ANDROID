@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:animateLayoutChanges="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="20dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_inquiry_history_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="서비스 이용 안내"
+            style="@style/TextAppearance.App.Body01"/>
+
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5일 전"
+            style="@style/TextAppearance.App.Caption01"
+            android:layout_marginEnd="8dp"/>
+
+        <ImageView
+            android:id="@+id/iv_inquiry_history_arrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/img_arrow_down_user_profile"/>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/caption_2"/>
+
+    <LinearLayout
+        android:id="@+id/layout_inquiry_history_detail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:visibility="visible">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="문의 유형"
+            style="@style/TextAppearance.App.Body01"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-문의 유형-"
+            style="@style/TextAppearance.App.Body02"
+            android:background="@drawable/bg_round_stroke_inquiry"
+            android:padding="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="15dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="문의 내용"
+            style="@style/TextAppearance.App.Body01"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-문의 내용-"
+            style="@style/TextAppearance.App.Body02"
+            android:background="@drawable/bg_round_stroke_inquiry"
+            android:padding="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="15dp"/>
+
+        <LinearLayout
+            android:id="@+id/layout_inquiry_photo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingBottom="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="사진"
+                style="@style/TextAppearance.App.Body01"/>
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_round_stroke_inquiry"
+                android:padding="5dp">
+                
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:background="@color/caption_1"
+                    android:layout_weight="1"
+                    android:layout_margin="10dp"/>
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:background="@color/caption_1"
+                    android:layout_weight="1"
+                    android:layout_margin="10dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/layout_inquiry_answer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="답변"
+                style="@style/TextAppearance.App.Body01"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="-답변-"
+                style="@style/TextAppearance.App.Body02"
+                android:background="@drawable/bg_round_stroke_inquiry"
+                android:padding="15dp"
+                android:layout_marginTop="5dp"/>
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/caption_2"/>
+
+</LinearLayout>
