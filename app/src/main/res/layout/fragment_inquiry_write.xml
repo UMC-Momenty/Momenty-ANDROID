@@ -57,7 +57,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="사진 첨부"
-                style="@style/TextAppearance.App.Body02"
+                style="@style/TextAppearance.App.Body01"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="5dp"/>
 

@@ -39,12 +39,10 @@
 
     </LinearLayout>
 
-
-
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#F0F0F0"
+        android:background="@color/caption_2"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

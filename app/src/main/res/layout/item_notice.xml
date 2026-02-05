@@ -13,8 +13,7 @@
         android:layout_height="wrap_content"
         android:text="공지 제목"
         android:textSize="16sp"
-        android:textColor="@color/body_1"
-        android:fontFamily="@font/pretendard_regular"
+        style="@style/TextAppearance.App.Body01"
         android:maxLines="1"
         android:ellipsize="end"
         app:layout_constraintStart_toStartOf="parent"
@@ -29,8 +28,7 @@
         android:layout_height="wrap_content"
         android:text="1일 전"
         android:textSize="12sp"
-        android:textColor="@color/caption_1"
-        android:fontFamily="@font/pretendard_regular"
+        style="@style/TextAppearance.App.Caption01"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
@@ -38,7 +36,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#F0F0F0"
+        android:background="@color/caption_2"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

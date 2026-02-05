@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFFFF"
+    android:background="@color/white"
     android:padding="25dp">
 
     <RelativeLayout
@@ -20,6 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="고객센터"
+            android:textSize="24sp"
             style="@style/TextAppearance.App.Body01"
             android:layout_centerInParent="true"/>
     </RelativeLayout>
@@ -28,27 +29,24 @@
         android:id="@+id/tab_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:tabIndicatorColor="#000000"
-        app:tabSelectedTextColor="#000000"
-        app:tabTextColor="#999999"
+        app:tabIndicatorColor="@color/body_1"
+        app:tabSelectedTextColor="@color/body_1"
+        app:tabTextColor="@color/caption_1"
         app:tabMode="fixed"
         app:tabGravity="fill">
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="FAQ"
-            style="@style/TextAppearance.App.Body02"/>
+            android:text="FAQ"/>
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="문의내역"
-            style="@style/TextAppearance.App.Body02"/>
+            android:text="문의내역"/>
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="문의하기"
-            style="@style/TextAppearance.App.Body02"/>
+            android:text="문의하기"/>
     </com.google.android.material.tabs.TabLayout>
 
     <androidx.viewpager2.widget.ViewPager2
