@@ -15,6 +15,9 @@ class MomentyApplication : Application() {
         // 카카오 SDK 초기화
         KakaoSdk.init(this, BuildConfig.KAKAO_NATIVE_APP_KEY)
 
+        //네아버 SDK 초기화
+
+
         // 디버그 모드에서만 키 해시 출력
         if (BuildConfig.DEBUG) {
             val keyHash = Utility.getKeyHash(this)

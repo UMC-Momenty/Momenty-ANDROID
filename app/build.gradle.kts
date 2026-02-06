@@ -71,6 +71,12 @@ dependencies {
     // 카카오 SDK
     implementation("com.kakao.sdk:v2-user:2.20.1")
 
+    // Google
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    // 네이버 SDK
+    implementation("com.navercorp.nid:oauth:5.9.1")
+
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
@@ -85,6 +91,7 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
     // ViewModel & LiveData
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
