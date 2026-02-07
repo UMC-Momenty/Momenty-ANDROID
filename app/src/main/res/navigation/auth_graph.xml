@@ -48,6 +48,18 @@
         android:name="com.example.momenty.domain.member.presentation.UserProfileFragment"
         android:label="UserProfile"
         tools:layout="@layout/fragment_signup_user_profile">
+        <action
+            android:id="@+id/action_userProfileFragment_to_petProfileFragment"
+            app:destination="@id/petProfileFragment"
+            app:popUpTo="@id/userProfileFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/petProfileFragment"
+        android:name="com.example.momenty.domain.member.presentation.PetProfileFragment"
+        android:label="PetProfile"
+        tools:layout="@layout/fragment_signup_pet_profile">
     </fragment>
 
 

@@ -69,7 +69,7 @@
     </string-array>
 
     <!-- 강아지 종 -->
-    <string-array name="doy_type_options">
+    <string-array name="dog_type_options">
         <item>-----소형-----</item>
         <item>말티즈</item>
         <item>포메라니안</item>

@@ -11,6 +11,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentSignupUserProfileBinding
@@ -225,8 +226,8 @@ class UserProfileFragment : Fragment() {
         // SharedPreferences에 저장
         saveToPreferences(name, gender, birth, alarmTime)
 
-        // 메인 화면으로 이동
-        navigateToHome()
+        // 반려동물 프로필 설정으로 이동
+        navigateToPetProfile()
     }
 
     private fun saveToPreferences(
@@ -250,14 +251,8 @@ class UserProfileFragment : Fragment() {
         }
     }
 
-    private fun navigateToHome() {
-        // home_graph로 이동 및 백스택 정리
-        val navOptions = androidx.navigation.NavOptions.Builder()
-            .setPopUpTo(R.id.auth_graph, true)
-            .setLaunchSingleTop(true)
-            .build()
-
-        findNavController().navigate(R.id.home_graph, null, navOptions)
+    private fun navigateToPetProfile() {
+        findNavController().navigate(R.id.action_userProfileFragment_to_petProfileFragment)
     }
 
     override fun onDestroyView() {
