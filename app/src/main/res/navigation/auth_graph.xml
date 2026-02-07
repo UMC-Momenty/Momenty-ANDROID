@@ -48,11 +48,6 @@
         android:name="com.example.momenty.domain.member.presentation.UserProfileFragment"
         android:label="UserProfile"
         tools:layout="@layout/fragment_signup_user_profile">
-        <action
-            android:id="@+id/action_userProfileFragment_to_petProfileFragment"
-            app:destination="@id/homeFragment"
-            app:popUpTo="@id/userProfileFragment"
-            app:popUpToInclusive="true"/>
     </fragment>
 
 

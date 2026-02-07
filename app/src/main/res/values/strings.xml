@@ -12,4 +12,22 @@
     <string name="question_time_field">오늘의 질문 알림 시간을 선택해 주세요.</string>
     <string name="question_time_unchosen">알림 시간을 설정하지 않겠습니다.</string>
     <string name="save">저장하기</string>
+
+    <!-- 알림 시간 -->
+    <string-array name="alarm_time_options">
+        <item>option</item>
+        <item>AM 09:00</item>
+        <item>AM 10:00</item>
+        <item>AM 11:00</item>
+        <item>PM 12:00</item>
+        <item>PM 01:00</item>
+        <item>PM 02:00</item>
+        <item>PM 03:00</item>
+        <item>PM 04:00</item>
+        <item>PM 05:00</item>
+        <item>PM 06:00</item>
+        <item>PM 07:00</item>
+        <item>PM 08:00</item>
+        <item>PM 09:00</item>
+    </string-array>
 </resources>
