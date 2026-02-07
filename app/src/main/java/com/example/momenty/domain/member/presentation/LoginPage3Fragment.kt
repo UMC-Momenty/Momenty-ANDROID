@@ -79,7 +79,10 @@ class LoginPage3Fragment : Fragment() {
             authViewModel.startGoogleSignIn(googleSignInLauncher)
         }
 
-        binding.btnNaverLogin.setOnClickListener {}
+        // 네이버 로그인
+        binding.btnNaverLogin.setOnClickListener {
+            authViewModel.loginWithNaver(requireContext())
+        }
     }
 
     private fun observeLoginState() {
