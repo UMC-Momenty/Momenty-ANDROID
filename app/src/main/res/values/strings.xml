@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Momenty</string>
+
+    <!-- 사용자 & 반려동물 프로필 설정 -->
+    <string name="profile_title">기본 정보</string>
+    <string name="name_field">이름 (필수)</string>
+    <string name="name_hint">placeholder</string>
+    <string name="gender_field">성별</string>
+    <string name="gender_male">남</string>
+    <string name="gender_female">여</string>
+    <string name="birth_hint">생년월일</string>
+    <string name="question_time_field">오늘의 질문 알림 시간을 선택해 주세요.</string>
+    <string name="question_time_unchosen">알림 시간을 설정하지 않겠습니다.</string>
+    <string name="save">저장하기</string>
 </resources>

@@ -37,12 +37,24 @@
         android:label="Login"
         tools:layout="@layout/fragment_login">
         <action
-            android:id="@+id/action_loginFragment_to_homeFragment"
-            app:destination="@id/homeFragment"
+            android:id="@+id/action_loginFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
     </fragment>
 
-    
+    <fragment
+        android:id="@+id/userProfileFragment"
+        android:name="com.example.momenty.domain.member.presentation.UserProfileFragment"
+        android:label="UserProfile"
+        tools:layout="@layout/fragment_signup_user_profile">
+        <action
+            android:id="@+id/action_userProfileFragment_to_petProfileFragment"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/userProfileFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+
 
 </navigation>
