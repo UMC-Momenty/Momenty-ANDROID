@@ -11,12 +11,10 @@
 
     <!-- 우측 화살표 아이콘 -->
     <item
+        android:drawable="@drawable/img_arrow_down_user_profile"
         android:gravity="end|center_vertical"
         android:right="16dp"
-        android:width="24dp"
-        android:height="24dp">
-        <bitmap
-            android:src="@drawable/img_arrow_down_user_profile"
-            android:gravity="center"/>
+        android:width="25dp"
+        android:height="15dp">
     </item>
 </layer-list>
