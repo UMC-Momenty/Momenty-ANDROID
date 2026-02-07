@@ -4,11 +4,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="@color/white"
     android:padding="25dp">
 
     <ImageView
-        android:id="@+id/btn_pet_form_back"
+        android:id="@+id/btn_pet_form_add_back"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:src="@drawable/img_arrow_left"
@@ -16,23 +16,22 @@
         app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
-        android:id="@+id/tv_pet_form_page_title"
+        android:id="@+id/tv_pet_form_add_page_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="정보 수정"
-        android:textSize="18sp"
-        android:textColor="@color/body_1"
-        android:fontFamily="@font/pretendard_semibold"
+        android:textSize="24sp"
+        style="@style/TextAppearance.App.Body01"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/btn_pet_form_back"
-        app:layout_constraintBottom_toBottomOf="@id/btn_pet_form_back"/>
+        app:layout_constraintTop_toTopOf="@id/btn_pet_form_add_back"
+        app:layout_constraintBottom_toBottomOf="@id/btn_pet_form_add_back"/>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/btn_pet_form_back"
-        app:layout_constraintBottom_toTopOf="@id/btn_pet_form_save">
+        app:layout_constraintTop_toBottomOf="@id/btn_pet_form_add_back"
+        app:layout_constraintBottom_toTopOf="@id/btn_pet_form_add_save">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -41,6 +40,7 @@
             android:padding="20dp">
 
             <FrameLayout
+                android:id="@+id/layout_pet_form_add_photo"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:layout_gravity="center_horizontal"
@@ -53,10 +53,16 @@
                     android:layout_height="match_parent"
                     android:src="@drawable/dot_record_unselected" />
                 <ImageView
+                    android:id="@+id/img_pet_form_pet_profile_edit1"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="bottom|end"
-                    android:background="@android:color/white"
+                    android:tint="@color/white"
+                    android:src="@drawable/dot_record_unselected" />
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="bottom|end"
                     android:src="@drawable/ic_record_camera_btn"
                     android:padding="4dp"/>
             </FrameLayout>
@@ -65,15 +71,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="이름 (필수)"
-                android:textColor="@color/caption_1"
-                android:fontFamily="@font/pretendard_regular"
+                style="@style/TextAppearance.App.Caption01"
                 android:textSize="12sp"/>
 
             <EditText
                 android:id="@+id/et_pet_form_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/pretendard_regular"
+                style="@style/TextAppearance.App.Caption01"
+                android:textSize="18sp"
                 android:hint="이름"
                 android:inputType="textPersonName"
                 android:paddingTop="10dp"
@@ -85,8 +91,7 @@
                 android:layout_marginTop="20dp"
                 android:text="성별"
                 android:textSize="12sp"
-                android:textColor="@color/caption_1"
-                android:fontFamily="@font/pretendard_regular"/>
+                style="@style/TextAppearance.App.Caption01"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -99,39 +104,41 @@
                     android:layout_height="50dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_record_round_input"
-                    android:orientation="horizontal">
-                    <Button
-                        android:id="@+id/btn_pet_form_gender_male"
+                    android:orientation="horizontal"
+                    android:padding="5dp">
+                    <android.widget.Button
+                        android:id="@+id/btn_pet_form_add_gender_male"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:text="남"
-                        android:backgroundTint="@color/caption_2"
-                        android:textColor="@color/body_2"
-                        android:fontFamily="@font/pretendard_regular"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"/>
+                        android:background="@drawable/bg_round_stroke_profile"
+                        style="@style/TextAppearance.App.Body01"/>
 
-                    <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#DDDDDD"/>
 
-                    <Button
-                        android:id="@+id/btn_pet_form_gender_female"
+                    <android.widget.Button
+                        android:id="@+id/btn_pet_form_add_gender_female"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:text="여"
-                        android:textColor="#888888"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"/>
+                        android:background="@color/white"
+                        style="@style/TextAppearance.App.Body02"/>/>
                 </LinearLayout>
 
-                <View android:layout_width="16dp" android:layout_height="match_parent"/>
+                <View
+                    android:layout_width="16dp"
+                    android:layout_height="match_parent"/>
 
 
                 <EditText
-                    android:id="@+id/et_pet_birthday"
+                    android:id="@+id/et_pet_form_add_birthday"
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_weight="1"
                     android:hint="생년월일"
+                    style="@style/TextAppearance.App.Caption01"
+                    android:textSize="18sp"
                     android:background="@drawable/bg_record_round_input"/>
                 <!--
                 <TextView
@@ -158,14 +165,17 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
                     <EditText
-                        android:id="@+id/et_pet_form_species"
+                        android:id="@+id/et_pet_form_add_species"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="종 (필수)"
-                        android:fontFamily="@font/pretendard_regular"/>
+                        style="@style/TextAppearance.App.Caption01"
+                        android:textSize="18sp"/>
                 </LinearLayout>
 
-                <View android:layout_width="16dp" android:layout_height="match_parent"/>
+                <View
+                    android:layout_width="16dp"
+                    android:layout_height="match_parent"/>
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -173,11 +183,12 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
                     <EditText
-                        android:id="@+id/et_pet_form_race"
+                        android:id="@+id/et_pet_form_add_race"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="품종 (선택)"
-                        android:fontFamily="@font/pretendard_regular"/>
+                        style="@style/TextAppearance.App.Caption01"
+                        android:textSize="18sp"/>
                 </LinearLayout>
             </LinearLayout>
 
@@ -187,33 +198,32 @@
                 android:layout_marginTop="20dp"
                 android:text="반려동물 소개"
                 android:textSize="12sp"
-                android:textColor="@color/caption_1"
-                android:fontFamily="@font/pretendard_regular"/>
+                style="@style/TextAppearance.App.Caption01"/>
 
             <EditText
-                android:id="@+id/et_pet_form_intro"
+                android:id="@+id/et_pet_form_add_intro"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_record_round_input"
                 android:gravity="top|start"
                 android:padding="12dp"
-                android:fontFamily="@font/pretendard_regular"
+                style="@style/TextAppearance.App.Caption01"
+                android:textSize="18sp"
                 android:hint="내용을 입력해주세요."/>
 
         </LinearLayout>
     </ScrollView>
 
     <Button
-        android:id="@+id/btn_pet_form_save"
+        android:id="@+id/btn_pet_form_add_save"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_margin="20dp"
         android:enabled="false"
         android:text="수정하기"
         android:textSize="16sp"
-        android:textColor="@color/white"
-        android:fontFamily="@font/pretendard_regular"
+        style="@style/TextAppearance.App.Caption03"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
