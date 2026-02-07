@@ -22,13 +22,18 @@
 
     <fragment
         android:id="@+id/communityWriteFragment"
-        android:name="com.example.momenty.domain.community.CommunityWriteFragment"
+        android:name="com.example.momenty.domain.community.write.CommunityWriteFragment"
         android:label="글 작성"
-        tools:layout="@layout/fragment_community_write" />
+        tools:layout="@layout/fragment_community_write">
+        <argument
+            android:name="hideBottomNav"
+            app:argType="boolean"
+            android:defaultValue="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/communityEditFragment"
-        android:name="com.example.momenty.domain.community.CommunityEditFragment"
+        android:name="com.example.momenty.domain.community.edite.CommunityEditFragment"
         android:label="글 수정"
         tools:layout="@layout/fragment_community_edit" />
 

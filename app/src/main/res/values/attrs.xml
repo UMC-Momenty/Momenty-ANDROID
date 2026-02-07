@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="UFilterChip">
-        <attr name="text" format="string"/>
+        <attr name="text" format="string" />
+
+        <attr name="checked" format="boolean" />
+
+        <attr name="chipRadius" format="dimension" />
+        <attr name="chipStrokeWidth" format="dimension" />
+
+        <attr name="chipBgColor" format="color" />
+        <attr name="chipCheckedBgColor" format="color" />
+
+        <attr name="chipStrokeColor" format="color" />
+        <attr name="chipCheckedStrokeColor" format="color" />
+
+        <attr name="chipTextColor" format="color" />
+        <attr name="chipCheckedTextColor" format="color" />
     </declare-styleable>
+
 </resources>
