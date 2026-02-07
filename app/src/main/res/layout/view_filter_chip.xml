@@ -6,5 +6,5 @@
     android:gravity="center"
     android:textSize="14sp"
     android:textStyle="bold"
-    android:textColor="@color/filter_chip_text"
+    android:textColor="@color/body_2"
     android:background="@drawable/bg_filter_chip"/>
