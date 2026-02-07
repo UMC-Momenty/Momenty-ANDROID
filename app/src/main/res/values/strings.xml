@@ -13,6 +13,7 @@
     <string name="question_time_unchosen">알림 시간을 설정하지 않겠습니다.</string>
     <string name="save">저장하기</string>
     <string name="pet_type">종 (필수) / 품종 (선택)</string>
+    <string name="type_hint">강아지 / 고양이</string>
     <string name="pet_intro">반려동물 소개 (선택)</string>
 
     <!-- 알림 시간 -->

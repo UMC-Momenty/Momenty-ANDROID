@@ -207,7 +207,7 @@
                 android:layout_height="46dp"
                 android:layout_marginTop="3dp"
                 android:paddingStart="20dp"
-                android:hint="@string/name_hint"
+                android:hint="@string/type_hint"
                 android:textColorHint="@color/caption_2"
                 android:textColor="@color/caption_1"
                 android:textSize="16sp"
