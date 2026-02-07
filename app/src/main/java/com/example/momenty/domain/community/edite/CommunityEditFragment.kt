@@ -1,4 +1,4 @@
-package com.example.momenty.domain.community
+package com.example.momenty.domain.community.edite
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

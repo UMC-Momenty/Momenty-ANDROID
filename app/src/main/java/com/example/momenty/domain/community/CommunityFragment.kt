@@ -23,12 +23,10 @@ class CommunityFragment : Fragment(R.layout.fragment_community) {
         }
     }
 
-    private fun selectFilter(
-        selected: UFilterChip,
-        chips: List<UFilterChip>
-    ) {
-        chips.forEach { it.isSelected = (it == selected) }
+    private fun selectFilter(selected: UFilterChip, chips: List<UFilterChip>) {
+        chips.forEach { it.setChecked(it == selected) }
     }
+
 
 
     private val allPosts = mutableListOf<CommunityPostUiModel>()
