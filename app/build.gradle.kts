@@ -22,18 +22,23 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // local.properties에서 카카오 앱 키 읽기
+        // local.properties
         val properties = Properties()
         val localPropertiesFile = rootProject.file("local.properties")
         if (localPropertiesFile.exists()) {
             properties.load(FileInputStream(localPropertiesFile))
         }
 
-        val kakaoKey = properties.getProperty("KAKAO_NATIVE_APP_KEY")
-            ?: "8367190c9f93267d9fb62bc7a6cbc6cb"
+        val kakaoKey = properties.getProperty("KAKAO_NATIVE_APP_KEY") ?: ""
+        val naverClientId = properties.getProperty("NAVER_CLIENT_ID") ?: ""
+        val naverClientSecret = properties.getProperty("NAVER_CLIENT_SECRET") ?: ""
 
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"$kakaoKey\"")
+        buildConfigField("String", "NAVER_CLIENT_ID", "\"$naverClientId\"")
+        buildConfigField("String", "NAVER_CLIENT_SECRET", "\"$naverClientSecret\"")
         manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = kakaoKey
+        manifestPlaceholders["NAVER_CLIENT_ID"] = naverClientId
+        manifestPlaceholders["NAVER_CLIENT_SECRET"] = naverClientSecret
     }
 
     buildTypes {

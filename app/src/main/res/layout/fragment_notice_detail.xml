@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFFFF"
+    android:background="@color/white"
     android:padding="25dp">
 
     <RelativeLayout
@@ -19,9 +19,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="공지사항"
-            android:textSize="20sp"
-            android:textColor="@color/body_1"
-            android:fontFamily="@font/pretendard_semibold"
+            android:textSize="24sp"
+            style="@style/TextAppearance.App.Body01"
             android:layout_centerInParent="true"/>
     </RelativeLayout>
 
@@ -41,8 +40,7 @@
                 android:layout_height="wrap_content"
                 android:text="공지 제목"
                 android:textSize="20sp"
-                android:textColor="@color/body_1"
-                android:fontFamily="@font/pretendard_regular"
+                style="@style/TextAppearance.App.Body01"
                 android:gravity="center"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="30dp"/>
@@ -52,8 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
-                android:fontFamily="@font/pretendard_regular"
-                android:textColor="@color/body_1"
+                style="@style/TextAppearance.App.Body02"
                 android:lineSpacingExtra="4dp"
                 android:text="공지내용" />
 

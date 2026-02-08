@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFFFF"
+    android:background="@color/white"
     android:padding="25dp">
 
     <RelativeLayout
@@ -19,16 +19,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="정보"
-            android:textSize="18sp"
-            android:fontFamily="@font/pretendard_semibold"
-            android:textColor="@color/body_1"
+            android:textSize="24sp"
+            style="@style/TextAppearance.App.Body01"
             android:layout_centerInParent="true"/>
     </RelativeLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#F0F0F0"/>
+        android:background="@color/caption_2"/>
 
     <RelativeLayout
         android:id="@+id/layout_app_info_terms"
@@ -42,8 +41,7 @@
             android:layout_height="wrap_content"
             android:text="이용 약관"
             android:textSize="16sp"
-            android:fontFamily="@font/pretendard_regular"
-            android:textColor="@color/body_1"
+            style="@style/TextAppearance.App.Body01"
             android:layout_centerVertical="true"/>
 
         <ImageView
@@ -51,9 +49,13 @@
             android:layout_height="20dp"
             android:src="@drawable/img_arrow_right"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"/> </RelativeLayout>
+            android:layout_centerVertical="true"/>
+    </RelativeLayout>
 
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/caption_2"/>
 
     <RelativeLayout
         android:id="@+id/layout_app_info_privacy"
@@ -67,8 +69,7 @@
             android:layout_height="wrap_content"
             android:text="개인정보 수집 및 이용"
             android:textSize="16sp"
-            android:fontFamily="@font/pretendard_regular"
-            android:textColor="@color/body_1"
+            style="@style/TextAppearance.App.Body01"
             android:layout_centerVertical="true"/>
 
         <ImageView
@@ -79,6 +80,9 @@
             android:layout_centerVertical="true"/>
     </RelativeLayout>
 
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/caption_2"/>
 
 </LinearLayout>

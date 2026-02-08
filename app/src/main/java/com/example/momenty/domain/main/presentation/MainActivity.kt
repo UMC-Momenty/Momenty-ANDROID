@@ -72,6 +72,11 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(R.id.auth_graph)
                 }
             }
+
+            "profile" -> {
+                navController.navigate(R.id.auth_graph)
+                navController.navigate(R.id.userProfileFragment)
+            }
         }
 
         intent.removeExtra("navigate_to")

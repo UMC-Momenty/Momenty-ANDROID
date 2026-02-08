@@ -1,6 +1,121 @@
 <resources>
     <string name="app_name">Momenty</string>
 
+    <!-- 사용자 & 반려동물 프로필 설정 -->
+    <string name="profile_title">기본 정보</string>
+    <string name="name_field">이름 (필수)</string>
+    <string name="name_hint">placeholder</string>
+    <string name="gender_field">성별</string>
+    <string name="gender_male">남</string>
+    <string name="gender_female">여</string>
+    <string name="birth_hint">생년월일</string>
+    <string name="question_time_field">오늘의 질문 알림 시간을 선택해 주세요.</string>
+    <string name="question_time_unchosen">알림 시간을 설정하지 않겠습니다.</string>
+    <string name="save">저장하기</string>
+    <string name="pet_type">종 (필수) / 품종 (선택)</string>
+    <string name="type_hint">강아지 / 고양이</string>
+    <string name="pet_intro">반려동물 소개 (선택)</string>
+
+    <!-- 알림 시간 -->
+    <string-array name="alarm_time_options">
+        <item>option</item>
+        <item>AM 09:00</item>
+        <item>AM 10:00</item>
+        <item>AM 11:00</item>
+        <item>PM 12:00</item>
+        <item>PM 01:00</item>
+        <item>PM 02:00</item>
+        <item>PM 03:00</item>
+        <item>PM 04:00</item>
+        <item>PM 05:00</item>
+        <item>PM 06:00</item>
+        <item>PM 07:00</item>
+        <item>PM 08:00</item>
+        <item>PM 09:00</item>
+    </string-array>
+
+    <!-- 고양이 종 -->
+    <string-array name="cat_type_options">
+        <item>코리안 숏헤어(믹스)</item>
+        <item>아메리칸 숏헤어</item>
+        <item>브리티시 숏헤어</item>
+        <item>러시안 블루</item>
+        <item>스코티시 폴드</item>
+        <item>샴</item>
+        <item>터키시 앙고라</item>
+        <item>페르시안</item>
+        <item>렉돌</item>
+        <item>메인쿤</item>
+        <item>노르웨이 숲</item>
+        <item>히말라얀</item>
+        <item>터키시 반</item>
+        <item>뱅갈</item>
+        <item>아비시니안</item>
+        <item>오리엔탈 숏헤어</item>
+        <item>데본 렉스</item>
+        <item>코니시 렉스</item>
+        <item>싱카푸라</item>
+        <item>소말리</item>
+        <item>맨치킨</item>
+        <item>스핑크스</item>
+        <item>버만</item>
+        <item>샤르트뢰</item>
+        <item>아메리칸 컬</item>
+        <item>라팜</item>
+        <item>셀커크 렉스</item>
+        <item>피터볼드</item>
+        <item>사바나 캣</item>
+        <item>기타:</item>
+    </string-array>
+
+    <!-- 강아지 종 -->
+    <string-array name="dog_type_options">
+        <item>-----소형-----</item>
+        <item>말티즈</item>
+        <item>포메라니안</item>
+        <item>치와와</item>
+        <item>요크셔테리어</item>
+        <item>토이 푸들</item>
+        <item>시츄</item>
+        <item>비숑 프리제</item>
+        <item>파피용</item>
+        <item>닥스훈트</item>
+        <item>페키니즈</item>
+        <item>미니어처 핀셔</item>
+        <item>볼로네즈</item>
+        <item>-----중형-----</item>
+        <item>푸들</item>
+        <item>코커 스패니얼</item>
+        <item>보더 콜리</item>
+        <item>시바견</item>
+        <item>웰시 코기</item>
+        <item>비글</item>
+        <item>불독</item>
+        <item>바셋 하운드</item>
+        <item>샤페이</item>
+        <item>불테리어</item>
+        <item>진돗개</item>
+        <item>아메리칸 코카 스패니얼</item>
+        <item>스피츠</item>
+        <item>-----대형-----</item>
+        <item>골든 리트리버</item>
+        <item>래브라도 리트리버</item>
+        <item>저먼 셰퍼드</item>
+        <item>시베리안 허스키</item>
+        <item>알래스칸 말라뮤트</item>
+        <item>로트와일러</item>
+        <item>도베르만</item>
+        <item>사모예드</item>
+        <item>그레이트 피레니즈</item>
+        <item>세인트 버나드</item>
+        <item>그레이트 데인</item>
+        <item>아키타</item>
+        <item>보르조이</item>
+        <item>차우차우</item>
+        <item>기타:</item>
+    </string-array>
+
+
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
 

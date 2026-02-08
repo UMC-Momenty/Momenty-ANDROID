@@ -8,30 +8,36 @@
     android:paddingHorizontal="24dp">
 
     <TextView
-        android:id="@+id/tv_notice_title"
+        android:id="@+id/tv_notification_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="공지 제목"
-        android:textSize="16sp"
-        style="@style/TextAppearance.App.Body01"
-        android:maxLines="1"
-        android:ellipsize="end"
+        android:text="알림"
+        style="@style/TextAppearance.App.Body02"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/tv_notice_date"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginEnd="10dp"/>
 
-    <TextView
-        android:id="@+id/tv_notice_date"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="1일 전"
-        android:textSize="12sp"
-        style="@style/TextAppearance.App.Caption01"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintTop_toTopOf="@id/tv_notification_title"
+        app:layout_constraintBottom_toBottomOf="@id/tv_notification_title">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ON"
+            android:paddingRight="8dp"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/img_arrow_right"
+            android:tint="@color/caption_1"/>
+
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"
