@@ -115,4 +115,28 @@
         <item>기타:</item>
     </string-array>
 
+    <!-- 일정 관리 -->
+    <string name="calendar_title">일정 관리</string>
+    <string name="calendar_year">년</string>
+    <string name="calendar_month">월</string>
+    <string-array name="calendar_date">
+        <item>월</item>
+        <item>화</item>
+        <item>수</item>
+        <item>목</item>
+        <item>금</item>
+        <item>토</item>
+        <item>일</item>
+    </string-array>
+    <string-array name="schedule_type">
+        <item>산책</item>
+        <item>미용</item>
+        <item>투약</item>
+        <item>간식</item>
+        <item>밥</item>
+        <item>건강</item>
+        <item>식사</item>
+        <item>기타</item>
+    </string-array>
+
 </resources>
