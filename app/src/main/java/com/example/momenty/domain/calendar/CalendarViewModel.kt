@@ -35,6 +35,22 @@ class CalendarViewModel(
     private var currentMonth = Calendar.getInstance()
     private var allEvents = listOf<CalendarEvent>()
 
+    init{
+        loadDummyPets() // 개발용 더미 데이터
+    }
+
+    /**
+     * 개발용 더미 반려동물 데이터 로드
+     */
+    private fun loadDummyPets() {
+        val dummyPets = listOf(
+            Pet(id = "1", name = "코코", imageUrl = null, color = null),
+            Pet(id = "2", name = "몽이", imageUrl = null, color = null),
+            Pet(id = "3", name = "초코", imageUrl = null, color = null)
+        )
+        _pets.value = dummyPets
+    }
+
     /**
      * 캘린더 로드
      */
@@ -163,7 +179,7 @@ class CalendarViewModel(
         val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
 
         // 이전 달의 날짜들
-        val prevMonthDays = (firstDayOfWeek - Calendar.MONDAY + 7) % 7
+        val prevMonthDays = firstDayOfWeek - 1
         if (prevMonthDays > 0) {
             val prevMonthCalendar = calendar.clone() as Calendar
             prevMonthCalendar.add(Calendar.MONTH, -1)

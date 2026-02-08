@@ -5,7 +5,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.provider.CalendarContract
-import androidx.credentials.exceptions.domerrors.SecurityError
 import java.util.Date
 import java.util.TimeZone
 

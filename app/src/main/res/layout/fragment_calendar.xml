@@ -77,7 +77,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:layout_marginEnd="30dp"
+            android:layout_marginEnd="20dp"
             android:text="2025년 12월"
             android:textColor="@color/body_1"
             android:fontFamily="@font/pretendard_medium"

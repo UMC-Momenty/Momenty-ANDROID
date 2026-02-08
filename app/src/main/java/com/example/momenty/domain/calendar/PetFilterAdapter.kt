@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -53,12 +54,18 @@ class PetFilterAdapter(
             selectionBorder.visibility = if (isSelected) View.VISIBLE else View.GONE
 
             // 이미지 로드
-            Glide.with(itemView.context)
-                .load(pet.imageUrl)
-                .apply(RequestOptions.circleCropTransform())
-                .placeholder(R.drawable.ic_pet_placeholder) // 이미지 로딩 중 보일 임시 이미지(회색 원)
-                .error(R.drawable.ic_pet_placeholder)
-                .into(petImage)
+            if(pet.imageUrl.isNullOrEmpty()){
+                // 펫 이미지 없을 경우 회색 원 표시 (개발용)
+                val grayCircle = ContextCompat.getDrawable(itemView.context, R.drawable.ic_pet_placeholder)
+                petImage.setImageDrawable(grayCircle)
+            } else{
+                Glide.with(itemView.context)
+                    .load(pet.imageUrl)
+                    .apply(RequestOptions.circleCropTransform())
+                    .placeholder(R.drawable.ic_pet_placeholder) // 이미지 로딩 중 보일 임시 이미지(회색 원)
+                    .error(R.drawable.ic_pet_placeholder)
+                    .into(petImage)
+            }
 
             // 클릭 리스너 - 토글 방식
             itemView.setOnClickListener {
