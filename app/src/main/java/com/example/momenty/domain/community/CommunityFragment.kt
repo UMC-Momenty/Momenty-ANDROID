@@ -17,17 +17,18 @@ class CommunityFragment : Fragment(R.layout.fragment_community) {
     private var _binding: FragmentCommunityBinding? = null
     private val binding get() = _binding!!
 
+
+
     private val adapter by lazy {
         CommunityAdapter { post ->
-            findNavController().navigate(R.id.action_communityFragment_to_communityEditFragment)
+            val args = Bundle().apply { putLong("postId", post.id) }
+            findNavController().navigate(R.id.action_toCommunityDetail, args)
         }
     }
 
     private fun selectFilter(selected: UFilterChip, chips: List<UFilterChip>) {
         chips.forEach { it.setChecked(it == selected) }
     }
-
-
 
     private val allPosts = mutableListOf<CommunityPostUiModel>()
     private var selectedCategory: CommunityCategory = CommunityCategory.ALL
@@ -44,6 +45,7 @@ class CommunityFragment : Fragment(R.layout.fragment_community) {
             v.setPadding(v.paddingLeft, top, v.paddingRight, v.paddingBottom)
             insets
         }
+
 
         allPosts.clear()
         allPosts.addAll(
@@ -81,20 +83,15 @@ class CommunityFragment : Fragment(R.layout.fragment_community) {
             )
         )
 
-
-
         applyFilter()
-
-
 
         binding.btnBack.setOnClickListener { findNavController().popBackStack() }
 
         binding.btnWrite.setOnClickListener {
-            findNavController().navigate(R.id.action_communityFragment_to_communityWriteFragment)
+            findNavController().navigate(R.id.action_toCommunityWrite)
         }
 
         val chips = listOf(binding.chipAll, binding.chipQna, binding.chipInfo, binding.chipReview)
-
 
         selectFilter(binding.chipAll, chips)
 
@@ -122,9 +119,6 @@ class CommunityFragment : Fragment(R.layout.fragment_community) {
             applyFilter()
         }
 
-
-
-        // 검색 필터
         binding.etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
