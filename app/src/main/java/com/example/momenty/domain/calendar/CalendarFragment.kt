@@ -29,8 +29,15 @@ class CalendarFragment : Fragment() {
 
     private lateinit var calendarAdapter: CalendarAdapter
     private lateinit var petFilterAdapter: PetFilterAdapter
-    private lateinit var deviceCalendarHelper: DeviceCalendarHelper
-    private lateinit var repository: CalendarRepository
+
+    // lazy 초기화로 변경
+    private val deviceCalendarHelper by lazy { DeviceCalendarHelper(requireContext()) }
+    private val repository by lazy {
+        CalendarRepository(
+            apiService = RetrofitClient.calendarApiService,
+            deviceCalendarHelper = deviceCalendarHelper
+        )
+    }
 
     private val viewModel: CalendarViewModel by viewModels {
         CalendarViewModelFactory(repository)
@@ -56,16 +63,6 @@ class CalendarFragment : Fragment() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        deviceCalendarHelper = DeviceCalendarHelper(requireContext())
-
-        repository = CalendarRepository(
-            apiService = RetrofitClient.calendarApiService,
-            deviceCalendarHelper = deviceCalendarHelper
-        )
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -89,12 +86,10 @@ class CalendarFragment : Fragment() {
     /**
      * 반려동물 필터 설정
      */
-    private fun setupPetFilter()    {
+    private fun setupPetFilter() {
         petFilterAdapter = PetFilterAdapter(emptyList()) { pet ->
-            // pet == null : 전체 일정 / or 선택된 반려동물 일정
             viewModel.selectPetFilter(pet)
 
-            // 사용자 피드백
             val message = if (pet == null) {
                 "전체 일정을 표시합니다"
             } else {
@@ -113,7 +108,7 @@ class CalendarFragment : Fragment() {
     /**
      * 요일 헤더 설정
      */
-    private fun setupWeekdayHeader()    {
+    private fun setupWeekdayHeader() {
         val weekdays = resources.getStringArray(R.array.calendar_date)
         binding.llCalendarDate.removeAllViews()
 
@@ -130,7 +125,7 @@ class CalendarFragment : Fragment() {
                 text = weekday
                 gravity = Gravity.CENTER
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-                setTextColor(R.color.body_1)
+                setTextColor(ContextCompat.getColor(requireContext(), R.color.body_1))
                 includeFontPadding = false
 
                 typeface = try {
@@ -147,7 +142,7 @@ class CalendarFragment : Fragment() {
      * 캘린더 RecyclerView 설정
      */
     private fun setupCalendarRecyclerView() {
-        calendarAdapter = CalendarAdapter(emptyList())  { day ->
+        calendarAdapter = CalendarAdapter(emptyList()) { day ->
             viewModel.selectDay(day)
         }
 
@@ -162,27 +157,22 @@ class CalendarFragment : Fragment() {
      * 클릭 리스너 설정
      */
     private fun setupClickListeners() {
-        // 뒤로가기 버튼
         binding.ivCalendarBack.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        // 이전 달 버튼
         binding.ivMonthDefore.setOnClickListener {
             viewModel.goToPreviousMonth()
         }
 
-        // 다음 달 버튼
         binding.ivMonthAtfer.setOnClickListener {
             viewModel.goToNextMonth()
         }
 
-        // 일정 관리 버튼
         binding.btnCalendarManage.setOnClickListener {
             showEventDialog()
         }
 
-        // 일정 추가 버튼
         binding.ivCalendarAdd.setOnClickListener {
             showAddEventDialog()
         }
@@ -192,37 +182,31 @@ class CalendarFragment : Fragment() {
      * ViewModel 관찰
      */
     private fun observeViewModel() {
-        // 달력 날짜 데이터
         viewModel.calendarDays.observe(viewLifecycleOwner) { days ->
             calendarAdapter.updateDays(days)
             binding.tvYearMonthLabel.text = viewModel.getYearMonthText()
         }
 
-        // 선택된 날짜
         viewModel.selectedDate.observe(viewLifecycleOwner) { selectedDay ->
             selectedDay?.let {
                 showEventsForDay(it)
             }
         }
 
-        // 에러 메시지
         viewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
             }
         }
 
-        // 사용 가능한 캘린더 목록
         viewModel.availableCalendars.observe(viewLifecycleOwner) { calendars ->
             // 필요시 캘린더 선택 UI 표시
         }
 
-        // 반려동물 목록
         viewModel.pets.observe(viewLifecycleOwner) { pets ->
             petFilterAdapter.updatePets(pets)
         }
 
-        // 선택된 반려동물
         viewModel.selectedPet.observe(viewLifecycleOwner) { pet ->
             petFilterAdapter.selectPet(pet)
         }
@@ -248,7 +232,6 @@ class CalendarFragment : Fragment() {
             }
             shouldShowRequestPermissionRationale(Manifest.permission.READ_CALENDAR) ||
                     shouldShowRequestPermissionRationale(Manifest.permission.WRITE_CALENDAR) -> {
-                // 권한 요청 이유 설명
                 Snackbar.make(
                     binding.root,
                     "일정을 관리하려면 캘린더 권한이 필요합니다.",
@@ -258,7 +241,6 @@ class CalendarFragment : Fragment() {
                 }.show()
             }
             else -> {
-                // 권한 요청
                 requestPermissions()
             }
         }
@@ -283,7 +265,6 @@ class CalendarFragment : Fragment() {
         val events = viewModel.getEventsForDay(day)
 
         if (events.isNotEmpty()) {
-            // TODO: 이벤트 목록을 보여주는 바텀시트나 다이얼로그 구현
             val eventTitles = events.joinToString("\n") {
                 "• ${it.title} (${formatTime(it.startTime)})"
             }
@@ -297,7 +278,6 @@ class CalendarFragment : Fragment() {
      * 일정 관리 다이얼로그 표시
      */
     private fun showEventDialog() {
-        // TODO: 일정 관리 화면 또는 다이얼로그 구현
         Snackbar.make(binding.root, "일정 관리 기능 구현 예정", Snackbar.LENGTH_SHORT).show()
     }
 
@@ -305,7 +285,6 @@ class CalendarFragment : Fragment() {
      * 일정 추가 다이얼로그 표시
      */
     private fun showAddEventDialog() {
-        // TODO: 일정 추가 다이얼로그 구현
         Snackbar.make(binding.root, "일정 추가 기능 구현 예정", Snackbar.LENGTH_SHORT).show()
     }
 
@@ -323,9 +302,6 @@ class CalendarFragment : Fragment() {
     }
 
     companion object {
-        /**
-         * Fragment 인스턴스 생성
-         */
         @JvmStatic
         fun newInstance() = CalendarFragment()
     }

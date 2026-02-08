@@ -35,8 +35,6 @@ class CalendarViewModel(
     private var currentMonth = Calendar.getInstance()
     private var allEvents = listOf<CalendarEvent>()
 
-    init{ loadCalendar() }
-
     /**
      * 캘린더 로드
      */
