@@ -12,7 +12,7 @@
         android:layout_height="35dp"
         android:src="@drawable/img_arrow_left"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="100dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -80,7 +80,7 @@
             android:layout_marginEnd="20dp"
             android:text="2025년 12월"
             android:textColor="@color/body_1"
-            android:fontFamily="@font/pretendard_medium"
+            android:fontFamily="@font/pretendard_semibold"
             android:textSize="16sp"/>
 
         <ImageView
@@ -134,7 +134,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="20dp"
                 android:paddingTop="20dp"
                 android:paddingBottom="24dp">
 
@@ -144,7 +144,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="15dp">
                     <!-- 동적으로 생성됨 -->
                 </LinearLayout>
 
@@ -152,7 +152,7 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/calendarRecyclerView"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:nestedScrollingEnabled="false"
                     android:overScrollMode="never"/>
 

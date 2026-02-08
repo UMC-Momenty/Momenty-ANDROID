@@ -42,7 +42,7 @@ class CalendarAdapter(
         private val dayText: TextView = itemView.findViewById(R.id.tv_day)
         private val eventIndicatorLayout: LinearLayout = itemView.findViewById(R.id.ll_event_indicators)
         private val eventCountText: TextView = itemView.findViewById(R.id.tv_event_count)
-        private val dayContainer: View = itemView.findViewById(R.id.day_container)
+        private val dayContainer: View = itemView.findViewById(R.id.fl_day_container)
 
         fun bind(day: CalendarDay){
             dayText.text = if(day.isCurrentMonth) day.day.toString() else ""

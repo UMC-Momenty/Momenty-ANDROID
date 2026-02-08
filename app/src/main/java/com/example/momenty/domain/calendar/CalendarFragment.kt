@@ -167,12 +167,12 @@ class CalendarFragment : Fragment() {
                 layoutParams = params
                 text = weekday
                 gravity = Gravity.CENTER
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
                 setTextColor(ContextCompat.getColor(requireContext(), R.color.body_1))
                 includeFontPadding = false
 
                 typeface = try {
-                    ResourcesCompat.getFont(requireContext(), R.font.pretendard_medium)
+                    ResourcesCompat.getFont(requireContext(), R.font.pretendard_semibold)
                 } catch (e: Exception) {
                     Typeface.DEFAULT
                 }

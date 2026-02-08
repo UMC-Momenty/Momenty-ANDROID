@@ -1,5 +1,6 @@
 package com.example.momenty.domain.calendar
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -36,7 +37,10 @@ class CalendarViewModel(
     private var allEvents = listOf<CalendarEvent>()
 
     init{
+        Log.d("CalendarViewModel", "ViewModel initialized")
         loadDummyPets() // 개발용 더미 데이터
+        // 초기 캘린더 표시 (일정 없이)
+        loadCalendarWithoutEvents()
     }
 
     /**
@@ -52,14 +56,24 @@ class CalendarViewModel(
     }
 
     /**
-     * 캘린더 로드
+     * 일정 없이 캘린더만 로드 (권한 없을 때)
+     */
+    fun loadCalendarWithoutEvents() {
+        Log.d("CalendarViewModel", "loadCalendarWithoutEvents called")
+        generateCalendarDays(emptyList())
+    }
+
+    /**
+     * 캘린더 로드 (일정 포함)
      */
     fun loadCalendar()  {
+        Log.d("CalendarViewModel", "loadCalendar called")
         viewModelScope.launch {
             _isLoading.value = true
             try{
                 val startDate = getMonthStartDate()
                 val endDate = getMonthEndDate()
+                Log.d("CalendarViewModel", "Fetching events from ${startDate.timeInMillis} to ${endDate.timeInMillis}")
 
                 val result = repository.getEventsInRange(
                     startDate = startDate.timeInMillis,
@@ -72,9 +86,13 @@ class CalendarViewModel(
                     generateCalendarDays(events)
                 }.onFailure { exception ->
                     _error.value = exception.message ?: "일정을 불러오는데 실패했습니다"
+                    // 실패해도 빈 캘린더는 표시
+                    generateCalendarDays(emptyList())
                 }
             }catch (e: Exception){
                 _error.value = e.message ?: "알 수 없는 오류가 발생했습니다."
+                // 실패해도 빈 캘린더는 표시
+                generateCalendarDays(emptyList())
             }finally {
                 _isLoading.value = false
             }
