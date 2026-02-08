@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.momenty.R
-import com.example.momenty.databinding.ItemWritePhotoBinding
+import com.example.momenty.databinding.ItemCommunityWritePhotoBinding
 
 
 class WritePhotoAdapter(
@@ -33,7 +33,7 @@ class WritePhotoAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val binding = ItemWritePhotoBinding.inflate(
+        val binding = ItemCommunityWritePhotoBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
@@ -46,7 +46,7 @@ class WritePhotoAdapter(
     }
 
     inner class VH(
-        private val binding: ItemWritePhotoBinding
+        private val binding: ItemCommunityWritePhotoBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(position: Int) {

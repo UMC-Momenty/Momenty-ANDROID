@@ -12,13 +12,14 @@
         tools:layout="@layout/fragment_community">
 
         <action
-            android:id="@+id/action_communityFragment_to_communityWriteFragment"
+            android:id="@+id/action_toCommunityWrite"
             app:destination="@id/communityWriteFragment" />
 
         <action
-            android:id="@+id/action_communityFragment_to_communityEditFragment"
-            app:destination="@id/communityEditFragment" />
+            android:id="@+id/action_toCommunityDetail"
+            app:destination="@id/communityDetailFragment" />
     </fragment>
+
 
     <fragment
         android:id="@+id/communityWriteFragment"
@@ -36,5 +37,19 @@
         android:name="com.example.momenty.domain.community.edite.CommunityEditFragment"
         android:label="글 수정"
         tools:layout="@layout/fragment_community_edit" />
+
+    <fragment
+        android:id="@+id/communityDetailFragment"
+        android:name="com.example.momenty.domain.community.detail.CommunityDetailFragment"
+        android:label="게시글 상세"
+        tools:layout="@layout/fragment_community_detail">
+
+        <argument
+            android:name="hideBottomNav"
+            app:argType="boolean"
+            android:defaultValue="true" />
+    </fragment>
+
+
 
 </navigation>
