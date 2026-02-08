@@ -46,7 +46,7 @@ class CalendarAdapter(
             // 오늘 날짜 표시
             if(day.isToday) {
                 dayContainer.setBackgroundResource(R.drawable.bg_calendar_selected)
-                dayText.setTextColor(R.color.white)
+                dayText.setTextColor(ContextCompat.getColor(itemView.context, R.color.white))
                 dayText.typeface = Typeface.DEFAULT_BOLD
             }
             // 선택된 날짜
