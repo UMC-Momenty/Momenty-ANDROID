@@ -1,6 +1,7 @@
 package com.example.momenty.domain.splash
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -52,8 +53,16 @@ class SplashActivity : AppCompatActivity() {
             val intent = Intent(this@SplashActivity, MainActivity::class.java)
 
             if (hasToken && hasFirebaseUser) {
-                // 로그인 상태 → 메인 화면으로 (RecordFragment)
-                intent.putExtra("navigate_to", "home")
+                // 프로필 설정 완료 여부 확인
+                val prefs = getSharedPreferences("momenty_prefs", Context.MODE_PRIVATE)
+                val isProfileCompleted = prefs.getBoolean("profile_completed", false)
+
+                if(isProfileCompleted)  {
+                    // 로그인 상태 → 메인 화면으로 (RecordFragment)
+                    intent.putExtra("navigate_to", "home")
+                }else   {
+                    intent.putExtra("navigate_to", "profile")
+                }
             } else {
                 // 비로그인 상태 → 약관 동의 화면으로
                 intent.putExtra("navigate_to", "terms")

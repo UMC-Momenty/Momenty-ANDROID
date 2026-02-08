@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 배경 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/white"/>
+            <stroke android:width="1dp" android:color="@color/caption_1"/>
+            <corners android:radius="8dp"/>
+        </shape>
+    </item>
+
+    <!-- 우측 화살표 아이콘 -->
+    <item
+        android:drawable="@drawable/img_arrow_down_user_profile"
+        android:gravity="end|center_vertical"
+        android:right="16dp"
+        android:width="25dp"
+        android:height="15dp">
+    </item>
+</layer-list>

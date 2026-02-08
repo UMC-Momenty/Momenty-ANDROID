@@ -119,7 +119,9 @@ class LoginPage3Fragment : Fragment() {
         }
 
         // 메인 화면으로 이동
-        navigateToRecord()
+        //navigateToRecord()
+
+        navigateToUserProfile()
     }
 
     private fun handleLoginError(message: String) {
@@ -145,13 +147,20 @@ class LoginPage3Fragment : Fragment() {
         // binding.progressBar.visibility = View.GONE
     }
 
-    private fun navigateToRecord() {
-        val options = NavOptions.Builder()
-            .setPopUpTo(R.id.auth_graph, true) // inclusive = true와 동일
-            .setLaunchSingleTop(true)
-            .build()
+    /**
+     *     private fun navigateToRecord() {
+     *         val options = NavOptions.Builder()
+     *             .setPopUpTo(R.id.auth_graph, true) // inclusive = true와 동일
+     *             .setLaunchSingleTop(true)
+     *             .build()
+     *
+     *         findNavController().navigate(R.id.home_graph, null, options)
+     *     }
+     */
 
-        findNavController().navigate(R.id.home_graph, null, options)
+    // 로그인 후 사용자 프로필 설정 화면으로 이동 -> 추후 회원가입 시에만 적용되도록 수정
+    private fun navigateToUserProfile() {
+        findNavController().navigate(R.id.action_loginFragment_to_userProfileFragment)
     }
 
     private fun showToast(message: String) {
