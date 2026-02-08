@@ -9,18 +9,35 @@ class CalendarRepository(
     private val deviceCalendarHelper: DeviceCalendarHelper
 ) {
     /**
-     * 서버에서 반려동물 목록 가져오기
+     * 서버에서 반려동물 목록 가져오기 (지금은 더미 데이터 반환)
      */
     suspend fun getPets(): Result<List<Pet>> = withContext(Dispatchers.IO) {
         try {
+            // 더미 데이터 반환
+            val dummyPets = listOf(
+                Pet(id = "1", name = "코코", imageUrl = null, color = null),
+                Pet(id = "2", name = "몽이", imageUrl = null, color = null),
+                Pet(id = "3", name = "초코", imageUrl = null, color = null)
+            )
+            Result.success(dummyPets)
+
+            /*
             val response = apiService.getPets()
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
                 Result.failure(Exception("Failed to fetch pets"))
             }
+             */
+
         } catch (e: Exception) {
-            Result.failure(e)
+            // 네트워크 에러 발생 시 더미 데이터 반환
+            val dummyPets = listOf(
+                Pet(id = "1", name = "코코", imageUrl = null, color = null),
+                Pet(id = "2", name = "몽이", imageUrl = null, color = null),
+                Pet(id = "3", name = "초코", imageUrl = null, color = null)
+            )
+            Result.success(dummyPets)
         }
     }
 
@@ -83,18 +100,18 @@ class CalendarRepository(
             )
 
             if (eventId != null) {
-                // 서버에도 일정 정보 동기화 (선택사항)
-                petId?.let {
-                    apiService.createEvent(
-                        CalendarEventRequest(
-                            title = title,
-                            startTime = startTime.time,
-                            endTime = endTime.time,
-                            description = description,
-                            petId = it
-                        )
-                    )
-                }
+                // 서버에도 일정 정보 동기화 -> 나중에 구현
+//                petId?.let {
+//                    apiService.createEvent(
+//                        CalendarEventRequest(
+//                            title = title,
+//                            startTime = startTime.time,
+//                            endTime = endTime.time,
+//                            description = description,
+//                            petId = it
+//                        )
+//                    )
+//                }
                 Result.success(eventId)
             } else {
                 Result.failure(Exception("Failed to add event"))
