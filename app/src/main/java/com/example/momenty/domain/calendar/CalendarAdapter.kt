@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.momenty.R
 import java.util.Calendar
@@ -30,8 +31,11 @@ class CalendarAdapter(
     override fun getItemCount(): Int = days.size
 
     fun updateDays(newDays: List<CalendarDay>) {
+        val diffCallback = CalendarDiffCallback(days, newDays)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
         days = newDays
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
     }
 
     inner class DayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
@@ -67,36 +71,8 @@ class CalendarAdapter(
                 dayText.typeface = Typeface.DEFAULT
             }
 
-            // 일정 인디케이터 표시
-            eventIndicatorLayout.removeAllViews()
-            eventCountText.visibility = View.GONE
-
-            if (day.events.isNotEmpty() && day.isCurrentMonth) {
-                val eventCount = day.events.size
-
-                if (eventCount <= 3) {
-                    // 최대 3개까지 점으로 표시
-                    day.events.take(3).forEach { event ->
-                        val dot = View(itemView.context).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                dpToPx(5), dpToPx(5)
-                            ).apply {
-                                marginEnd = dpToPx(2)
-                            }
-                            setBackgroundResource(R.drawable.bg_event_dot)
-                            // 일정 색상 적용
-                            event.color?.let {
-                                setBackgroundColor(it)
-                            }
-                        }
-                        eventIndicatorLayout.addView(dot)
-                    }
-                } else {
-                    // 3개 초과 시 (+개수) 텍스트로 표시
-                    eventCountText.visibility = View.VISIBLE
-                    eventCountText.text = "+${eventCount}"
-                }
-            }
+            // 일정 인디케이터 표시 - 최적화
+            updateEventIndicators(day)
 
             // 클릭 리스너
             itemView.setOnClickListener {
@@ -105,9 +81,80 @@ class CalendarAdapter(
                 }
             }
         }
+        private fun updateEventIndicators(day: CalendarDay) {
+            // 현재 월이 아니거나 이벤트가 없으면 숨김
+            if (!day.isCurrentMonth || day.events.isEmpty()) {
+                eventIndicatorLayout.visibility = View.GONE
+                eventCountText.visibility = View.GONE
+                return
+            }
+
+            eventIndicatorLayout.visibility = View.VISIBLE
+            eventIndicatorLayout.removeAllViews()
+            eventCountText.visibility = View.GONE
+
+            val eventCount = day.events.size
+
+            if (eventCount <= 3) {
+                // 최대 3개까지 점으로 표시
+                day.events.take(3).forEach { event ->
+                    val dot = createDotView(event.color)
+                    eventIndicatorLayout.addView(dot)
+                }
+            } else {
+                // 3개 초과 시 (+개수) 텍스트로 표시
+                eventCountText.visibility = View.VISIBLE
+                eventCountText.text = "+${eventCount}"
+            }
+        }
+
+        private fun createDotView(color: Int?): View {
+            return View(itemView.context).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    dpToPx(5), dpToPx(5)
+                ).apply {
+                    marginEnd = dpToPx(2)
+                }
+                setBackgroundResource(R.drawable.bg_event_dot)
+                // 일정 색상 적용
+                color?.let {
+                    setBackgroundColor(it)
+                }
+            }
+        }
 
         private fun dpToPx(dp: Int): Int {
             return (dp * itemView.context.resources.displayMetrics.density).toInt()
+        }
+    }
+
+    /**
+     * DiffUtil Callback for efficient updates
+     */
+    private class CalendarDiffCallback(
+        private val oldList: List<CalendarDay>,
+        private val newList: List<CalendarDay>
+    ) : DiffUtil.Callback() {
+
+        override fun getOldListSize(): Int = oldList.size
+
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldDay = oldList[oldItemPosition]
+            val newDay = newList[newItemPosition]
+            return oldDay.day == newDay.day &&
+                    oldDay.month == newDay.month &&
+                    oldDay.year == newDay.year
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldDay = oldList[oldItemPosition]
+            val newDay = newList[newItemPosition]
+            return oldDay.isSelected == newDay.isSelected &&
+                    oldDay.isToday == newDay.isToday &&
+                    oldDay.isCurrentMonth == newDay.isCurrentMonth &&
+                    oldDay.events.size == newDay.events.size
         }
     }
 }

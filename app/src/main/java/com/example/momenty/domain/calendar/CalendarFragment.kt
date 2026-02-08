@@ -16,11 +16,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentCalendarBinding
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class CalendarFragment : Fragment() {
 
@@ -30,17 +33,22 @@ class CalendarFragment : Fragment() {
     private lateinit var calendarAdapter: CalendarAdapter
     private lateinit var petFilterAdapter: PetFilterAdapter
 
-    // lazy 초기화로 변경
-    private val deviceCalendarHelper by lazy { DeviceCalendarHelper(requireContext()) }
-    private val repository by lazy {
-        CalendarRepository(
-            apiService = RetrofitClient.calendarApiService,
-            deviceCalendarHelper = deviceCalendarHelper
-        )
-    }
+    // lazy 초기화를 지연 초기화로 변경
+    private var deviceCalendarHelper: DeviceCalendarHelper? = null
+    private var repository: CalendarRepository? = null
 
     private val viewModel: CalendarViewModel by viewModels {
-        CalendarViewModelFactory(repository)
+        // Repository를 안전하게 초기화
+        val helper = deviceCalendarHelper ?: DeviceCalendarHelper(requireContext()).also {
+            deviceCalendarHelper = it
+        }
+        val repo = repository ?: CalendarRepository(
+            apiService = RetrofitClient.calendarApiService,
+            deviceCalendarHelper = helper
+        ).also {
+            repository = it
+        }
+        CalendarViewModelFactory(repo)
     }
 
     // 권한 요청 런처
@@ -51,9 +59,8 @@ class CalendarFragment : Fragment() {
         val writeGranted = permissions[Manifest.permission.WRITE_CALENDAR] ?: false
 
         if (readGranted && writeGranted) {
-            viewModel.loadAvailableCalendars()
-            viewModel.loadCalendar()
-            viewModel.loadPets()
+            // 순차적으로 로드하여 부하 분산
+            loadDataSequentially()
         } else {
             Snackbar.make(
                 binding.root,
@@ -75,12 +82,46 @@ class CalendarFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupPetFilter()
+        // UI 먼저 초기화 (가벼운 작업)
         setupWeekdayHeader()
         setupCalendarRecyclerView()
+        setupPetFilter()
         setupClickListeners()
         observeViewModel()
+
+        // 권한 확인은 마지막에
         checkCalendarPermission()
+    }
+
+    /**
+     * 데이터를 순차적으로 로드하여 ANR 방지
+     */
+    private fun loadDataSequentially() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                // 1. 먼저 더미 펫 데이터 표시 (즉시)
+                // viewModel.loadDummyPets()는 init에서 이미 실행됨
+
+                // 2. 캘린더 목록 로드 (백그라운드)
+                delay(100) // UI 렌더링 시간 확보
+                viewModel.loadAvailableCalendars()
+
+                // 3. 캘린더 데이터 로드 (백그라운드)
+                delay(100)
+                viewModel.loadCalendar()
+
+                // 4. 서버에서 펫 데이터 로드 (선택사항, 백그라운드)
+                delay(100)
+                viewModel.loadPets()
+
+            } catch (e: Exception) {
+                Snackbar.make(
+                    binding.root,
+                    "데이터 로드 중 오류가 발생했습니다: ${e.message}",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
+        }
     }
 
     /**
@@ -102,6 +143,8 @@ class CalendarFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = petFilterAdapter
             setHasFixedSize(true)
+            // 스크롤 성능 최적화
+            isNestedScrollingEnabled = false
         }
     }
 
@@ -150,6 +193,10 @@ class CalendarFragment : Fragment() {
             layoutManager = GridLayoutManager(requireContext(), 7)
             adapter = calendarAdapter
             setHasFixedSize(true)
+            // 성능 최적화
+            itemAnimator = null // 애니메이션 비활성화
+            setItemViewCacheSize(42) // 6주 * 7일
+            isNestedScrollingEnabled = false
         }
     }
 
@@ -226,9 +273,7 @@ class CalendarFragment : Fragment() {
                         Manifest.permission.WRITE_CALENDAR
                     ) == PackageManager.PERMISSION_GRANTED -> {
                 // 권한이 이미 허용됨
-                viewModel.loadAvailableCalendars()
-                viewModel.loadCalendar()
-                viewModel.loadPets()
+                loadDataSequentially()
             }
             shouldShowRequestPermissionRationale(Manifest.permission.READ_CALENDAR) ||
                     shouldShowRequestPermissionRationale(Manifest.permission.WRITE_CALENDAR) -> {

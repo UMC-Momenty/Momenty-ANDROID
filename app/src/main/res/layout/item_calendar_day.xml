@@ -3,19 +3,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/day_container"
     android:layout_width="match_parent"
-    android:layout_height="52dp"
-    android:padding="4dp">
+    android:layout_height="wrap_content"
+    android:padding="2dp">
 
-    <!-- 날짜 텍스트 -->
-    <TextView
-        android:id="@+id/tv_day"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:textSize="14sp"
-        android:textColor="@color/body_1"
-        android:fontFamily="@font/pretendard_medium"
-        tools:text="15" />
+    <!-- 원 전용 컨테이너 -->
+    <FrameLayout
+        android:id="@+id/dayContainer"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:id="@+id/tv_day"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:textColor="@color/body_1"
+            android:fontFamily="@font/pretendard_medium"
+            tools:text="15" />
+
+    </FrameLayout>
 
     <!-- 일정 인디케이터 컨테이너 -->
     <LinearLayout
