@@ -120,13 +120,13 @@
     <string name="calendar_year">년</string>
     <string name="calendar_month">월</string>
     <string-array name="calendar_date">
+        <item>일</item>
         <item>월</item>
         <item>화</item>
         <item>수</item>
         <item>목</item>
         <item>금</item>
         <item>토</item>
-        <item>일</item>
     </string-array>
     <string-array name="schedule_type">
         <item>산책</item>
