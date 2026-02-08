@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
@@ -192,12 +193,64 @@ class CalendarFragment : Fragment() {
         binding.calendarRecyclerView.apply {
             layoutManager = GridLayoutManager(requireContext(), 7)
             adapter = calendarAdapter
-            setHasFixedSize(true)
+            setHasFixedSize(false) // 동적 높이를 위해 false로 변경
             // 성능 최적화
             itemAnimator = null // 애니메이션 비활성화
             setItemViewCacheSize(42) // 6주 * 7일
             isNestedScrollingEnabled = false
+
+            // RecyclerView가 측정된 후 높이 조정
+            viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    adjustCalendarHeight()
+                }
+            })
         }
+    }
+
+    /**
+     * 캘린더 높이를 카드뷰에 맞게 조정
+     */
+    private fun adjustCalendarHeight() {
+        val cardView = binding.cvCalendarCard
+        val weekdayHeader = binding.llCalendarDate
+        val recyclerView = binding.calendarRecyclerView
+
+        // 카드뷰 내부 사용 가능한 높이 계산
+        val cardPaddingVertical = dpToPx(44) // 20dp(top) + 24dp(bottom)
+        val weekdayHeight = weekdayHeader.height
+        val weekdayMarginBottom = dpToPx(15)
+
+        val availableHeight = cardView.height - cardPaddingVertical - weekdayHeight - weekdayMarginBottom
+
+        // 6주 기준으로 각 행의 높이 계산
+        val rowCount = 6
+        val itemHeight = availableHeight / rowCount
+
+        // RecyclerView 높이 설정
+        recyclerView.layoutParams = recyclerView.layoutParams.apply {
+            height = availableHeight
+        }
+
+        // 각 아이템 높이를 동적으로 설정
+        recyclerView.addItemDecoration(object : androidx.recyclerview.widget.RecyclerView.ItemDecoration() {
+            override fun getItemOffsets(
+                outRect: android.graphics.Rect,
+                view: View,
+                parent: androidx.recyclerview.widget.RecyclerView,
+                state: androidx.recyclerview.widget.RecyclerView.State
+            ) {
+                view.layoutParams.height = itemHeight
+            }
+        })
+    }
+
+    /**
+     * dp를 px로 변환
+     */
+    private fun dpToPx(dp: Int): Int {
+        return (dp * resources.displayMetrics.density).toInt()
     }
 
     /**

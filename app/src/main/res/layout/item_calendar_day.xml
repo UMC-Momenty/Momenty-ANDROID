@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/day_item_container"
     android:layout_width="match_parent"
-    android:layout_height="56dp"
+    android:layout_height="65dp"
     android:padding="2dp">
 
     <!-- 원 전용 컨테이너 -->
