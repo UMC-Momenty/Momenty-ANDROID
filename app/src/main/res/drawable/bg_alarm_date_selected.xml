@@ -3,11 +3,14 @@
     <item android:state_checked="true">
         <shape android:shape="oval">
             <solid android:color="@color/primary"/>
+            <size android:width="40dp" android:height="40dp" />
         </shape>
     </item>
-    <item android:state_checked="false">
+
+    <item>
         <shape android:shape="oval">
-            <solid android:color="@color/white" />
+            <solid android:color="@color/caption_2" />
+            <size android:width="40dp" android:height="40dp" />
         </shape>
     </item>
 </selector>

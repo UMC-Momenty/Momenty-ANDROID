@@ -47,28 +47,34 @@ class CalendarAdapter(
         fun bind(day: CalendarDay){
             dayText.text = if(day.isCurrentMonth) day.day.toString() else ""
 
-            // 오늘 날짜 표시
-            if(day.isToday) {
-                dayContainer.setBackgroundResource(R.drawable.bg_calendar_selected)
-                dayText.setTextColor(ContextCompat.getColor(itemView.context, R.color.white))
-                dayText.typeface = Typeface.DEFAULT_BOLD
-            }
-            // 선택된 날짜
-            else if (day.isSelected) {
-                dayContainer.setBackgroundResource(R.drawable.bg_calendar_selected)
-                dayText.setTextColor(ContextCompat.getColor(itemView.context, R.color.white))
-                dayText.typeface = Typeface.DEFAULT_BOLD
-            }
-            // 일반 날짜
-            else {
-                dayContainer.background = null
-                dayText.setTextColor(
-                    if (day.isCurrentMonth)
-                        ContextCompat.getColor(itemView.context, R.color.body_1)
-                    else
-                        ContextCompat.getColor(itemView.context, R.color.caption_1)
-                )
-                dayText.typeface = Typeface.DEFAULT
+            // 배경 초기화 (매번 리셋)
+            dayContainer.background = null
+
+            // 선택된 날짜가 오늘 날짜보다 우선순위를 가짐
+            when {
+                day.isSelected -> {
+                    // 선택된 날짜
+                    dayContainer.setBackgroundResource(R.drawable.bg_calendar_selected)
+                    dayText.setTextColor(ContextCompat.getColor(itemView.context, R.color.white))
+                    dayText.typeface = Typeface.DEFAULT_BOLD
+                }
+                day.isToday -> {
+                    // 오늘 날짜 (선택되지 않은 경우에만)
+                    dayContainer.setBackgroundResource(R.drawable.bg_calendar_today)
+                    dayText.setTextColor(ContextCompat.getColor(itemView.context, R.color.body_1))
+                    dayText.typeface = Typeface.DEFAULT_BOLD
+                }
+                else -> {
+                    // 일반 날짜
+                    dayContainer.background = null
+                    dayText.setTextColor(
+                        if (day.isCurrentMonth)
+                            ContextCompat.getColor(itemView.context, R.color.body_1)
+                        else
+                            ContextCompat.getColor(itemView.context, R.color.caption_1)
+                    )
+                    dayText.typeface = Typeface.DEFAULT
+                }
             }
 
             // 일정 인디케이터 표시 - 최적화

@@ -1,12 +1,9 @@
 package com.example.momenty.domain.calendar
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Calendar
 
 class CalendarViewModel(
     private val repository: CalendarRepository
@@ -18,33 +15,190 @@ class CalendarViewModel(
     private val _selectedDate = MutableLiveData<CalendarDay?>()
     val selectedDate: LiveData<CalendarDay?> = _selectedDate
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
-
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
 
-    private val _availableCalendars = MutableLiveData<List<DeviceCalendarHelper.DeviceCalendar>>()
-    val availableCalendars: LiveData<List<DeviceCalendarHelper.DeviceCalendar>> = _availableCalendars
+    private val _availableCalendars = MutableLiveData<List<DeviceCalendar>>()
+    val availableCalendars: LiveData<List<DeviceCalendar>> = _availableCalendars
 
     private val _pets = MutableLiveData<List<Pet>>()
     val pets: LiveData<List<Pet>> = _pets
 
-    private val _selectedPet = MutableLiveData<Pet?>(null) // null = 전체 일정
+    private val _selectedPet = MutableLiveData<Pet?>()
     val selectedPet: LiveData<Pet?> = _selectedPet
 
-    private var currentMonth = Calendar.getInstance()
-    private var allEvents = listOf<CalendarEvent>()
+    private var currentCalendar = Calendar.getInstance()
+    private var allEvents: MutableList<CalendarEvent> = mutableListOf()
 
-    init{
-        Log.d("CalendarViewModel", "ViewModel initialized")
-        loadDummyPets() // 개발용 더미 데이터
-        // 초기 캘린더 표시 (일정 없이)
-        loadCalendarWithoutEvents()
+    init {
+        loadDummyPets()
+        generateCalendarDays()
     }
 
     /**
-     * 개발용 더미 반려동물 데이터 로드
+     * 이벤트 추가 (알림에서 호출)
+     */
+    fun addEvent(event: CalendarEvent) {
+        allEvents.add(event)
+        generateCalendarDays() // 달력 다시 그리기
+    }
+
+    /**
+     * 날짜 선택 처리 - 핵심 수정 부분
+     */
+    fun selectDay(day: CalendarDay) {
+        val currentDays = _calendarDays.value ?: return
+
+        // 모든 날짜의 isSelected를 false로 설정하고, 클릭한 날짜만 true로 설정
+        val updatedDays = currentDays.map { calendarDay ->
+            calendarDay.copy(
+                isSelected = calendarDay.day == day.day &&
+                        calendarDay.month == day.month &&
+                        calendarDay.year == day.year,
+                // isToday는 유지 (날짜 선택과 무관)
+                isToday = calendarDay.isToday
+            )
+        }
+
+        _calendarDays.value = updatedDays
+        _selectedDate.value = day
+    }
+
+    /**
+     * 달력 생성
+     */
+    private fun generateCalendarDays() {
+        val days = mutableListOf<CalendarDay>()
+        val calendar = currentCalendar.clone() as Calendar
+        val today = Calendar.getInstance()
+
+        // 현재 월의 1일로 설정
+        calendar.set(Calendar.DAY_OF_MONTH, 1)
+        val firstDayOfMonth = calendar.get(Calendar.DAY_OF_WEEK)
+        val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+
+        // 이전 달의 날짜들
+        calendar.add(Calendar.MONTH, -1)
+        val daysInPrevMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+        val prevMonthStartDay = daysInPrevMonth - (firstDayOfMonth - Calendar.SUNDAY) + 1
+
+        for (i in prevMonthStartDay..daysInPrevMonth) {
+            days.add(
+                CalendarDay(
+                    day = i,
+                    month = calendar.get(Calendar.MONTH),
+                    year = calendar.get(Calendar.YEAR),
+                    isCurrentMonth = false,
+                    isToday = false,
+                    isSelected = false
+                )
+            )
+        }
+
+        // 현재 달의 날짜들
+        calendar.add(Calendar.MONTH, 1)
+        for (i in 1..daysInMonth) {
+            val isToday = calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                    calendar.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
+                    i == today.get(Calendar.DAY_OF_MONTH)
+
+            days.add(
+                CalendarDay(
+                    day = i,
+                    month = calendar.get(Calendar.MONTH),
+                    year = calendar.get(Calendar.YEAR),
+                    isCurrentMonth = true,
+                    isToday = isToday,
+                    isSelected = false, // 초기에는 아무것도 선택 안됨
+                    events = getEventsForDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), i)
+                )
+            )
+        }
+
+        // 다음 달의 날짜들
+        calendar.add(Calendar.MONTH, 1)
+        val remainingDays = 42 - days.size // 6주 * 7일 = 42칸
+        for (i in 1..remainingDays) {
+            days.add(
+                CalendarDay(
+                    day = i,
+                    month = calendar.get(Calendar.MONTH),
+                    year = calendar.get(Calendar.YEAR),
+                    isCurrentMonth = false,
+                    isToday = false,
+                    isSelected = false
+                )
+            )
+        }
+
+        _calendarDays.value = days
+    }
+
+    /**
+     * 이전 달로 이동
+     */
+    fun goToPreviousMonth() {
+        currentCalendar.add(Calendar.MONTH, -1)
+        generateCalendarDays()
+    }
+
+    /**
+     * 다음 달로 이동
+     */
+    fun goToNextMonth() {
+        currentCalendar.add(Calendar.MONTH, 1)
+        generateCalendarDays()
+    }
+
+    /**
+     * 년/월 텍스트 가져오기
+     */
+    fun getYearMonthText(): String {
+        val year = currentCalendar.get(Calendar.YEAR)
+        val month = currentCalendar.get(Calendar.MONTH) + 1
+        return "${year}년 ${month}월"
+    }
+
+    /**
+     * 특정 날짜의 이벤트 조회
+     */
+    fun getEventsForDay(day: CalendarDay): List<CalendarEvent> {
+        return getEventsForDate(day.year, day.month, day.day)
+    }
+
+    private fun getEventsForDate(year: Int, month: Int, day: Int): List<CalendarEvent> {
+        return allEvents.filter { event ->
+            val eventCal = Calendar.getInstance().apply { time = event.startTime }
+            eventCal.get(Calendar.YEAR) == year &&
+                    eventCal.get(Calendar.MONTH) == month &&
+                    eventCal.get(Calendar.DAY_OF_MONTH) == day
+        }
+    }
+
+    /**
+     * 달력 로드
+     */
+    fun loadCalendar() {
+        // TODO: 실제 API 호출
+        generateCalendarDays()
+    }
+
+    /**
+     * 사용 가능한 캘린더 목록 로드
+     */
+    fun loadAvailableCalendars() {
+        // TODO: DeviceCalendarHelper에서 로드
+    }
+
+    /**
+     * 펫 목록 로드
+     */
+    fun loadPets() {
+        // TODO: 실제 API 호출
+    }
+
+    /**
+     * 더미 펫 데이터 로드
      */
     private fun loadDummyPets() {
         val dummyPets = listOf(
@@ -56,245 +210,19 @@ class CalendarViewModel(
     }
 
     /**
-     * 일정 없이 캘린더만 로드 (권한 없을 때)
-     */
-    fun loadCalendarWithoutEvents() {
-        Log.d("CalendarViewModel", "loadCalendarWithoutEvents called")
-        generateCalendarDays(emptyList())
-    }
-
-    /**
-     * 캘린더 로드 (일정 포함)
-     */
-    fun loadCalendar()  {
-        Log.d("CalendarViewModel", "loadCalendar called")
-        viewModelScope.launch {
-            _isLoading.value = true
-            try{
-                val startDate = getMonthStartDate()
-                val endDate = getMonthEndDate()
-                Log.d("CalendarViewModel", "Fetching events from ${startDate.timeInMillis} to ${endDate.timeInMillis}")
-
-                val result = repository.getEventsInRange(
-                    startDate = startDate.timeInMillis,
-                    endDate = endDate.timeInMillis,
-                    selectedPetId = _selectedPet.value?.id
-                )
-
-                result.onSuccess { events ->
-                    allEvents = events
-                    generateCalendarDays(events)
-                }.onFailure { exception ->
-                    _error.value = exception.message ?: "일정을 불러오는데 실패했습니다"
-                    // 실패해도 빈 캘린더는 표시
-                    generateCalendarDays(emptyList())
-                }
-            }catch (e: Exception){
-                _error.value = e.message ?: "알 수 없는 오류가 발생했습니다."
-                // 실패해도 빈 캘린더는 표시
-                generateCalendarDays(emptyList())
-            }finally {
-                _isLoading.value = false
-            }
-        }
-    }
-
-    /**
-     * 사용 가능한 캘린더 목록 로드
-     */
-    fun loadAvailableCalendars() {
-        viewModelScope.launch {
-            val result = repository.getAvailableCalendars()
-            result.onSuccess { calendars ->
-                _availableCalendars.value = calendars
-            }.onFailure { exception ->
-                _error.value = exception.message ?: "캘린더 목록을 불러오는데 실패했습니다"
-            }
-        }
-    }
-
-    /**
-     * 반려동물 목록 로드
-     */
-    fun loadPets() {
-        viewModelScope.launch {
-            val result = repository.getPets()
-            result.onSuccess { pets ->
-                _pets.value = pets
-            }.onFailure { exception ->
-                _error.value = exception.message ?: "반려동물 목록을 불러오는데 실패했습니다"
-            }
-        }
-    }
-
-    /**
-     * 반려동물 필터 선택
+     * 펫 필터 선택
      */
     fun selectPetFilter(pet: Pet?) {
         _selectedPet.value = pet
-        loadCalendar() // 필터링된 일정 다시 로드
-    }
-
-    /**
-     * 날짜 선택
-     */
-    fun selectDay(day: CalendarDay) {
-        _selectedDate.value = day
-        generateCalendarDays(allEvents, day)
-    }
-
-    /**
-     * 이전 달로 이동
-     */
-    fun goToPreviousMonth() {
-        currentMonth.add(Calendar.MONTH, -1)
-        loadCalendar()
-    }
-
-    /**
-     * 다음 달로 이동
-     */
-    fun goToNextMonth() {
-        currentMonth.add(Calendar.MONTH, 1)
-        loadCalendar()
-    }
-
-    /**
-     * 년월 텍스트 가져오기
-     */
-    fun getYearMonthText(): String {
-        val year = currentMonth.get(Calendar.YEAR)
-        val month = currentMonth.get(Calendar.MONTH) + 1
-        return "${year}년 ${month}월"
-    }
-
-    /**
-     * 특정 날짜의 일정 가져오기
-     */
-    fun getEventsForDay(day: CalendarDay): List<CalendarEvent> {
-        return allEvents.filter { event ->
-            val eventCalendar = Calendar.getInstance().apply {
-                time = event.startTime
-            }
-            day.isSameDay(eventCalendar)
-        }
-    }
-
-    /**
-     * 캘린더 날짜 생성
-     */
-    private fun generateCalendarDays(
-        events: List<CalendarEvent>,
-        selectedDay: CalendarDay? = null
-    ) {
-        val days = mutableListOf<CalendarDay>()
-        val today = Calendar.getInstance()
-
-        val calendar = currentMonth.clone() as Calendar
-        calendar.set(Calendar.DAY_OF_MONTH, 1)
-
-        val firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
-        val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-
-        // 이전 달의 날짜들
-        val prevMonthDays = firstDayOfWeek - 1
-        if (prevMonthDays > 0) {
-            val prevMonthCalendar = calendar.clone() as Calendar
-            prevMonthCalendar.add(Calendar.MONTH, -1)
-            val prevMonthLastDay = prevMonthCalendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-
-            for (i in prevMonthLastDay - prevMonthDays + 1..prevMonthLastDay) {
-                days.add(
-                    CalendarDay(
-                        day = i,
-                        month = prevMonthCalendar.get(Calendar.MONTH),
-                        year = prevMonthCalendar.get(Calendar.YEAR),
-                        isCurrentMonth = false
-                    )
-                )
-            }
-        }
-
-        // 현재 달의 날짜들
-        for (day in 1..daysInMonth) {
-            val dayCalendar = calendar.clone() as Calendar
-            dayCalendar.set(Calendar.DAY_OF_MONTH, day)
-
-            val isToday = today.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
-                    today.get(Calendar.MONTH) == calendar.get(Calendar.MONTH) &&
-                    today.get(Calendar.DAY_OF_MONTH) == day
-
-            val isSelected = selectedDay?.let {
-                it.day == day && it.month == calendar.get(Calendar.MONTH) &&
-                        it.year == calendar.get(Calendar.YEAR)
-            } ?: false
-
-            val dayEvents = events.filter { event ->
-                val eventCalendar = Calendar.getInstance().apply {
-                    time = event.startTime
-                }
-                eventCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
-                        eventCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH) &&
-                        eventCalendar.get(Calendar.DAY_OF_MONTH) == day
-            }
-
-            days.add(
-                CalendarDay(
-                    day = day,
-                    month = calendar.get(Calendar.MONTH),
-                    year = calendar.get(Calendar.YEAR),
-                    isCurrentMonth = true,
-                    isToday = isToday,
-                    isSelected = isSelected,
-                    events = dayEvents
-                )
-            )
-        }
-
-        // 다음 달의 날짜들
-        val remainingDays = 42 - days.size // 6주 * 7일
-        if (remainingDays > 0) {
-            val nextMonthCalendar = calendar.clone() as Calendar
-            nextMonthCalendar.add(Calendar.MONTH, 1)
-
-            for (i in 1..remainingDays) {
-                days.add(
-                    CalendarDay(
-                        day = i,
-                        month = nextMonthCalendar.get(Calendar.MONTH),
-                        year = nextMonthCalendar.get(Calendar.YEAR),
-                        isCurrentMonth = false
-                    )
-                )
-            }
-        }
-
-        _calendarDays.value = days
-    }
-
-    /**
-    * 월의 시작 날짜
-    */
-    private fun getMonthStartDate(): Calendar {
-        return (currentMonth.clone() as Calendar).apply {
-            set(Calendar.DAY_OF_MONTH, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-    }
-
-    /**
-     * 월의 마지막 날짜
-     */
-    private fun getMonthEndDate(): Calendar {
-        return (currentMonth.clone() as Calendar).apply {
-            set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-            set(Calendar.HOUR_OF_DAY, 23)
-            set(Calendar.MINUTE, 59)
-            set(Calendar.SECOND, 59)
-            set(Calendar.MILLISECOND, 999)
-        }
+        // TODO: 필터링된 이벤트 다시 로드
+        generateCalendarDays()
     }
 }
+
+// 더미 데이터 클래스들
+data class DeviceCalendar(
+    val id: String,
+    val name: String,
+    val accountName: String,
+    val isSelected: Boolean = false
+)

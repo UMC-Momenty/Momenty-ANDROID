@@ -102,7 +102,7 @@
                 android:text="@string/alarm_once"
                 android:fontFamily="@font/pretendard_regular"
                 android:textSize="14sp"
-                android:textColor="@color/white"
+                android:textColor="@color/btn_text_color_selector"
                 android:stateListAnimator="@null"/>
 
             <Button
@@ -115,7 +115,7 @@
                 android:text="@string/alarm_repeat"
                 android:fontFamily="@font/pretendard_regular"
                 android:textSize="14sp"
-                android:textColor="@color/white"
+                android:textColor="@color/btn_text_color_selector"
                 android:stateListAnimator="@null"/>
 
         </LinearLayout>
@@ -128,7 +128,8 @@
             android:text="@string/alarm_date"
             android:fontFamily="@font/pretendard_regular"
             android:textSize="14sp"
-            android:textColor="@color/caption_1"/>
+            android:textColor="@color/caption_1"
+            android:visibility="gone"/>
 
         <LinearLayout
             android:id="@+id/ll_date_btns"
@@ -137,98 +138,106 @@
             android:orientation="horizontal"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="10dp"
-            android:paddingHorizontal="10dp">
+            android:paddingHorizontal="10dp"
+            android:visibility="gone">
 
-            <!-- 월 - 일 button : 흰색 원형 배경이고, 클릭 시 주황색으로 변함-->
+            <!-- 월 - 일 button : 회색 원형 배경이고, 클릭 시 주황색으로 변함-->
             <Button
                 android:id="@+id/btn_day_mon"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="46dp"
                 android:layout_weight="1"
+                android:padding="0dp"
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/bg_alarm_date_selected"
                 android:text="@string/day_mon"
                 android:fontFamily="@font/pretendard_regular"
                 android:textSize="14sp"
-                android:textColor="@color/white"
+                android:textColor="@color/btn_text_color_selector"
                 android:stateListAnimator="@null"/>
 
             <Button
                 android:id="@+id/btn_day_tue"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="46dp"
                 android:layout_weight="1"
+                android:padding="0dp"
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/bg_alarm_date_selected"
                 android:text="@string/day_tue"
                 android:fontFamily="@font/pretendard_regular"
                 android:textSize="14sp"
-                android:textColor="@color/white"
+                android:textColor="@color/btn_text_color_selector"
                 android:stateListAnimator="@null"/>
 
             <Button
                 android:id="@+id/btn_day_wed"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="46dp"
                 android:layout_weight="1"
+                android:padding="0dp"
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/bg_alarm_date_selected"
                 android:text="@string/day_wed"
                 android:fontFamily="@font/pretendard_regular"
                 android:textSize="14sp"
-                android:textColor="@color/white"
+                android:textColor="@color/btn_text_color_selector"
                 android:stateListAnimator="@null"/>
 
             <Button
                 android:id="@+id/btn_day_thr"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="46dp"
                 android:layout_weight="1"
+                android:padding="0dp"
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/bg_alarm_date_selected"
                 android:text="@string/day_thr"
                 android:fontFamily="@font/pretendard_regular"
                 android:textSize="14sp"
-                android:textColor="@color/white"
+                android:textColor="@color/btn_text_color_selector"
                 android:stateListAnimator="@null"/>
 
             <Button
                 android:id="@+id/btn_day_fri"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="46dp"
                 android:layout_weight="1"
+                android:padding="0dp"
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/bg_alarm_date_selected"
                 android:text="@string/day_fri"
                 android:fontFamily="@font/pretendard_regular"
                 android:textSize="14sp"
-                android:textColor="@color/white"
+                android:textColor="@color/btn_text_color_selector"
                 android:stateListAnimator="@null"/>
 
             <Button
                 android:id="@+id/btn_day_sat"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="46dp"
                 android:layout_weight="1"
+                android:padding="0dp"
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/bg_alarm_date_selected"
                 android:text="@string/day_sat"
                 android:fontFamily="@font/pretendard_regular"
                 android:textSize="14sp"
-                android:textColor="@color/white"
+                android:textColor="@color/btn_text_color_selector"
                 android:stateListAnimator="@null"/>
 
             <Button
                 android:id="@+id/btn_day_sun"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="46dp"
                 android:layout_weight="1"
+                android:padding="0dp"
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/bg_alarm_date_selected"
                 android:text="@string/day_sun"
                 android:fontFamily="@font/pretendard_regular"
                 android:textSize="14sp"
-                android:textColor="@color/white"
+                android:textColor="@color/btn_text_color_selector"
                 android:stateListAnimator="@null"/>
 
         </LinearLayout>

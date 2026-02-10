@@ -20,7 +20,15 @@ class AddAlarmFragment : Fragment() {
     private var _binding: FragmentAddAlarmBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: AlarmViewModel by activityViewModels()
+    private val alarmViewModel: AlarmViewModel by activityViewModels()
+    private val calendarViewModel: CalendarViewModel by activityViewModels {
+        val helper = DeviceCalendarHelper(requireContext())
+        val repo = CalendarRepository(
+            apiService = RetrofitClient.calendarApiService,
+            deviceCalendarHelper = helper
+        )
+        CalendarViewModelFactory(repo)
+    }
 
     private var selectedActivityType: String? = null
     private var isRepeatMode = false
@@ -35,7 +43,7 @@ class AddAlarmFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentAddAlarmBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -47,8 +55,10 @@ class AddAlarmFragment : Fragment() {
 
         setupViews()
         setupClickListeners()
+        // 초기 상태 설정
+        initializeButtonStates()
+
         showActivityTypeDialog() // Fragment 생성 시 바로 다이얼로그 표시
-        updateRepeatDayVisibility()
     }
 
     private fun setupViews() {
@@ -61,6 +71,28 @@ class AddAlarmFragment : Fragment() {
             binding.btnDaySat to 6,
             binding.btnDaySun to 7
         )
+    }
+
+    /**
+     * 모든 버튼의 초기 상태 설정
+     */
+    private fun initializeButtonStates() {
+        // 주기 버튼 : 일회성 선택된 상태로 시작
+        binding.btnTermOnce.isSelected = true
+        binding.btnTermOnce.refreshDrawableState()
+
+        binding.btnTermRepeat.isSelected = false
+        binding.btnTermRepeat.refreshDrawableState()
+
+        // 요일 버튼 : 모두 선택 해제
+        dayButtons.forEach { (button, _) ->
+            button.isSelected = false
+            button.refreshDrawableState()
+        }
+
+        // 일회성 모드로 시작 (요일 섹션 숨김)
+        isRepeatMode = false
+        updateRepeatDayVisibility()
     }
 
     private fun setupClickListeners() {
@@ -99,20 +131,16 @@ class AddAlarmFragment : Fragment() {
      * 반복 모드 설정 (일회성/반복성)
      */
     private fun setRepeatMode(isRepeat: Boolean) {
+        // 상태가 실제로 변경될 때만 처리
+        if (isRepeatMode == isRepeat) return
+
         isRepeatMode = isRepeat
 
         // 버튼 스타일 업데이트
-        if (isRepeat) {
-            binding.btnTermOnce.isSelected = false
-            binding.btnTermRepeat.isSelected = true
-            binding.btnTermOnce.setBackgroundResource(R.drawable.bg_button_alarm_toggle)
-            binding.btnTermRepeat.setBackgroundResource(R.drawable.bg_button_alarm_toggle)
-        } else {
-            binding.btnTermOnce.isSelected = true
-            binding.btnTermRepeat.isSelected = false
-            binding.btnTermOnce.setBackgroundResource(R.drawable.bg_button_alarm_toggle)
-            binding.btnTermRepeat.setBackgroundResource(R.drawable.bg_button_alarm_toggle)
-        }
+        binding.btnTermOnce.isSelected = !isRepeat
+        binding.btnTermOnce.refreshDrawableState()
+        binding.btnTermRepeat.isSelected = isRepeat
+        binding.btnTermRepeat.refreshDrawableState()
 
         updateRepeatDayVisibility()
     }
@@ -131,6 +159,11 @@ class AddAlarmFragment : Fragment() {
             binding.tvAlramDateLabel.visibility = View.GONE
             binding.llDateBtns.visibility = View.GONE
             selectedRepeatDays.clear()
+            // 모든 요일 버튼 선택 해제
+            dayButtons.forEach { (button, _) ->
+                button.isSelected = false
+                button.refreshDrawableState()
+            }
         }
     }
 
@@ -163,14 +196,11 @@ class AddAlarmFragment : Fragment() {
         if (selectedRepeatDays.contains(dayNum)) {
             selectedRepeatDays.remove(dayNum)
             button.isSelected = false
-            button.setBackgroundResource(R.drawable.bg_alarm_date_selected)
-            button.setTextColor(ContextCompat.getColor(requireContext(), R.color.body_1))
         } else {
             selectedRepeatDays.add(dayNum)
             button.isSelected = true
-            button.setBackgroundResource(R.drawable.bg_alarm_date_selected)
-            button.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         }
+        button.refreshDrawableState()
     }
 
     /**
@@ -212,10 +242,38 @@ class AddAlarmFragment : Fragment() {
         )
 
         // ViewModel에 추가
-        viewModel.addAlarm(alarm)
+        alarmViewModel.addAlarm(alarm)
+
+        // Alarm을 CalendarEvent로 변환
+        val calendarEvent = CalendarEvent(
+            id = System.currentTimeMillis().toString(),
+            title = alarm.title,
+            startTime = alarm.alarmDate,
+            endTime = alarm.alarmDate,
+            calendarId = "default_calendar", // 기본 캘린더 ID
+            color = getColorForActivityType(alarm.activityType),
+            petId = null
+        )
+
+        calendarViewModel.addEvent(calendarEvent)
+
+        Snackbar.make(binding.root, "알림이 추가되었습니다", Snackbar.LENGTH_SHORT).show()
+
 
         // CalendarAlarmFragment로 돌아가기
         requireActivity().onBackPressedDispatcher.onBackPressed()
+    }
+
+    private fun getColorForActivityType(activityType: String): Int {
+        return when(activityType) {
+            "산책" -> android.graphics.Color.parseColor("#FF6B6B")
+            "식사" -> android.graphics.Color.parseColor("#4ECDC4")
+            "미용" -> android.graphics.Color.parseColor("#FFE66D")
+            "건강" -> android.graphics.Color.parseColor("#95E1D3")
+            "투약" -> android.graphics.Color.parseColor("#A8E6CF")
+            "진료" -> android.graphics.Color.parseColor("#C7CEEA")
+            else -> android.graphics.Color.parseColor("#D97D54")
+        }
     }
 
     override fun onDestroyView() {

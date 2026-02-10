@@ -75,6 +75,11 @@ class AlarmAdapter(
         private fun formatRepeatDays(repeatDays: List<Int>?): String {
             if(repeatDays.isNullOrEmpty()) return ""
 
+            // 모든 요일이 선택된 경우 (1~7 모두 포함)
+            if(repeatDays.size == 7 && repeatDays.containsAll(listOf(1,2,3,4,5,6,7))){
+                return "매일"
+            }
+
             val dayNames = listOf("월", "화", "수", "목", "금", "토", "일")
             return repeatDays.sorted().joinToString(" ") { day ->
                 dayNames.getOrNull(day - 1) ?: ""
@@ -82,7 +87,7 @@ class AlarmAdapter(
         }
 
         private fun formatDate(date: Date): String {
-            val dateFormat = SimpleDateFormat("yyyy.mm.dd", Locale.KOREAN)
+            val dateFormat = SimpleDateFormat("yyyy.MM.dd", Locale.KOREAN)
             return dateFormat.format(date)
         }
     }

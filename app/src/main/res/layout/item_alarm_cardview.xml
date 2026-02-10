@@ -38,7 +38,9 @@
                 android:checked="true"
                 android:thumb="@drawable/bg_alarm_switch_thumb"
                 app:track="@drawable/bg_alarm_switch_track"
-                app:switchMinWidth="48dp"/>
+                app:switchMinWidth="48dp"
+                app:thumbTint="@null"
+                app:trackTint="@null"/>
 
         </LinearLayout>
 
