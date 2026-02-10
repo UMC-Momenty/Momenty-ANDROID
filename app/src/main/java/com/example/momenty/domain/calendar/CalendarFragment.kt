@@ -261,11 +261,11 @@ class CalendarFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        binding.ivMonthDefore.setOnClickListener {
+        binding.ivMonthBefore.setOnClickListener {
             viewModel.goToPreviousMonth()
         }
 
-        binding.ivMonthAtfer.setOnClickListener {
+        binding.ivMonthAfter.setOnClickListener {
             viewModel.goToNextMonth()
         }
 
