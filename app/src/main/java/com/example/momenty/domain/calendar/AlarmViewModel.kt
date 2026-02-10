@@ -12,13 +12,19 @@ class AlarmViewModel : ViewModel() {
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
 
+    private val _navigateToAlarmList = MutableLiveData<Boolean>()
+    val navigateToAlarmList: LiveData<Boolean> = _navigateToAlarmList
+
+    init {
+        _alarms.value = emptyList()
+    }
+
     /**
     * 알람 목록 로드
     */
     fun loadAlarms() {
         // TODO: 실제로는 서버나 로컬 DB에서 데이터를 가져옴
-        // 현재는 더미 데이터로 테스트
-        _alarms.value = getDummyAlarms()
+        // 현재는 저장된 리스트 유지
     }
 
     /**
@@ -47,6 +53,8 @@ class AlarmViewModel : ViewModel() {
         _alarms.value = currentList
 
         // TODO: 서버나 로컬 DB에 저장
+        // 알람 리스트로 이동 트리거
+        _navigateToAlarmList.value = true
     }
 
     /**
@@ -58,29 +66,5 @@ class AlarmViewModel : ViewModel() {
         _alarms.value = currentList
 
         // TODO: 서버나 로컬 DB에서 삭제
-    }
-
-    /**
-     * 더미 데이터 생성 (테스트용)
-     */
-    private fun getDummyAlarms(): List<Alarm> {
-        return listOf(
-            Alarm(
-                id = 1,
-                title = "산책",
-                duration = "1시간",
-                repeatDays = "월 화 수",
-                time = "오후 07:00",
-                isEnabled = true
-            ),
-            Alarm(
-                id = 2,
-                title = "약 주기",
-                duration = "매일",
-                repeatDays = "매일",
-                time = "오전 06:00",
-                isEnabled = true
-            )
-        )
     }
 }

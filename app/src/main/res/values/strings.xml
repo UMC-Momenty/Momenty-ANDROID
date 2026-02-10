@@ -161,6 +161,14 @@
     <string name="type_treat">간식</string>
     <string name="type_etc">기타</string>
 
+    <string name="day_mon">월</string>
+    <string name="day_tue">화</string>
+    <string name="day_wed">수</string>
+    <string name="day_thr">목</string>
+    <string name="day_fri">금</string>
+    <string name="day_sat">토</string>
+    <string name="day_sun">일</string>
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
 

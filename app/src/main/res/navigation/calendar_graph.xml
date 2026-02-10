@@ -19,12 +19,16 @@
         android:id="@+id/calendarAlarmFragment"
         android:name="com.example.momenty.domain.calendar.CalendarAlarmFragment"
         android:label="알림 관리"
-        tools:layout="@layout/fragment_calendar_alarm"/>
+        tools:layout="@layout/fragment_calendar_alarm">
+        <action
+            android:id="@+id/action_calendarAlarmFragment_to_addAlarmFragment"
+            app:destination="@+id/addAlarmFragment"/>
+    </fragment>
 
     <fragment
-        android:id="@+id/calendarAlarmAddFragment"
-        android:name="com.example.momenty.domain.calendar."
-        android:label="알림 관리"
-        tools:layout="@layout/fragment_calendar_alarm"/>
+        android:id="@+id/addAlarmFragment"
+        android:name="com.example.momenty.domain.calendar.AddAlarmFragment"
+        android:label="알림 추가"
+        tools:layout="@layout/fragment_add_alarm"/>
 
 </navigation>

@@ -1,11 +1,15 @@
 package com.example.momenty.domain.calendar
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.momenty.databinding.ItemAlarmCardviewBinding
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class AlarmAdapter(
     private val onToggleChanged: (Alarm, Boolean) -> Unit,
@@ -15,7 +19,7 @@ class AlarmAdapter(
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): AlarmAdapter.AlarmViewHolder {
+    ): AlarmViewHolder {
         val binding = ItemAlarmCardviewBinding.inflate(
             LayoutInflater.from(parent.context),
             parent, false
@@ -35,11 +39,25 @@ class AlarmAdapter(
 
         fun bind(alarm: Alarm) {
             binding.apply {
-                // 알람 정보 설정
+                // 알람 제목
                 tvAlarmTitle.text = alarm.title
-                tvDuration.text = alarm.duration
-                tvRepeatDays.text = alarm.repeatDays
-                tvAlarmTime.text = alarm.time
+                // 지속 시간 (입력한 경우에만 보임)
+                if(alarm.duration.isNullOrBlank()){
+                    llDurationSection.visibility = View.GONE
+                } else{
+                    llDurationSection.visibility = View.VISIBLE
+                    tvDuration.text = alarm.duration
+                }
+                // 알림 요일/날짜
+                // 일회성 : 날짜, 반복성 : 요일
+                tvRepeatDays.text = if(alarm.isRepeat){
+                    formatRepeatDays(alarm.repeatDays)
+                } else{
+                    formatDate(alarm.alarmDate)
+                }
+                // 알림 시간
+                tvAlarmTime.text = alarm.alarmTime
+                // 스위치 상태
                 switchAlarm.isChecked = alarm.isEnabled
 
                 // 토글 스위치 리스너
@@ -52,6 +70,20 @@ class AlarmAdapter(
                     onAlarmClick(alarm)
                 }
             }
+        }
+
+        private fun formatRepeatDays(repeatDays: List<Int>?): String {
+            if(repeatDays.isNullOrEmpty()) return ""
+
+            val dayNames = listOf("월", "화", "수", "목", "금", "토", "일")
+            return repeatDays.sorted().joinToString(" ") { day ->
+                dayNames.getOrNull(day - 1) ?: ""
+            }
+        }
+
+        private fun formatDate(date: Date): String {
+            val dateFormat = SimpleDateFormat("yyyy.mm.dd", Locale.KOREAN)
+            return dateFormat.format(date)
         }
     }
 

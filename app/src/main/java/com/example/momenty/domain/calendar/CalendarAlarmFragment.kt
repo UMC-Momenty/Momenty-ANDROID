@@ -5,8 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.momenty.R
 import com.example.momenty.databinding.FragmentCalendarAlarmBinding
 import com.google.android.material.snackbar.Snackbar
 
@@ -15,7 +17,7 @@ class CalendarAlarmFragment: Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var alarmAdapter: AlarmAdapter
-    private val viewModel: AlarmViewModel by viewModels()
+    private val viewModel: AlarmViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,7 +70,7 @@ class CalendarAlarmFragment: Fragment() {
 
         // 알람 추가 버튼
         binding.ivAlarmAdd.setOnClickListener {
-            showAddAlarmDialog()
+            navigateToAddAlarm()
         }
     }
 
@@ -93,11 +95,12 @@ class CalendarAlarmFragment: Fragment() {
     }
 
     /**
-     * 알람 추가 다이얼로그
+     * 알람 추가 화면으로 이동
      */
-    private fun showAddAlarmDialog() {
-        // TODO: 알람 추가 다이얼로그 구현
-        Snackbar.make(binding.root, "알람 추가 기능 구현 예정", Snackbar.LENGTH_SHORT).show()
+    private fun navigateToAddAlarm() {
+        findNavController().navigate(
+            R.id.action_calendarAlarmFragment_to_addAlarmFragment
+        )
     }
 
     /**

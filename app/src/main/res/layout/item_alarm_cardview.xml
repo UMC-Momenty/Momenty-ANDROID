@@ -14,6 +14,7 @@
 
         <!-- 알람 제목 및 토글 -->
         <LinearLayout
+            android:id="@+id/ll_title_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -50,6 +51,7 @@
 
         <!-- 자속 시간 -->
         <LinearLayout
+            android:id="@+id/ll_duration_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -77,6 +79,7 @@
 
         <!-- 알림 요일 -->
         <LinearLayout
+            android:id="@+id/ll_date_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -104,6 +107,7 @@
 
         <!-- 알림 시간 -->
         <LinearLayout
+            android:id="@+id/ll_time_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"

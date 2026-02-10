@@ -49,7 +49,9 @@
         <!-- 알림 추가 디자인에서 활동 버튼 선택 부분이 없어서 여기에 추가했어요! -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="46dp">
+            android:layout_height="46dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="10dp">
 
             <Button
                 android:id="@+id/btn_alarm_activity"
@@ -128,7 +130,110 @@
             android:textSize="14sp"
             android:textColor="@color/caption_1"/>
 
-        <EditText
+        <LinearLayout
+            android:id="@+id/ll_date_btns"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="10dp"
+            android:paddingHorizontal="10dp">
+
+            <!-- 월 - 일 button : 흰색 원형 배경이고, 클릭 시 주황색으로 변함-->
+            <Button
+                android:id="@+id/btn_day_mon"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_alarm_date_selected"
+                android:text="@string/day_mon"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:stateListAnimator="@null"/>
+
+            <Button
+                android:id="@+id/btn_day_tue"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_alarm_date_selected"
+                android:text="@string/day_tue"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:stateListAnimator="@null"/>
+
+            <Button
+                android:id="@+id/btn_day_wed"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_alarm_date_selected"
+                android:text="@string/day_wed"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:stateListAnimator="@null"/>
+
+            <Button
+                android:id="@+id/btn_day_thr"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_alarm_date_selected"
+                android:text="@string/day_thr"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:stateListAnimator="@null"/>
+
+            <Button
+                android:id="@+id/btn_day_fri"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_alarm_date_selected"
+                android:text="@string/day_fri"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:stateListAnimator="@null"/>
+
+            <Button
+                android:id="@+id/btn_day_sat"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_alarm_date_selected"
+                android:text="@string/day_sat"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:stateListAnimator="@null"/>
+
+            <Button
+                android:id="@+id/btn_day_sun"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_alarm_date_selected"
+                android:text="@string/day_sun"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:stateListAnimator="@null"/>
+
+        </LinearLayout>
+
+        <!--<EditText
             android:id="@+id/et_alarm_date"
             android:layout_width="match_parent"
             android:layout_height="46dp"
@@ -139,7 +244,7 @@
             android:hint="ex) 월요일"
             android:textColorHint="@color/caption_1"
             android:fontFamily="@font/pretendard_regular"
-            android:textSize="14sp"/>
+            android:textSize="14sp"/>-->
 
         <TextView
             android:id="@+id/tv_alram_time_label"
