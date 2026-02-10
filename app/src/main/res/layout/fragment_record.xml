@@ -32,20 +32,32 @@
             android:layout_marginTop="12dp"
             android:background="#E0E0E0" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvRecord"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_marginTop="12dp"
-            android:clipToPadding="false"
-            android:paddingBottom="12dp"/>
+            android:layout_marginTop="12dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvRecord"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="12dp"/>
+
+            <ImageButton
+                android:id="@+id/btn_go_community"
+                android:layout_width="60dp"
+                android:layout_height="70dp"
+                android:layout_gravity="bottom|end"
+
+                android:src="@drawable/ic_community_edit"
+                android:background="@android:color/transparent"
+                android:contentDescription="커뮤니티로 이동"/>
+        </FrameLayout>
+
 
     </LinearLayout>
-
-
-
-
 
 
 
