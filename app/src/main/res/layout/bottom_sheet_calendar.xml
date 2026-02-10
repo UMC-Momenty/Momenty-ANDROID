@@ -16,9 +16,22 @@
         android:textColor="@color/body_1"/>
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_bottom_sheet_schedules"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
         android:layout_marginBottom="15dp"/>
+
+    <!-- 일정이 없을 때 표시 -->
+    <TextView
+        android:id="@+id/tv_no_schedule"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/schedule_none"
+        android:gravity="center"
+        android:fontFamily="@font/pretendard_regular"
+        android:textSize="14sp"
+        android:textColor="@color/caption_1"
+        android:paddingVertical="30dp"
+        android:visibility="gone"/>
 
 </LinearLayout>

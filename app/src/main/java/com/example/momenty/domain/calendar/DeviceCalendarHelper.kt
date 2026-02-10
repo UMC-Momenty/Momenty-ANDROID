@@ -19,7 +19,7 @@ class DeviceCalendarHelper(private val context: Context) {
     /**
      * 디바이스의 모든 캘린더 조회
      */
-    fun getAvailableCalendars(): List<DeviceCalendar>   {
+    fun getAvailableCalendars(): List<DeviceCalendar> {
         val calendars = mutableListOf<DeviceCalendar>()
         val projection = arrayOf(
             CalendarContract.Calendars._ID,
@@ -28,14 +28,14 @@ class DeviceCalendarHelper(private val context: Context) {
             CalendarContract.Calendars.CALENDAR_COLOR
         )
 
-        try{
+        try {
             val cursor: Cursor? = context.contentResolver.query(
                 CalendarContract.Calendars.CONTENT_URI,
                 projection,
                 null, null, null
             )
-            cursor?.use{
-                while(it.moveToNext()){
+            cursor?.use {
+                while (it.moveToNext()) {
                     val id = it.getString(0)
                     val name = it.getString(1)
                     val accountName = it.getString(2)
@@ -83,22 +83,17 @@ class DeviceCalendarHelper(private val context: Context) {
                     val id = it.getString(0)
                     val title = it.getString(1) ?: "제목 없음"
                     val startTime = it.getLong(2)
-                    val endTime = it.getLong(3)
-                    val description = if (!it.isNull(4)) it.getString(4) else null
                     val calendarId = it.getString(5)
-                    val color = if (!it.isNull(6)) it.getInt(6) else null
-
                     events.add(
                         CalendarEvent(
                             id = id,
-                            title = title,
-                            startTime = Date(startTime),
-                            endTime = Date(endTime),
-                            description = description,
-                            calendarId = calendarId,
-                            color = color,
                             petId = null, // 추후 메타데이터로 저장 가능
-                            petName = null
+                            calendarId = calendarId,
+                            title = title,
+                            scheduleDate = Date(startTime), // 수정: scheduleDate 대신 startTime 사용
+                            alarmTime = "", // 기본값 (알림은 별도 처리 필요)
+                            petName = null,
+                            type = "DEVICE" // 디바이스 캘린더 이벤트 타입
                         )
                     )
                 }

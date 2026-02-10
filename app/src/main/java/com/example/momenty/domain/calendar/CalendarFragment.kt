@@ -21,11 +21,16 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentCalendarBinding
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class CalendarFragment : Fragment() {
 
@@ -34,6 +39,13 @@ class CalendarFragment : Fragment() {
 
     private lateinit var calendarAdapter: CalendarAdapter
     private lateinit var petFilterAdapter: PetFilterAdapter
+
+    // 바텀시트 변수
+    private var bottomSheetDialog: BottomSheetDialog? = null
+    private var scheduleAdapter: ScheduleBottomSheetAdapter? = null
+
+    // 딤 뷰
+    private var dimView: View? = null
 
     // lazy 초기화를 지연 초기화로 변경
     private var deviceCalendarHelper: DeviceCalendarHelper? = null
@@ -93,6 +105,33 @@ class CalendarFragment : Fragment() {
 
         // 권한 확인은 마지막에
         checkCalendarPermission()
+    }
+
+    /**
+     * 딤 뷰 설정 (바텀시트 표시 시 배경 어둡게)
+     */
+    private fun setupDimView() {
+        // 루트 뷰가 CoordinatorLayout이거나 FrameLayout인 경우에만 동작
+        val rootView = binding.root.parent as? ViewGroup
+
+        dimView = View(requireContext()).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            setBackgroundColor(R.color.caption_1)
+            visibility = View.GONE
+            isClickable = true
+            isFocusable = true
+
+            // 딤 뷰 클릭 시 바텀시트 닫기
+            setOnClickListener {
+                bottomSheetDialog?.dismiss()
+            }
+        }
+
+        // 딤 뷰를 루트의 자식으로 추가
+        rootView?.addView(dimView)
     }
 
     /**
@@ -271,7 +310,7 @@ class CalendarFragment : Fragment() {
         }
 
         binding.btnCalendarManage.setOnClickListener {
-            showEventDialog()
+            showScheduleBottomSheet()
         }
 
         binding.ivCalendarAdd.setOnClickListener {
@@ -288,9 +327,10 @@ class CalendarFragment : Fragment() {
             binding.tvYearMonthLabel.text = viewModel.getYearMonthText()
         }
 
+        // 날짜 선택 시 바텀시트 표시
         viewModel.selectedDate.observe(viewLifecycleOwner) { selectedDay ->
             selectedDay?.let {
-                showEventsForDay(it)
+                showScheduleBottomSheet(it)
             }
         }
 
@@ -358,19 +398,99 @@ class CalendarFragment : Fragment() {
     }
 
     /**
-     * 특정 날짜의 일정 표시
+     * 일정 바텀시트 표시
      */
-    private fun showEventsForDay(day: CalendarDay) {
-        val events = viewModel.getEventsForDay(day)
+    private fun showScheduleBottomSheet(day: CalendarDay? = null){
+        showDim()
 
-        if (events.isNotEmpty()) {
-            val eventTitles = events.joinToString("\n") {
-                "• ${it.title} (${formatTime(it.startTime)})"
-            }
-            Snackbar.make(binding.root, eventTitles, Snackbar.LENGTH_LONG).show()
+        bottomSheetDialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
+        val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_calendar, null)
+        val tvDate = bottomSheetView.findViewById<TextView>(R.id.tv_bottom_sheet_date)
+        val selectedDay = day ?: viewModel.selectedDate.value
+        tvDate.text = formatDate(selectedDay)
+
+        // RecyclerView
+        val rvSchedules = bottomSheetView.findViewById<RecyclerView>(R.id.rv_bottom_sheet_schedules)
+        val tvNoSchedule = bottomSheetView.findViewById<TextView>(R.id.tv_no_schedule)
+
+        val events = if(selectedDay != null){
+            viewModel.getEventsForDay(selectedDay)
         } else {
-            Snackbar.make(binding.root, "일정이 없습니다", Snackbar.LENGTH_SHORT).show()
+            emptyList()
         }
+
+        // 일정이 있으면 RecyclerView 표시, 없으면 안내 메시지 표시
+        if (events.isNotEmpty()) {
+            rvSchedules.visibility = View.VISIBLE
+            tvNoSchedule.visibility = View.GONE
+
+            scheduleAdapter = ScheduleBottomSheetAdapter(events)
+            rvSchedules.apply {
+                layoutManager = LinearLayoutManager(requireContext())
+                adapter = scheduleAdapter
+            }
+        } else {
+            rvSchedules.visibility = View.GONE
+            tvNoSchedule.visibility = View.VISIBLE
+        }
+
+        // 바텀시트에 뷰 설정
+        bottomSheetDialog?.setContentView(bottomSheetView)
+
+        // 바텀시트 dismiss 리스너 설정
+        bottomSheetDialog?.setOnDismissListener {
+            hideDim()
+        }
+
+        // 바텀시트 표시
+        bottomSheetDialog?.show()
+    }
+
+    /**
+     * 딤 뷰 표시 (페이드인 애니메이션)
+     */
+    private fun showDim() {
+        dimView?.let { dim ->
+            dim.visibility = View.VISIBLE
+            dim.alpha = 0f
+            dim.animate()
+                .alpha(1f)
+                .setDuration(200)
+                .start()
+        }
+    }
+
+    /**
+     * 딤 뷰 숨기기 (페이드아웃 애니메이션)
+     */
+    private fun hideDim() {
+        dimView?.let { dim ->
+            dim.animate()
+                .alpha(0f)
+                .setDuration(200)
+                .withEndAction {
+                    dim.visibility = View.GONE
+                }
+                .start()
+        }
+    }
+
+    /**
+     * 날짜 포맷팅 (예: 12월 2일 화요일)
+     */
+    private fun formatDate(day: CalendarDay?): String {
+        if (day == null) return ""
+
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.YEAR, day.year)
+            set(Calendar.MONTH, day.month)
+            set(Calendar.DAY_OF_MONTH, day.day)
+        }
+
+        val monthFormat = SimpleDateFormat("M월 d일", Locale.KOREAN)
+        val dayOfWeekFormat = SimpleDateFormat("EEEE", Locale.KOREAN)
+
+        return "${monthFormat.format(calendar.time)} ${dayOfWeekFormat.format(calendar.time)}"
     }
 
     /**
@@ -389,16 +509,10 @@ class CalendarFragment : Fragment() {
         )
     }
 
-    /**
-     * 시간 포맷팅
-     */
-    private fun formatTime(date: java.util.Date): String {
-        val format = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
-        return format.format(date)
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
+        bottomSheetDialog?.dismiss()
+        bottomSheetDialog = null
         _binding = null
     }
 

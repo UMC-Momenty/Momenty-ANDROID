@@ -248,12 +248,13 @@ class AddAlarmFragment : Fragment() {
         // Alarm을 CalendarEvent로 변환
         val calendarEvent = CalendarEvent(
             id = System.currentTimeMillis().toString(),
+            petId = null, // TODO: 선택된 반려동물 ID
+            calendarId = "default_calendar",
             title = alarm.title,
-            startTime = alarm.alarmDate,
-            endTime = alarm.alarmDate,
-            calendarId = "default_calendar", // 기본 캘린더 ID
-            color = getColorForActivityType(alarm.activityType),
-            petId = null
+            scheduleDate = alarm.alarmDate, // Date 객체
+            alarmTime = alarm.alarmTime,    // "오후 3:00" 형식 문자열
+            petName = null, // TODO: 선택된 반려동물 이름
+            type = alarm.activityType // "산책", "식사" 등
         )
 
         calendarViewModel.addEvent(calendarEvent)

@@ -152,6 +152,7 @@
     <string name="alarm_add">알림 추가</string>
     <string name="alarm_action_type">유형</string>
     <string name="alarm_action_type_dialog">활동 유형 선택</string>
+    <string name="schedule_none">일정이 없습니다.</string>
 
     <string name="type_walk">산책</string>
     <string name="type_eat">식사</string>

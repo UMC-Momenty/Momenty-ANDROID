@@ -168,7 +168,7 @@ class CalendarViewModel(
 
     private fun getEventsForDate(year: Int, month: Int, day: Int): List<CalendarEvent> {
         return allEvents.filter { event ->
-            val eventCal = Calendar.getInstance().apply { time = event.startTime }
+            val eventCal = Calendar.getInstance().apply { time = event.scheduleDate }
             eventCal.get(Calendar.YEAR) == year &&
                     eventCal.get(Calendar.MONTH) == month &&
                     eventCal.get(Calendar.DAY_OF_MONTH) == day

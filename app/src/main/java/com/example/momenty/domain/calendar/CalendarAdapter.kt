@@ -104,7 +104,7 @@ class CalendarAdapter(
             if (eventCount <= 3) {
                 // 최대 3개까지 점으로 표시
                 day.events.take(3).forEach { event ->
-                    val dot = createDotView(event.color)
+                    val dot = createDotView(R.color.primary)
                     eventIndicatorLayout.addView(dot)
                 }
             } else {
