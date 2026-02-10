@@ -1,6 +1,7 @@
 package com.example.momenty.domain.calendar
 
 import android.app.TimePickerDialog
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -63,13 +64,13 @@ class AddAlarmFragment : Fragment() {
 
     private fun setupViews() {
         dayButtons = listOf(
-            binding.btnDayMon to 1,
-            binding.btnDayTue to 2,
-            binding.btnDayWed to 3,
-            binding.btnDayThr to 4,
-            binding.btnDayFri to 5,
-            binding.btnDaySat to 6,
-            binding.btnDaySun to 7
+            binding.btnDayMon to Calendar.MONDAY,
+            binding.btnDayTue to Calendar.TUESDAY,
+            binding.btnDayWed to Calendar.WEDNESDAY,
+            binding.btnDayThr to Calendar.THURSDAY,
+            binding.btnDayFri to Calendar.FRIDAY,
+            binding.btnDaySat to Calendar.SATURDAY,
+            binding.btnDaySun to Calendar.SUNDAY
         )
     }
 
@@ -266,13 +267,14 @@ class AddAlarmFragment : Fragment() {
 
     private fun getColorForActivityType(activityType: String): Int {
         return when(activityType) {
-            "산책" -> android.graphics.Color.parseColor("#FF6B6B")
-            "식사" -> android.graphics.Color.parseColor("#4ECDC4")
-            "미용" -> android.graphics.Color.parseColor("#FFE66D")
-            "건강" -> android.graphics.Color.parseColor("#95E1D3")
-            "투약" -> android.graphics.Color.parseColor("#A8E6CF")
-            "진료" -> android.graphics.Color.parseColor("#C7CEEA")
-            else -> android.graphics.Color.parseColor("#D97D54")
+            "산책" -> ContextCompat.getColor(requireContext(), R.color.alarm_walk)
+            "식사" -> ContextCompat.getColor(requireContext(), R.color.alarm_eat)
+            "미용" -> ContextCompat.getColor(requireContext(), R.color.alarm_beauty)
+            "건강" -> ContextCompat.getColor(requireContext(), R.color.alarm_health)
+            "투약" -> ContextCompat.getColor(requireContext(), R.color.alarm_medician)
+            "간식" -> ContextCompat.getColor(requireContext(), R.color.alarm_treat)
+            "기타" -> ContextCompat.getColor(requireContext(), R.color.alarm_etc)
+            else ->  ContextCompat.getColor(requireContext(), R.color.primary)
         }
     }
 

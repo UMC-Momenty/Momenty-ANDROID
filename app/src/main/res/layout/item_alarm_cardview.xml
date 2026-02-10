@@ -75,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:text="1시간"
                 android:textSize="14sp"
-                android:textColor="#999999" />
+                android:textColor="@color/caption_1" />
 
         </LinearLayout>
 
@@ -103,7 +103,7 @@
                 android:layout_height="wrap_content"
                 android:text="월 화 수"
                 android:textSize="14sp"
-                android:textColor="#999999" />
+                android:textColor="@color/caption_1" />
 
         </LinearLayout>
 
@@ -131,7 +131,7 @@
                 android:layout_height="wrap_content"
                 android:text="오후 07:00"
                 android:textSize="14sp"
-                android:textColor="#999999" />
+                android:textColor="@color/caption_1" />
 
         </LinearLayout>
 
