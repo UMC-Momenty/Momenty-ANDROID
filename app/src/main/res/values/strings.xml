@@ -117,6 +117,7 @@
 
     <!-- 일정 관리 -->
     <string name="calendar_title">일정 관리</string>
+    <string name="alarm_title">알림 관리</string>
     <string name="calendar_year">년</string>
     <string name="calendar_month">월</string>
     <string-array name="calendar_date">
@@ -139,6 +140,13 @@
         <item>기타</item>
     </string-array>
 
+    <!-- 알림 관리 -->
+    <string name="alarm_continue">지속 시간</string>
+    <string name="alarm_date">알림 요일</string>
+    <string name="alarm_time">알림 시간</string>
+    <string name="alarm_name">일정 이름</string>
+    <string name="alarm_term">주기</string>
+    <string name="alarm_note">메모</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
 

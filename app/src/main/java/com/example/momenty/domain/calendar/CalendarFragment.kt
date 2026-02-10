@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.R
@@ -383,7 +384,9 @@ class CalendarFragment : Fragment() {
      * 일정 추가 다이얼로그 표시
      */
     private fun showAddEventDialog() {
-        Snackbar.make(binding.root, "일정 추가 기능 구현 예정", Snackbar.LENGTH_SHORT).show()
+        findNavController().navigate(
+            R.id.action_calendarFragment_to_calendarAlarmFragment
+        )
     }
 
     /**

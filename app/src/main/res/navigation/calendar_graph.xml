@@ -9,6 +9,16 @@
         android:id="@+id/calendarFragment"
         android:name="com.example.momenty.domain.calendar.CalendarFragment"
         android:label="일정 관리"
-        tools:layout="@layout/fragment_calendar" />
+        tools:layout="@layout/fragment_calendar" >
+        <action
+            android:id="@+id/action_calendarFragment_to_calendarAlarmFragment"
+            app:destination="@id/calendarAlarmFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/calendarAlarmFragment"
+        android:name="com.example.momenty.domain.calendar.CalendarAlarmFragment"
+        android:label="알림 관리"
+        tools:layout="@layout/fragment_calendar_alarm"/>
 
 </navigation>
