@@ -145,22 +145,27 @@ class CalendarFragment : Fragment() {
 
                 // 2. 캘린더 목록 로드 (백그라운드)
                 delay(100) // UI 렌더링 시간 확보
+                if(!isAdded) return@launch
                 viewModel.loadAvailableCalendars()
 
                 // 3. 캘린더 데이터 로드 (백그라운드)
                 delay(100)
+                if(!isAdded) return@launch
                 viewModel.loadCalendar()
 
                 // 4. 서버에서 펫 데이터 로드 (선택사항, 백그라운드)
                 delay(100)
+                if(!isAdded) return@launch
                 viewModel.loadPets()
 
             } catch (e: Exception) {
-                Snackbar.make(
-                    binding.root,
-                    "데이터 로드 중 오류가 발생했습니다: ${e.message}",
-                    Snackbar.LENGTH_LONG
-                ).show()
+                if(isAdded && _binding != null) {
+                    Snackbar.make(
+                        binding.root,
+                        "데이터 로드 중 오류가 발생했습니다: ${e.message}",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
             }
         }
     }
@@ -177,7 +182,9 @@ class CalendarFragment : Fragment() {
             } else {
                 "${pet.name}의 일정을 표시합니다"
             }
-            Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+            _binding?.let {
+                Snackbar.make(it.root, message, Snackbar.LENGTH_SHORT).show()
+            }
         }
 
         binding.rvPetFilter.apply {
@@ -336,7 +343,9 @@ class CalendarFragment : Fragment() {
 
         viewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
-                Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
+                _binding?.let { b ->
+                    Snackbar.make(b.root, it, Snackbar.LENGTH_LONG).show()
+                }
             }
         }
 
@@ -371,13 +380,15 @@ class CalendarFragment : Fragment() {
             }
             shouldShowRequestPermissionRationale(Manifest.permission.READ_CALENDAR) ||
                     shouldShowRequestPermissionRationale(Manifest.permission.WRITE_CALENDAR) -> {
-                Snackbar.make(
-                    binding.root,
-                    "일정을 관리하려면 캘린더 권한이 필요합니다.",
-                    Snackbar.LENGTH_LONG
-                ).setAction("허용") {
-                    requestPermissions()
-                }.show()
+                _binding?.let {
+                    Snackbar.make(
+                        it.root,
+                        "일정을 관리하려면 캘린더 권한이 필요합니다.",
+                        Snackbar.LENGTH_LONG
+                    ).setAction("허용") {
+                        requestPermissions()
+                    }.show()
+                }
             }
             else -> {
                 requestPermissions()
