@@ -139,4 +139,28 @@
         <item>기타</item>
     </string-array>
 
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
+    <!-- Community -->
+    <string name="community_comment_mute_reply">대댓글 알림 끄기</string>
+    <string name="community_comment_delete">삭제</string>
+
+    <string name="community_title">커뮤니티</string>
+
+    <string name="back">back</string>
+    <string name="more">더보기</string>
+
+    <string name="post_category_question">질문</string>
+    <string name="post_author_anonymous">익명</string>
+
+    <string name="comment_label">댓글</string>
+    <string name="comment_hint">댓글을 입력해 주세요</string>
+    <string name="comment_submit">등록</string>
+
+
+
+
+
 </resources>
