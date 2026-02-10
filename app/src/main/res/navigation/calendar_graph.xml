@@ -21,4 +21,10 @@
         android:label="알림 관리"
         tools:layout="@layout/fragment_calendar_alarm"/>
 
+    <fragment
+        android:id="@+id/calendarAlarmAddFragment"
+        android:name="com.example.momenty.domain.calendar."
+        android:label="알림 관리"
+        tools:layout="@layout/fragment_calendar_alarm"/>
+
 </navigation>

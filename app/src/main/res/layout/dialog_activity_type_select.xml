@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="30dp"
+    android:background="@drawable/bg_dialog_rounded">
+
+    <TextView
+        android:id="@+id/tv_dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/alarm_action_type_dialog"
+        android:fontFamily="@font/pretendard_semibold"
+        android:textColor="@color/body_1"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- 2x4 그리드 -->
+    <LinearLayout
+        android:id="@+id/ll_activity_grid"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_dialog_title">
+
+        <!-- 첫 번째 줄 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp"
+            android:paddingHorizontal="50dp">
+
+            <Button
+                android:id="@+id/btn_activity_walk"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:text="@string/type_walk"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:background="@drawable/bg_button_alarm_toggle"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_activity_eat"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:text="@string/type_eat"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:background="@drawable/bg_button_alarm_toggle"
+                android:stateListAnimator="@null" />
+
+        </LinearLayout>
+
+        <!-- 두 번째 줄 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp"
+            android:paddingHorizontal="50dp">
+
+            <Button
+                android:id="@+id/btn_activity_beauty"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:text="@string/type_beauty"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:background="@drawable/bg_button_alarm_toggle"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_activity_health"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:text="@string/type_health"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:background="@drawable/bg_button_alarm_toggle"
+                android:stateListAnimator="@null" />
+
+        </LinearLayout>
+
+        <!-- 세 번째 줄 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp"
+            android:paddingHorizontal="50dp">
+
+            <Button
+                android:id="@+id/btn_activity_medician"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:text="@string/type_medician"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:background="@drawable/bg_button_alarm_toggle"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_activity_treat"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:text="@string/type_treat"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:background="@drawable/bg_button_alarm_toggle"
+                android:stateListAnimator="@null" />
+
+        </LinearLayout>
+
+        <!-- 네 번째 줄 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="50dp">
+
+            <Button
+                android:id="@+id/btn_activity_etc"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:text="@string/type_etc"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:background="@drawable/bg_button_alarm_toggle"
+                android:stateListAnimator="@null" />
+
+            <!-- 빈 공간 -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
