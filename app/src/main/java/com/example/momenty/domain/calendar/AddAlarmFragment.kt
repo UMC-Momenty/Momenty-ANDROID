@@ -53,7 +53,6 @@ class AddAlarmFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Calendar Fragment에서 선택한 날짜 사용
-
         setupViews()
         setupClickListeners()
         // 초기 상태 설정
@@ -80,15 +79,11 @@ class AddAlarmFragment : Fragment() {
     private fun initializeButtonStates() {
         // 주기 버튼 : 일회성 선택된 상태로 시작
         binding.btnTermOnce.isSelected = true
-        binding.btnTermOnce.refreshDrawableState()
-
         binding.btnTermRepeat.isSelected = false
-        binding.btnTermRepeat.refreshDrawableState()
 
         // 요일 버튼 : 모두 선택 해제
         dayButtons.forEach { (button, _) ->
             button.isSelected = false
-            button.refreshDrawableState()
         }
 
         // 일회성 모드로 시작 (요일 섹션 숨김)
@@ -139,9 +134,7 @@ class AddAlarmFragment : Fragment() {
 
         // 버튼 스타일 업데이트
         binding.btnTermOnce.isSelected = !isRepeat
-        binding.btnTermOnce.refreshDrawableState()
         binding.btnTermRepeat.isSelected = isRepeat
-        binding.btnTermRepeat.refreshDrawableState()
 
         updateRepeatDayVisibility()
     }
@@ -163,7 +156,6 @@ class AddAlarmFragment : Fragment() {
             // 모든 요일 버튼 선택 해제
             dayButtons.forEach { (button, _) ->
                 button.isSelected = false
-                button.refreshDrawableState()
             }
         }
     }
@@ -201,7 +193,6 @@ class AddAlarmFragment : Fragment() {
             selectedRepeatDays.add(dayNum)
             button.isSelected = true
         }
-        button.refreshDrawableState()
     }
 
     /**
@@ -264,19 +255,6 @@ class AddAlarmFragment : Fragment() {
 
         // CalendarAlarmFragment로 돌아가기
         requireActivity().onBackPressedDispatcher.onBackPressed()
-    }
-
-    private fun getColorForActivityType(activityType: String): Int {
-        return when(activityType) {
-            "산책" -> ContextCompat.getColor(requireContext(), R.color.alarm_walk)
-            "식사" -> ContextCompat.getColor(requireContext(), R.color.alarm_eat)
-            "미용" -> ContextCompat.getColor(requireContext(), R.color.alarm_beauty)
-            "건강" -> ContextCompat.getColor(requireContext(), R.color.alarm_health)
-            "투약" -> ContextCompat.getColor(requireContext(), R.color.alarm_medician)
-            "간식" -> ContextCompat.getColor(requireContext(), R.color.alarm_treat)
-            "기타" -> ContextCompat.getColor(requireContext(), R.color.alarm_etc)
-            else ->  ContextCompat.getColor(requireContext(), R.color.primary)
-        }
     }
 
     override fun onDestroyView() {

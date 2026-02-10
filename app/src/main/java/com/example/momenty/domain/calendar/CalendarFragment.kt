@@ -494,13 +494,6 @@ class CalendarFragment : Fragment() {
     }
 
     /**
-     * 일정 관리 다이얼로그 표시
-     */
-    private fun showEventDialog() {
-        Snackbar.make(binding.root, "일정 관리 기능 구현 예정", Snackbar.LENGTH_SHORT).show()
-    }
-
-    /**
      * 일정 추가 다이얼로그 표시
      */
     private fun showAddEventDialog() {
