@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="60dp"
+    android:layout_height="60dp"
+    android:layout_marginEnd="10dp">
+
+    <!-- 반려동물 이미지 -->
+    <ImageView
+        android:id="@+id/iv_pet_image"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_pet_filter"
+        android:scaleType="centerCrop"
+        android:contentDescription="반려동물 이미지" />
+
+    <!-- 선택 표시 테두리 -->
+    <View
+        android:id="@+id/view_selection_border"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_pet_filter_selected"
+        android:visibility="gone" />
+
+</FrameLayout>
