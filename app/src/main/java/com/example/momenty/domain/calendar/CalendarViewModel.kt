@@ -5,7 +5,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 
 class CalendarViewModel(
@@ -30,6 +32,7 @@ class CalendarViewModel(
     private val _selectedPet = MutableLiveData<Pet?>()
     val selectedPet: LiveData<Pet?> = _selectedPet
 
+    private val eventsLock = Any() // 이벤트 동기화 위함
     private var currentCalendar = Calendar.getInstance()
     private var allEvents: MutableList<CalendarEvent> = mutableListOf()
 
@@ -39,65 +42,74 @@ class CalendarViewModel(
     }
 
     /**
-     * 이벤트 추가 (알림에서 호출)
+     * 이벤트 추가 - 백그라운드에서
      */
     fun addEvent(event: CalendarEvent) {
-        Log.d("CalendarViewModel", "Adding event: ${event.title} on ${event.scheduleDate}")
-        allEvents.add(event)
-
-        // 달력 다시 그리기 - 이벤트 인디케이터 업데이트
-        generateCalendarDays()
-
-        // 현재 선택된 날짜가 있다면, 해당 날짜의 이벤트 목록도 업데이트
-        _selectedDate.value?.let { selectedDay ->
-            val updatedDay = _calendarDays.value?.find { day ->
-                day.day == selectedDay.day &&
-                        day.month == selectedDay.month &&
-                        day.year == selectedDay.year
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                synchronized(eventsLock) {
+                    Log.d("CalendarViewModel", "Adding event: ${event.title} on ${event.scheduleDate}")
+                    allEvents.add(event)
+                    Log.d("CalendarViewModel", "Total events: ${allEvents.size}")
+                }
             }
-            updatedDay?.let {
-                _selectedDate.value = it
+
+            // UI 업데이트는 메인 스레드에서
+            withContext(Dispatchers.Main) {
+                refreshCalendarDays()
             }
         }
-
-        Log.d("CalendarViewModel", "Total events: ${allEvents.size}")
     }
 
     /**
      * 날짜 선택 처리
      */
     fun selectDay(day: CalendarDay) {
-        val currentDays = _calendarDays.value ?: return
+        viewModelScope.launch(Dispatchers.Default) {
+            val currentDays = _calendarDays.value ?: return@launch
 
-        // 모든 날짜의 isSelected를 false로 설정하고, 클릭한 날짜만 true로 설정
-        val updatedDays = currentDays.map { calendarDay ->
-            calendarDay.copy(
-                isSelected = calendarDay.day == day.day &&
-                        calendarDay.month == day.month &&
-                        calendarDay.year == day.year,
-                // isToday는 유지 (날짜 선택과 무관)
-                isToday = calendarDay.isToday
-            )
+            val updatedDays = currentDays.map { calendarDay ->
+                calendarDay.copy(
+                    isSelected = calendarDay.day == day.day &&
+                            calendarDay.month == day.month &&
+                            calendarDay.year == day.year,
+                    isToday = calendarDay.isToday
+                )
+            }
+
+            withContext(Dispatchers.Main) {
+                _calendarDays.value = updatedDays
+                _selectedDate.value = updatedDays.find { it.isSelected }
+            }
         }
-
-        _calendarDays.value = updatedDays
-        _selectedDate.value = updatedDays.find { it.isSelected }
     }
 
     /**
-     * 달력 생성
+     * 달력 생성 - 백그라운드에서
      */
     private fun generateCalendarDays() {
+        viewModelScope.launch(Dispatchers.Default) {
+            val days = calculateCalendarDays()
+
+            withContext(Dispatchers.Main) {
+                _calendarDays.value = days
+            }
+        }
+    }
+
+    /**
+     *  백그라운드에서 실행될 달력 계산 로직
+     */
+    private suspend fun calculateCalendarDays(): List<CalendarDay> = withContext(Dispatchers.Default) {
         val days = mutableListOf<CalendarDay>()
         val calendar = currentCalendar.clone() as Calendar
         val today = Calendar.getInstance()
 
-        // 현재 월의 1일로 설정
         calendar.set(Calendar.DAY_OF_MONTH, 1)
         val firstDayOfMonth = calendar.get(Calendar.DAY_OF_WEEK)
         val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
 
-        // 이전 달의 날짜들
+        // 이전 달
         calendar.add(Calendar.MONTH, -1)
         val daysInPrevMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
         val prevMonthStartDay = daysInPrevMonth - (firstDayOfMonth - Calendar.SUNDAY) + 1
@@ -115,17 +127,15 @@ class CalendarViewModel(
             )
         }
 
-        // 현재 선택된 날짜 정보 저장
         val currentSelectedDate = _selectedDate.value
 
-        // 현재 달의 날짜들
+        // 현재 달
         calendar.add(Calendar.MONTH, 1)
         for (i in 1..daysInMonth) {
             val isToday = calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
                     calendar.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
                     i == today.get(Calendar.DAY_OF_MONTH)
 
-            // 이전에 선택된 날짜인지 확인
             val isSelected = currentSelectedDate?.let { selected ->
                 calendar.get(Calendar.YEAR) == selected.year &&
                         calendar.get(Calendar.MONTH) == selected.month &&
@@ -137,8 +147,6 @@ class CalendarViewModel(
                 calendar.get(Calendar.MONTH),
                 i
             )
-
-            Log.d("CalendarViewModel", "Day $i has ${eventsForDay.size} events")
 
             days.add(
                 CalendarDay(
@@ -153,9 +161,9 @@ class CalendarViewModel(
             )
         }
 
-        // 다음 달의 날짜들
+        // 다음 달
         calendar.add(Calendar.MONTH, 1)
-        val remainingDays = 42 - days.size // 6주 * 7일 = 42칸
+        val remainingDays = 42 - days.size
         for (i in 1..remainingDays) {
             days.add(
                 CalendarDay(
@@ -169,7 +177,25 @@ class CalendarViewModel(
             )
         }
 
-        _calendarDays.value = days
+        days
+    }
+
+    /**
+     *  FIX: 달력 새로고침
+     */
+    private fun refreshCalendarDays() {
+        generateCalendarDays()
+
+        _selectedDate.value?.let { selectedDay ->
+            val updatedDay = _calendarDays.value?.find { day ->
+                day.day == selectedDay.day &&
+                        day.month == selectedDay.month &&
+                        day.year == selectedDay.year
+            }
+            updatedDay?.let {
+                _selectedDate.value = it
+            }
+        }
     }
 
     /**
@@ -205,18 +231,14 @@ class CalendarViewModel(
     }
 
     private fun getEventsForDate(year: Int, month: Int, day: Int): List<CalendarEvent> {
-        val filtered = allEvents.filter { event ->
-            val eventCal = Calendar.getInstance().apply { time = event.scheduleDate }
-            val matches = eventCal.get(Calendar.YEAR) == year &&
-                    eventCal.get(Calendar.MONTH) == month &&
-                    eventCal.get(Calendar.DAY_OF_MONTH) == day
-
-            if (matches) {
-                Log.d("CalendarViewModel", "Event '${event.title}' matches date $year-$month-$day")
+        synchronized(eventsLock) {
+            return allEvents.filter { event ->
+                val eventCal = Calendar.getInstance().apply { time = event.scheduleDate }
+                eventCal.get(Calendar.YEAR) == year &&
+                        eventCal.get(Calendar.MONTH) == month &&
+                        eventCal.get(Calendar.DAY_OF_MONTH) == day
             }
-            matches
         }
-        return filtered
     }
 
     /**

@@ -12,11 +12,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.example.momenty.R
 import com.example.momenty.databinding.DialogAlarmDurationPickerBinding
+import kotlinx.coroutines.*
 
 /**
- * 알림 지속 시간 선택을 위한 커스텀 다이얼로그
- * - 시간: 0~23 선택
- * - 분: 0~59 선택
+ *  ANR 해결된 지속 시간 선택 다이얼로그
+ * - 백그라운드 뷰 생성
+ * - 5분 단위 선택 (60개 → 12개)
+ * - 시간은 0-5시간만 표시 (24개 → 6개)
  */
 class AlarmDurationPickerDialog(
     context: Context,
@@ -31,12 +33,13 @@ class AlarmDurationPickerDialog(
     private val hourItems = mutableListOf<TextView>()
     private val minuteItems = mutableListOf<TextView>()
 
+    private val dialogScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DialogAlarmDurationPickerBinding.inflate(LayoutInflater.from(context))
         setContentView(binding.root)
 
-        // 다이얼로그 배경 투명 설정
         window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -48,90 +51,72 @@ class AlarmDurationPickerDialog(
     }
 
     private fun setupViews() {
-        // 시간 아이템 생성 (0 ~ 23)
-        for (hour in 0..23) {
-            val textView = createItemTextView(String.format("%02d", hour))
-            hourItems.add(textView)
-            binding.llHourItems.addView(textView)
-
-            textView.setOnClickListener {
-                selectHour(hour)
-            }
+        // 백그라운드에서 뷰 생성
+        dialogScope.launch {
+            createDurationPickerViews()
         }
 
-        // 분 아이템 생성 (0 ~ 59)
-        for (minute in 0..59) {
-            val textView = createItemTextView(String.format("%02d", minute))
-            minuteItems.add(textView)
-            binding.llMinuteItems.addView(textView)
-
-            textView.setOnClickListener {
-                selectMinute(minute)
-            }
-        }
-
-        // 초기 선택 상태 설정
-        selectHour(selectedHour)
-        selectMinute(selectedMinute)
-
-        // EditText 초기값 설정
+        // 초기값 설정
         binding.etDurationPickerHour.setText(String.format("%02d", selectedHour))
         binding.etDurationPickerMin.setText(String.format("%02d", selectedMinute))
     }
 
-    private fun setupListeners() {
-        // 시간 EditText
-        binding.etDurationPickerHour.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                val text = s.toString()
-                if (text.isNotEmpty()) {
-                    val hour = text.toIntOrNull()
-                    if (hour != null && hour in 0..23) {
-                        selectHour(hour)
-                    }
-                }
-            }
-        })
-
-        // 분 EditText
-        binding.etDurationPickerMin.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                val text = s.toString()
-                if (text.isNotEmpty()) {
-                    val minute = text.toIntOrNull()
-                    if (minute != null && minute in 0..59) {
-                        selectMinute(minute)
-                    }
-                }
-            }
-        })
-
-        // 취소 버튼
-        binding.tvBtnCancel.setOnClickListener {
-            dismiss()
+    /**
+     * 백그라운드에서 뷰 생성
+     */
+    private suspend fun createDurationPickerViews() = withContext(Dispatchers.Default) {
+        // 시간: 0-5시간만 (일반적인 활동 지속 시간)
+        val hours = (0..5).map { hour ->
+            createItemTextViewData(String.format("%02d", hour)) to hour
         }
 
-        // 확인 버튼
-        binding.tvBtnEnter.setOnClickListener {
-            val durationString = String.format("%02d:%02d", selectedHour, selectedMinute)
-            onDurationSelected(durationString)
-            dismiss()
+        // 분: 5분 단위
+        val minutes = (0..59 step 5).map { minute ->
+            createItemTextViewData(String.format("%02d", minute)) to minute
+        }
+
+        withContext(Dispatchers.Main) {
+            if (!isShowing) return@withContext
+
+            // 시간 뷰 추가
+            hours.forEach { (textViewData, hour) ->
+                val textView = createTextViewFromData(textViewData)
+                hourItems.add(textView)
+                binding.llHourItems.addView(textView)
+
+                textView.setOnClickListener {
+                    selectHour(hour)
+                }
+            }
+
+            // 분 뷰 추가
+            minutes.forEach { (textViewData, minute) ->
+                val textView = createTextViewFromData(textViewData)
+                minuteItems.add(textView)
+                binding.llMinuteItems.addView(textView)
+
+                textView.setOnClickListener {
+                    selectMinute(minute)
+                }
+            }
+
+            // 초기 선택
+            selectHour(selectedHour)
+            selectMinute(findNearestMinute(selectedMinute))
         }
     }
 
-    /**
-     * 스크롤 가능한 아이템 TextView 생성
-     */
-    private fun createItemTextView(text: String): TextView {
+    private fun createItemTextViewData(text: String): Triple<String, Float, Int> {
+        return Triple(text, 14f, 24)
+    }
+
+    private fun createTextViewFromData(data: Triple<String, Float, Int>): TextView {
+        val (text, textSize, padding) = data
         return TextView(context).apply {
             this.text = text
-            textSize = 14f
+            this.textSize = textSize
             gravity = android.view.Gravity.CENTER
-            setPadding(16, 24, 16, 24)
+            setPadding(16, padding, 16, padding)
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -139,53 +124,109 @@ class AlarmDurationPickerDialog(
         }
     }
 
-    /**
-     * 시간 선택
-     */
-    private fun selectHour(hour: Int) {
-        selectedHour = hour
+    private fun findNearestMinute(minute: Int): Int {
+        return ((minute + 2) / 5) * 5
+    }
 
-        // 모든 시간 아이템 선택 해제
+    private fun setupListeners() {
+        // Debounce TextWatcher
+        var hourUpdateJob: Job? = null
+        binding.etDurationPickerHour.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                hourUpdateJob?.cancel()
+                hourUpdateJob = dialogScope.launch {
+                    delay(300)
+                    val text = s.toString()
+                    if (text.isNotEmpty()) {
+                        val hour = text.toIntOrNull()
+                        if (hour != null && hour in 0..5) {  // 0-5시간으로 제한
+                            selectHour(hour)
+                        }
+                    }
+                }
+            }
+        })
+
+        var minUpdateJob: Job? = null
+        binding.etDurationPickerMin.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                minUpdateJob?.cancel()
+                minUpdateJob = dialogScope.launch {
+                    delay(300)
+                    val text = s.toString()
+                    if (text.isNotEmpty()) {
+                        val minute = text.toIntOrNull()
+                        if (minute != null && minute in 0..59) {
+                            val nearest = findNearestMinute(minute)
+                            selectMinute(nearest)
+                        }
+                    }
+                }
+            }
+        })
+
+        binding.tvBtnCancel.setOnClickListener {
+            dismiss()
+        }
+
+        binding.tvBtnEnter.setOnClickListener {
+            val durationString = String.format("%02d:%02d", selectedHour, selectedMinute)
+            onDurationSelected(durationString)
+            dismiss()
+        }
+    }
+
+    private fun selectHour(hour: Int) {
+        if (hourItems.isEmpty()) return
+
+        selectedHour = hour
         hourItems.forEach { it.isSelected = false }
 
-        // 선택된 시간 강조
-        if (hour in 0..23) {
+        if (hour in hourItems.indices) {
             hourItems[hour].isSelected = true
 
-            // 선택된 아이템으로 스크롤
             binding.svHourPicker.post {
                 val selectedView = hourItems[hour]
                 val scrollY = selectedView.top - (binding.svHourPicker.height / 2) + (selectedView.height / 2)
-                binding.svHourPicker.smoothScrollTo(0, scrollY)
+                binding.svHourPicker.smoothScrollTo(0, scrollY.coerceAtLeast(0))
             }
         }
 
-        // EditText 업데이트
-        binding.etDurationPickerHour.setText(String.format("%02d", hour))
+        if (binding.etDurationPickerHour.text.toString() != String.format("%02d", hour)) {
+            binding.etDurationPickerHour.setText(String.format("%02d", hour))
+        }
     }
 
-    /**
-     * 분 선택
-     */
     private fun selectMinute(minute: Int) {
-        selectedMinute = minute
+        if (minuteItems.isEmpty()) return
 
-        // 모든 분 아이템 선택 해제
+        val nearest = findNearestMinute(minute)
+        selectedMinute = nearest
+
         minuteItems.forEach { it.isSelected = false }
 
-        // 선택된 분 강조
-        if (minute in 0..59) {
-            minuteItems[minute].isSelected = true
+        val index = nearest / 5
+        if (index in minuteItems.indices) {
+            minuteItems[index].isSelected = true
 
-            // 선택된 아이템으로 스크롤
             binding.svMinutePicker.post {
-                val selectedView = minuteItems[minute]
+                val selectedView = minuteItems[index]
                 val scrollY = selectedView.top - (binding.svMinutePicker.height / 2) + (selectedView.height / 2)
-                binding.svMinutePicker.smoothScrollTo(0, scrollY)
+                binding.svMinutePicker.smoothScrollTo(0, scrollY.coerceAtLeast(0))
             }
         }
 
-        // EditText 업데이트
-        binding.etDurationPickerMin.setText(String.format("%02d", minute))
+        if (binding.etDurationPickerMin.text.toString() != String.format("%02d", nearest)) {
+            binding.etDurationPickerMin.setText(String.format("%02d", nearest))
+        }
+    }
+
+    override fun dismiss() {
+        dialogScope.cancel()
+        super.dismiss()
     }
 }

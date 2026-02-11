@@ -59,11 +59,6 @@ class AddAlarmFragment : Fragment() {
         setupClickListeners()
         // 초기 상태 설정
         initializeButtonStates()
-
-        // 다이얼로그는 약간 지연시켜서 표시 (ANR 방지)
-        view.post {
-            showActivityTypeDialog()
-        }
     }
 
     private fun setupViews() {
@@ -101,15 +96,23 @@ class AddAlarmFragment : Fragment() {
         binding.ivAlarmBack.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
-        // 활동 유형 버튼 - 다이얼로그 다시 띄우기
+        // 활동 유형 버튼 - 클릭 시에만 다이얼로그 표시
         binding.btnAlarmActivity.setOnClickListener { showActivityTypeDialog() }
         // 일회성/반복성 토글
         binding.btnTermOnce.setOnClickListener { setRepeatMode(false) }
         binding.btnTermRepeat.setOnClickListener { setRepeatMode(true) }
         // 알림 시간
-        binding.etAlarmTime.setOnClickListener { showCustomTimePicker() }
+        binding.etAlarmTime.setOnClickListener {
+            if (isAdded && !isDetached) {
+                showCustomTimePicker()
+            }
+        }
         // 지속 시간
-        binding.etAlarmContinue.setOnClickListener { showCustomDurationPicker() }
+        binding.etAlarmContinue.setOnClickListener {
+            if (isAdded && !isDetached) {
+                showCustomDurationPicker()
+            }
+        }
         // 요일 버튼
         dayButtons.forEach { (button, dayNum) ->
             button.setOnClickListener {
@@ -124,10 +127,19 @@ class AddAlarmFragment : Fragment() {
      * 활동 유형 선택 다이얼로그
      */
     private fun showActivityTypeDialog() {
-        ActivityTypeDialog(requireContext()) { activityType ->
-            selectedActivityType = activityType
-            binding.btnAlarmActivity.text = activityType
-        }.show()
+        if (!isAdded || isDetached || context == null) return
+
+        try{
+            ActivityTypeDialog(requireContext()) { activityType ->
+                if(isAdded) {
+                    selectedActivityType = activityType
+                    binding.btnAlarmActivity.text = activityType
+                }
+            }.show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
     }
 
     /**
@@ -234,22 +246,20 @@ class AddAlarmFragment : Fragment() {
             return
         }
 
-        // 알람 생성
-        val alarm = Alarm(
-            activityType = selectedActivityType!!,
-            title = title,
-            isRepeat = isRepeatMode,
-            repeatDays = if (isRepeatMode) selectedRepeatDays.toList() else null,
-            alarmDate = selectedDate,
-            alarmTime = selectedTime!!,
-            duration = binding.etAlarmContinue.text.toString().trim().takeIf { it.isNotEmpty() },
-            note = binding.etAlarmNote.text.toString().trim().takeIf { it.isNotEmpty() }
-        )
-
-        // ViewModel 작업은 비동기로 처리 (ANR 방지)
+        // 알람 생성 - 백그라운드에서 처리
         lifecycleScope.launch {
             try {
-                // ViewModel에 추가
+                val alarm = Alarm(
+                    activityType = selectedActivityType!!,
+                    title = title,
+                    isRepeat = isRepeatMode,
+                    repeatDays = if (isRepeatMode) selectedRepeatDays.toList() else null,
+                    alarmDate = selectedDate,
+                    alarmTime = selectedTime!!,
+                    duration = binding.etAlarmContinue.text.toString().trim().takeIf { it.isNotEmpty() },
+                    note = binding.etAlarmNote.text.toString().trim().takeIf { it.isNotEmpty() }
+                )
+
                 alarmViewModel.addAlarm(alarm)
 
                 // Alarm을 CalendarEvent로 변환
@@ -266,14 +276,22 @@ class AddAlarmFragment : Fragment() {
 
                 calendarViewModel.addEvent(calendarEvent)
 
-                Snackbar.make(binding.root, "알림이 추가되었습니다", Snackbar.LENGTH_SHORT).show()
-
-                // CalendarAlarmFragment로 돌아가기
-                requireActivity().onBackPressedDispatcher.onBackPressed()
+                if (isAdded) {
+                    showSnackbar("알림이 추가되었습니다")
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
-                Snackbar.make(binding.root, "알림 추가 중 오류가 발생했습니다", Snackbar.LENGTH_SHORT).show()
+                if (isAdded) {
+                    showSnackbar("알림 추가 중 오류가 발생했습니다")
+                }
             }
+        }
+    }
+
+    private fun showSnackbar(message: String) {
+        if (isAdded && view != null) {
+            Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
         }
     }
 
