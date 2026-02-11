@@ -16,8 +16,10 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -40,28 +42,19 @@ class CalendarFragment : Fragment() {
     private lateinit var calendarAdapter: CalendarAdapter
     private lateinit var petFilterAdapter: PetFilterAdapter
 
-    // 바텀시트 변수
     private var bottomSheetDialog: BottomSheetDialog? = null
     private var scheduleAdapter: ScheduleBottomSheetAdapter? = null
 
-    // 딤 뷰
-    private var dimView: View? = null
+    // 추가: ItemDecoration 중복 방지 플래그
+    private var isItemDecorationAdded = false
 
-    // lazy 초기화를 지연 초기화로 변경
-    private var deviceCalendarHelper: DeviceCalendarHelper? = null
-    private var repository: CalendarRepository? = null
-
-    private val viewModel: CalendarViewModel by viewModels {
-        // Repository를 안전하게 초기화
-        val helper = deviceCalendarHelper ?: DeviceCalendarHelper(requireContext()).also {
-            deviceCalendarHelper = it
-        }
-        val repo = repository ?: CalendarRepository(
+    // 수정: activityViewModels로 변경 (AddAlarmFragment와 공유)
+    private val viewModel: CalendarViewModel by activityViewModels {
+        val helper = DeviceCalendarHelper(requireContext())
+        val repo = CalendarRepository(
             apiService = RetrofitClient.calendarApiService,
             deviceCalendarHelper = helper
-        ).also {
-            repository = it
-        }
+        )
         CalendarViewModelFactory(repo)
     }
 
@@ -73,14 +66,12 @@ class CalendarFragment : Fragment() {
         val writeGranted = permissions[Manifest.permission.WRITE_CALENDAR] ?: false
 
         if (readGranted && writeGranted) {
-            // 순차적으로 로드하여 부하 분산
-            loadDataSequentially()
+            viewLifecycleOwner.lifecycleScope.launch {
+                delay(200)
+                if (isAdded) loadDataSequentially()
+            }
         } else {
-            Snackbar.make(
-                binding.root,
-                "캘린더 권한이 필요합니다.",
-                Snackbar.LENGTH_LONG
-            ).show()
+            showSnackbar("캘린더 권한이 필요합니다.")
         }
     }
 
@@ -96,76 +87,42 @@ class CalendarFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // UI 먼저 초기화 (가벼운 작업)
+        // UI 먼저 초기화
         setupWeekdayHeader()
         setupCalendarRecyclerView()
         setupPetFilter()
         setupClickListeners()
+
+        // StateFlow 관찰
         observeViewModel()
 
-        // 권한 확인은 마지막에
-        checkCalendarPermission()
-    }
-
-    /**
-     * 딤 뷰 설정 (바텀시트 표시 시 배경 어둡게)
-     */
-    private fun setupDimView() {
-        // 루트 뷰가 CoordinatorLayout이거나 FrameLayout인 경우에만 동작
-        val rootView = binding.root.parent as? ViewGroup
-
-        dimView = View(requireContext()).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            setBackgroundColor(R.color.caption_1)
-            visibility = View.GONE
-            isClickable = true
-            isFocusable = true
-
-            // 딤 뷰 클릭 시 바텀시트 닫기
-            setOnClickListener {
-                bottomSheetDialog?.dismiss()
+        // Defer initialization
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(100)
+            if (isAdded) {
+                viewModel.initialize()
+                checkCalendarPermission()
             }
         }
-
-        // 딤 뷰를 루트의 자식으로 추가
-        rootView?.addView(dimView)
     }
 
     /**
-     * 데이터를 순차적으로 로드하여 ANR 방지
+     * 데이터를 순차적으로 로드
      */
     private fun loadDataSequentially() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // 1. 먼저 더미 펫 데이터 표시 (즉시)
-                // viewModel.loadDummyPets()는 init에서 이미 실행됨
+                delay(100)
+                if (!isAdded) return@launch
 
-                // 2. 캘린더 목록 로드 (백그라운드)
-                delay(100) // UI 렌더링 시간 확보
-                if(!isAdded) return@launch
                 viewModel.loadAvailableCalendars()
+                delay(50)
+                if (!isAdded) return@launch
 
-                // 3. 캘린더 데이터 로드 (백그라운드)
-                delay(100)
-                if(!isAdded) return@launch
-                viewModel.loadCalendar()
-
-                // 4. 서버에서 펫 데이터 로드 (선택사항, 백그라운드)
-                delay(100)
-                if(!isAdded) return@launch
                 viewModel.loadPets()
 
             } catch (e: Exception) {
-                if(isAdded && _binding != null) {
-                    Snackbar.make(
-                        binding.root,
-                        "데이터 로드 중 오류가 발생했습니다: ${e.message}",
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                }
+                showSnackbar("데이터 로드 중 오류가 발생했습니다: ${e.message}")
             }
         }
     }
@@ -182,17 +139,19 @@ class CalendarFragment : Fragment() {
             } else {
                 "${pet.name}의 일정을 표시합니다"
             }
-            _binding?.let {
-                Snackbar.make(it.root, message, Snackbar.LENGTH_SHORT).show()
-            }
+            showSnackbar(message, Snackbar.LENGTH_SHORT)
         }
 
         binding.rvPetFilter.apply {
-            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            layoutManager = LinearLayoutManager(
+                requireContext(),
+                LinearLayoutManager.HORIZONTAL,
+                false
+            )
             adapter = petFilterAdapter
             setHasFixedSize(true)
-            // 스크롤 성능 최적화
             isNestedScrollingEnabled = false
+            recycledViewPool.setMaxRecycledViews(0, 10)
         }
     }
 
@@ -203,7 +162,7 @@ class CalendarFragment : Fragment() {
         val weekdays = resources.getStringArray(R.array.calendar_date)
         binding.llCalendarDate.removeAllViews()
 
-        weekdays.forEachIndexed { index, weekday ->
+        weekdays.forEach { weekday ->
             val params = LinearLayout.LayoutParams(
                 0,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -221,6 +180,7 @@ class CalendarFragment : Fragment() {
 
                 typeface = try {
                     ResourcesCompat.getFont(requireContext(), R.font.pretendard_semibold)
+                        ?: Typeface.DEFAULT
                 } catch (e: Exception) {
                     Typeface.DEFAULT
                 }
@@ -230,48 +190,50 @@ class CalendarFragment : Fragment() {
     }
 
     /**
-     * 캘린더 RecyclerView 설정
+     * 캘린더 RecyclerView 설정 - 성능 최적화
      */
     private fun setupCalendarRecyclerView() {
-        calendarAdapter = CalendarAdapter(emptyList()) { day ->
+        calendarAdapter = CalendarAdapter { day ->
             viewModel.selectDay(day)
         }
 
         binding.calendarRecyclerView.apply {
             layoutManager = GridLayoutManager(requireContext(), 7)
             adapter = calendarAdapter
-            setHasFixedSize(false) // 동적 높이를 위해 false로 변경
-            // 성능 최적화
-            itemAnimator = null // 애니메이션 비활성화
-            setItemViewCacheSize(42) // 6주 * 7일
-            isNestedScrollingEnabled = false
+            setHasFixedSize(true)
 
-            // RecyclerView가 측정된 후 높이 조정
+            // 성능 최적화
+            itemAnimator = null
+            setItemViewCacheSize(42)
+            isNestedScrollingEnabled = false
+            recycledViewPool.setMaxRecycledViews(0, 50)
+
+            // 수정: ViewTreeObserver를 사용하여 높이 계산
             viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
-                    viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    adjustCalendarHeight()
+                    if (height > 0 && !isItemDecorationAdded) {
+                        viewTreeObserver.removeOnGlobalLayoutListener(this)
+                        adjustRecyclerViewHeight(this@apply)
+                    }
                 }
             })
         }
     }
 
     /**
-     * 캘린더 높이를 카드뷰에 맞게 조정
+     * RecyclerView 높이 동적 조정
+     * 수정: ItemDecoration을 한 번만 추가하도록 수정
      */
-    private fun adjustCalendarHeight() {
+    private fun adjustRecyclerViewHeight(recyclerView: RecyclerView) {
+        // 이미 추가되었다면 return
+        if (isItemDecorationAdded) return
+
         val cardView = binding.cvCalendarCard
-        val weekdayHeader = binding.llCalendarDate
-        val recyclerView = binding.calendarRecyclerView
+        val cardPaddingVertical = dpToPx(20) * 2  // 위아래 패딩
+        val weekdayHeaderHeight = binding.llCalendarDate.height
+        val availableHeight = cardView.height - cardPaddingVertical - weekdayHeaderHeight
 
-        // 카드뷰 내부 사용 가능한 높이 계산
-        val cardPaddingVertical = dpToPx(44) // 20dp(top) + 24dp(bottom)
-        val weekdayHeight = weekdayHeader.height
-        val weekdayMarginBottom = dpToPx(15)
-
-        val availableHeight = cardView.height - cardPaddingVertical - weekdayHeight - weekdayMarginBottom
-
-        // 6주 기준으로 각 행의 높이 계산
+        // 6주 기준으로 아이템 높이 계산
         val rowCount = 6
         val itemHeight = availableHeight / rowCount
 
@@ -280,22 +242,24 @@ class CalendarFragment : Fragment() {
             height = availableHeight
         }
 
-        // 각 아이템 높이를 동적으로 설정
-        recyclerView.addItemDecoration(object : androidx.recyclerview.widget.RecyclerView.ItemDecoration() {
+        // ItemDecoration을 한 번만 추가
+        recyclerView.addItemDecoration(object : RecyclerView.ItemDecoration() {
             override fun getItemOffsets(
                 outRect: android.graphics.Rect,
                 view: View,
-                parent: androidx.recyclerview.widget.RecyclerView,
-                state: androidx.recyclerview.widget.RecyclerView.State
+                parent: RecyclerView,
+                state: RecyclerView.State
             ) {
                 view.layoutParams.height = itemHeight
             }
         })
+
+        isItemDecorationAdded = true  // 플래그 설정
+
+        // RecyclerView 갱신
+        recyclerView.requestLayout()
     }
 
-    /**
-     * dp를 px로 변환
-     */
     private fun dpToPx(dp: Int): Int {
         return (dp * resources.displayMetrics.density).toInt()
     }
@@ -326,39 +290,43 @@ class CalendarFragment : Fragment() {
     }
 
     /**
-     * ViewModel 관찰
+     * ViewModel 관찰 - StateFlow 사용
      */
     private fun observeViewModel() {
-        viewModel.calendarDays.observe(viewLifecycleOwner) { days ->
-            calendarAdapter.updateDays(days)
-            binding.tvYearMonthLabel.text = viewModel.getYearMonthText()
-        }
-
-        // 날짜 선택 시 바텀시트 표시
-        viewModel.selectedDate.observe(viewLifecycleOwner) { selectedDay ->
-            selectedDay?.let {
-                showScheduleBottomSheet(it)
-            }
-        }
-
-        viewModel.error.observe(viewLifecycleOwner) { error ->
-            error?.let {
-                _binding?.let { b ->
-                    Snackbar.make(b.root, it, Snackbar.LENGTH_LONG).show()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    updateUi(state)
                 }
             }
         }
+    }
 
-        viewModel.availableCalendars.observe(viewLifecycleOwner) { calendars ->
-            // 필요시 캘린더 선택 UI 표시
+    /**
+     * UI 업데이트
+     */
+    private fun updateUi(state: CalendarUiState) {
+        // 달력 업데이트
+        if (state.calendarDays.isNotEmpty()) {
+            calendarAdapter.updateDays(state.calendarDays)
+            binding.tvYearMonthLabel.text = viewModel.getYearMonthText()
         }
 
-        viewModel.pets.observe(viewLifecycleOwner) { pets ->
-            petFilterAdapter.updatePets(pets)
+        // 선택된 날짜 처리 - 바텀시트는 사용자가 클릭했을 때만 표시
+        // state.selectedDate가 변경되어도 자동으로 바텀시트를 표시하지 않음
+
+        // 펫 목록 업데이트
+        if (state.pets.isNotEmpty()) {
+            petFilterAdapter.updatePets(state.pets)
         }
 
-        viewModel.selectedPet.observe(viewLifecycleOwner) { pet ->
-            petFilterAdapter.selectPet(pet)
+        // 선택된 펫 업데이트
+        petFilterAdapter.selectPet(state.selectedPet)
+
+        // 에러 처리
+        state.error?.let {
+            showSnackbar(it)
+            viewModel.clearError()
         }
     }
 
@@ -367,33 +335,37 @@ class CalendarFragment : Fragment() {
      */
     private fun checkCalendarPermission() {
         when {
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.READ_CALENDAR
-            ) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(
-                        requireContext(),
-                        Manifest.permission.WRITE_CALENDAR
-                    ) == PackageManager.PERMISSION_GRANTED -> {
-                // 권한이 이미 허용됨
+            hasCalendarPermissions() -> {
                 loadDataSequentially()
             }
             shouldShowRequestPermissionRationale(Manifest.permission.READ_CALENDAR) ||
                     shouldShowRequestPermissionRationale(Manifest.permission.WRITE_CALENDAR) -> {
-                _binding?.let {
-                    Snackbar.make(
-                        it.root,
-                        "일정을 관리하려면 캘린더 권한이 필요합니다.",
-                        Snackbar.LENGTH_LONG
-                    ).setAction("허용") {
-                        requestPermissions()
-                    }.show()
-                }
+                Snackbar.make(
+                    binding.root,
+                    "일정을 관리하려면 캘린더 권한이 필요합니다.",
+                    Snackbar.LENGTH_LONG
+                ).setAction("허용") {
+                    requestPermissions()
+                }.show()
             }
             else -> {
                 requestPermissions()
             }
         }
+    }
+
+    /**
+     * 캘린더 권한 확인
+     */
+    private fun hasCalendarPermissions(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.READ_CALENDAR
+        ) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.WRITE_CALENDAR
+                ) == PackageManager.PERMISSION_GRANTED
     }
 
     /**
@@ -411,26 +383,19 @@ class CalendarFragment : Fragment() {
     /**
      * 일정 바텀시트 표시
      */
-    private fun showScheduleBottomSheet(day: CalendarDay? = null){
-        showDim()
-
+    private fun showScheduleBottomSheet(day: CalendarDay? = null) {
         bottomSheetDialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
         val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_calendar, null)
+
         val tvDate = bottomSheetView.findViewById<TextView>(R.id.tv_bottom_sheet_date)
-        val selectedDay = day ?: viewModel.selectedDate.value
+        val selectedDay = day ?: viewModel.uiState.value.selectedDate
         tvDate.text = formatDate(selectedDay)
 
-        // RecyclerView
         val rvSchedules = bottomSheetView.findViewById<RecyclerView>(R.id.rv_bottom_sheet_schedules)
         val tvNoSchedule = bottomSheetView.findViewById<TextView>(R.id.tv_no_schedule)
 
-        val events = if(selectedDay != null){
-            viewModel.getEventsForDay(selectedDay)
-        } else {
-            emptyList()
-        }
+        val events = selectedDay?.let { viewModel.getEventsForDay(it) } ?: emptyList()
 
-        // 일정이 있으면 RecyclerView 표시, 없으면 안내 메시지 표시
         if (events.isNotEmpty()) {
             rvSchedules.visibility = View.VISIBLE
             tvNoSchedule.visibility = View.GONE
@@ -439,55 +404,24 @@ class CalendarFragment : Fragment() {
             rvSchedules.apply {
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = scheduleAdapter
+                setHasFixedSize(true)
             }
         } else {
             rvSchedules.visibility = View.GONE
             tvNoSchedule.visibility = View.VISIBLE
         }
 
-        // 바텀시트에 뷰 설정
         bottomSheetDialog?.setContentView(bottomSheetView)
 
-        // 바텀시트 dismiss 리스너 설정
-        bottomSheetDialog?.setOnDismissListener {
-            hideDim()
+        bottomSheetDialog?.window?.apply {
+            setDimAmount(0.5f)
         }
 
-        // 바텀시트 표시
         bottomSheetDialog?.show()
     }
 
     /**
-     * 딤 뷰 표시 (페이드인 애니메이션)
-     */
-    private fun showDim() {
-        dimView?.let { dim ->
-            dim.visibility = View.VISIBLE
-            dim.alpha = 0f
-            dim.animate()
-                .alpha(1f)
-                .setDuration(200)
-                .start()
-        }
-    }
-
-    /**
-     * 딤 뷰 숨기기 (페이드아웃 애니메이션)
-     */
-    private fun hideDim() {
-        dimView?.let { dim ->
-            dim.animate()
-                .alpha(0f)
-                .setDuration(200)
-                .withEndAction {
-                    dim.visibility = View.GONE
-                }
-                .start()
-        }
-    }
-
-    /**
-     * 날짜 포맷팅 (예: 12월 2일 화요일)
+     * 날짜 포맷팅
      */
     private fun formatDate(day: CalendarDay?): String {
         if (day == null) return ""
@@ -505,7 +439,7 @@ class CalendarFragment : Fragment() {
     }
 
     /**
-     * 일정 추가 다이얼로그 표시
+     * 일정 추가 화면으로 이동
      */
     private fun showAddEventDialog() {
         findNavController().navigate(
@@ -513,10 +447,26 @@ class CalendarFragment : Fragment() {
         )
     }
 
+    /**
+     * Snackbar 표시 헬퍼
+     */
+    private fun showSnackbar(message: String, duration: Int = Snackbar.LENGTH_LONG) {
+        _binding?.let {
+            Snackbar.make(it.root, message, duration).show()
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+
+        // 리소스 정리
         bottomSheetDialog?.dismiss()
         bottomSheetDialog = null
+        scheduleAdapter = null
+
+        // 플래그 초기화
+        isItemDecorationAdded = false
+
         _binding = null
     }
 

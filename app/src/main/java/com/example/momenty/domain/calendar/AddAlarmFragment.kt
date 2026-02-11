@@ -10,7 +10,9 @@ import android.widget.Button
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentAddAlarmBinding
 import com.google.android.material.snackbar.Snackbar
@@ -55,10 +57,56 @@ class AddAlarmFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Calendar Fragment에서 선택한 날짜 사용
+        calendarViewModel.uiState.value.selectedDate?.let { calendarDay ->
+            val calendar = Calendar.getInstance().apply {
+                set(Calendar.YEAR, calendarDay.year)
+                set(Calendar.MONTH, calendarDay.month)
+                set(Calendar.DAY_OF_MONTH, calendarDay.day)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            selectedDate = calendar.time
+        }
+
         setupViews()
         setupClickListeners()
+        observeViewModel()
+
         // 초기 상태 설정
         initializeButtonStates()
+    }
+
+    /**
+     * ViewModel 관찰 - StateFlow 사용
+     */
+    private fun observeViewModel() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                calendarViewModel.uiState.collect { state ->
+                    // 선택된 날짜가 변경되면 업데이트
+                    state.selectedDate?.let { calendarDay ->
+                        val calendar = Calendar.getInstance().apply {
+                            set(Calendar.YEAR, calendarDay.year)
+                            set(Calendar.MONTH, calendarDay.month)
+                            set(Calendar.DAY_OF_MONTH, calendarDay.day)
+                            set(Calendar.HOUR_OF_DAY, 0)
+                            set(Calendar.MINUTE, 0)
+                            set(Calendar.SECOND, 0)
+                            set(Calendar.MILLISECOND, 0)
+                        }
+                        selectedDate = calendar.time
+                    }
+
+                    // 에러 처리
+                    state.error?.let { error ->
+                        showSnackbar(error)
+                        calendarViewModel.clearError()
+                    }
+                }
+            }
+        }
     }
 
     private fun setupViews() {
@@ -97,7 +145,11 @@ class AddAlarmFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
         // 활동 유형 버튼 - 클릭 시에만 다이얼로그 표시
-        binding.btnAlarmActivity.setOnClickListener { showActivityTypeDialog() }
+        binding.btnAlarmActivity.setOnClickListener {
+            if (isAdded && !isDetached) {
+                showActivityTypeDialog()
+            }
+        }
         // 일회성/반복성 토글
         binding.btnTermOnce.setOnClickListener { setRepeatMode(false) }
         binding.btnTermRepeat.setOnClickListener { setRepeatMode(true) }
@@ -262,15 +314,24 @@ class AddAlarmFragment : Fragment() {
 
                 alarmViewModel.addAlarm(alarm)
 
+                val eventCalendar = Calendar.getInstance().apply {
+                    time = selectedDate
+                    // 시간 부분은 00:00:00으로 초기화 (날짜만 비교하도록)
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+
                 // Alarm을 CalendarEvent로 변환
                 val calendarEvent = CalendarEvent(
                     id = System.currentTimeMillis().toString(),
-                    petId = null, // TODO: 선택된 반려동물 ID
+                    petId = calendarViewModel.uiState.value.selectedPet?.id,
                     calendarId = "default_calendar",
                     title = alarm.title,
-                    scheduleDate = alarm.alarmDate,
+                    scheduleDate = eventCalendar.time,
                     alarmTime = alarm.alarmTime,
-                    petName = null, // TODO: 선택된 반려동물 이름
+                    petName = calendarViewModel.uiState.value.selectedPet?.name,
                     type = alarm.activityType
                 )
 
@@ -278,6 +339,7 @@ class AddAlarmFragment : Fragment() {
 
                 if (isAdded) {
                     showSnackbar("알림이 추가되었습니다")
+
                     requireActivity().onBackPressedDispatcher.onBackPressed()
                 }
             } catch (e: Exception) {
