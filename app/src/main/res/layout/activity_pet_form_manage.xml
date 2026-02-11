@@ -8,7 +8,7 @@
     android:padding="25dp">
 
     <ImageView
-        android:id="@+id/btn_pet_form_add_back"
+        android:id="@+id/btn_pet_form_manage_back"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:src="@drawable/img_arrow_left"
@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
-        android:id="@+id/tv_pet_form_add_page_title"
+        android:id="@+id/tv_pet_form_manage_page_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="정보 수정"
@@ -24,14 +24,14 @@
         style="@style/TextAppearance.App.Body01"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/btn_pet_form_add_back"
-        app:layout_constraintBottom_toBottomOf="@id/btn_pet_form_add_back"/>
+        app:layout_constraintTop_toTopOf="@id/btn_pet_form_manage_back"
+        app:layout_constraintBottom_toBottomOf="@id/btn_pet_form_manage_back"/>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/btn_pet_form_add_back"
-        app:layout_constraintBottom_toTopOf="@id/btn_pet_form_add_save">
+        app:layout_constraintTop_toBottomOf="@id/btn_pet_form_manage_back"
+        app:layout_constraintBottom_toTopOf="@id/btn_pet_form_manage_save">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -40,7 +40,7 @@
             android:padding="20dp">
 
             <FrameLayout
-                android:id="@+id/layout_pet_form_add_photo"
+                android:id="@+id/layout_pet_form_manage_photo"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:layout_gravity="center_horizontal"
@@ -48,16 +48,16 @@
                 android:layout_marginBottom="30dp">
 
                 <ImageView
-                    android:id="@+id/img_pet_form_pet_profile_edit"
+                    android:id="@+id/img_pet_form_manage_pet_profile_edit"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/dot_record_unselected" />
                 <ImageView
-                    android:id="@+id/img_pet_form_pet_profile_edit1"
+                    android:id="@+id/img_pet_form_manage_pet_profile_edit1"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="bottom|end"
-                    android:tint="@color/white"
+                    app:tint="@color/white"
                     android:src="@drawable/dot_record_unselected" />
                 <ImageView
                     android:layout_width="30dp"
@@ -75,7 +75,7 @@
                 android:textSize="12sp"/>
 
             <EditText
-                android:id="@+id/et_pet_form_name"
+                android:id="@+id/et_pet_form_manage_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="@style/TextAppearance.App.Caption01"
@@ -107,7 +107,7 @@
                     android:orientation="horizontal"
                     android:padding="5dp">
                     <android.widget.Button
-                        android:id="@+id/btn_pet_form_add_gender_male"
+                        android:id="@+id/btn_pet_form_manage_gender_male"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
@@ -117,7 +117,7 @@
 
 
                     <android.widget.Button
-                        android:id="@+id/btn_pet_form_add_gender_female"
+                        android:id="@+id/btn_pet_form_manage_gender_female"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
@@ -132,7 +132,7 @@
 
 
                 <EditText
-                    android:id="@+id/et_pet_form_add_birthday"
+                    android:id="@+id/et_pet_form_manage_birthday"
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_weight="1"
@@ -165,7 +165,7 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
                     <EditText
-                        android:id="@+id/et_pet_form_add_species"
+                        android:id="@+id/et_pet_form_manage_species"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="종 (필수)"
@@ -183,7 +183,7 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
                     <EditText
-                        android:id="@+id/et_pet_form_add_race"
+                        android:id="@+id/et_pet_form_manage_race"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="품종 (선택)"
@@ -201,7 +201,7 @@
                 style="@style/TextAppearance.App.Caption01"/>
 
             <EditText
-                android:id="@+id/et_pet_form_add_intro"
+                android:id="@+id/et_pet_form_manage_intro"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
                 android:layout_marginTop="8dp"
@@ -216,7 +216,7 @@
     </ScrollView>
 
     <Button
-        android:id="@+id/btn_pet_form_add_save"
+        android:id="@+id/btn_pet_form_manage_save"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_margin="20dp"
