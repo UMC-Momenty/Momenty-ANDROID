@@ -7,6 +7,7 @@ plugins {
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("com.google.gms.google-services")
+    id("androidx.navigation.safeargs.kotlin") // 네비게이션 인수 전달
 }
 
 android {
@@ -115,6 +116,7 @@ dependencies {
 
     // Glide
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.github.bumptech.glide:compiler:4.11.0")
 
     // Splash
     implementation("androidx.core:core-splashscreen:1.2.0")
