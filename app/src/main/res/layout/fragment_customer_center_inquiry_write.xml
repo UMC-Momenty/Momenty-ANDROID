@@ -100,20 +100,25 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:background="@drawable/bg_round_stroke_inquiry"
-                android:padding="5dp">
+                android:padding="5dp"
+                android:visibility="gone">
 
                 <ImageView
+                    android:id="@+id/iv_inquiry_write_added_photo1"
                     android:layout_width="0dp"
                     android:layout_height="100dp"
                     android:background="@color/caption_1"
                     android:layout_weight="1"
-                    android:layout_margin="10dp"/>
+                    android:layout_margin="10dp"
+                    android:visibility="invisible"/>
                 <ImageView
+                    android:id="@+id/iv_inquiry_write_added_photo2"
                     android:layout_width="0dp"
                     android:layout_height="100dp"
                     android:background="@color/caption_1"
                     android:layout_weight="1"
-                    android:layout_margin="10dp"/>
+                    android:layout_margin="10dp"
+                    android:visibility="invisible"/>
             </LinearLayout>
 
         </LinearLayout>
@@ -127,6 +132,7 @@
         style="@style/TextAppearance.App.Caption03"
         android:textSize="16sp"
         android:layout_margin="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:enabled="false"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

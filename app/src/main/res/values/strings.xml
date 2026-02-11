@@ -115,4 +115,10 @@
         <item>기타:</item>
     </string-array>
 
+    <!-- 문의 유형 -->
+    <string-array name="inquiry_type">
+        <item>계정</item>
+        <item>서비스</item>
+    </string-array>
+
 </resources>
