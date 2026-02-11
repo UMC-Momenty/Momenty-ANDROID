@@ -5,6 +5,8 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.provider.CalendarContract
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.Date
 import java.util.TimeZone
 
@@ -19,7 +21,7 @@ class DeviceCalendarHelper(private val context: Context) {
     /**
      * 디바이스의 모든 캘린더 조회
      */
-    fun getAvailableCalendars(): List<DeviceCalendar> {
+    suspend fun getAvailableCalendars(): List<DeviceCalendar> = withContext(Dispatchers.IO) {
         val calendars = mutableListOf<DeviceCalendar>()
         val projection = arrayOf(
             CalendarContract.Calendars._ID,
@@ -48,13 +50,13 @@ class DeviceCalendarHelper(private val context: Context) {
             e.printStackTrace()
         }
 
-        return calendars
+        calendars
     }
 
     /**
      * 특정 기간의 일정 조회
      */
-    fun getEventsInRange(startDate: Long, endDate: Long): List<CalendarEvent> {
+    suspend fun getEventsInRange(startDate: Long, endDate: Long): List<CalendarEvent> = withContext(Dispatchers.IO) {
         val events = mutableListOf<CalendarEvent>()
         val projection = arrayOf(
             CalendarContract.Events._ID,
@@ -102,20 +104,20 @@ class DeviceCalendarHelper(private val context: Context) {
             e.printStackTrace()
         }
 
-        return events
+        events
     }
 
     /**
      * 일정 추가
      */
-    fun addEvent(
+    suspend fun addEvent(
         calendarId: String,
         title: String,
         startTime: Date,
         endTime: Date,
         description: String? = null,
         location: String? = null
-    ): Long? {
+    ): Long? = withContext(Dispatchers.IO){
         val values = ContentValues().apply {
             put(CalendarContract.Events.CALENDAR_ID, calendarId)
             put(CalendarContract.Events.TITLE, title)
@@ -126,7 +128,7 @@ class DeviceCalendarHelper(private val context: Context) {
             location?.let { put(CalendarContract.Events.EVENT_LOCATION, it) }
         }
 
-        return try {
+        try {
             val uri = context.contentResolver.insert(
                 CalendarContract.Events.CONTENT_URI,
                 values
@@ -141,13 +143,13 @@ class DeviceCalendarHelper(private val context: Context) {
     /**
      * 일정 수정
      */
-    fun updateEvent(
+    suspend fun updateEvent(
         eventId: String,
         title: String? = null,
         startTime: Date? = null,
         endTime: Date? = null,
         description: String? = null
-    ): Boolean {
+    ): Boolean = withContext(Dispatchers.IO) {
         val values = ContentValues().apply {
             title?.let { put(CalendarContract.Events.TITLE, it) }
             startTime?.let { put(CalendarContract.Events.DTSTART, it.time) }
@@ -155,7 +157,7 @@ class DeviceCalendarHelper(private val context: Context) {
             description?.let { put(CalendarContract.Events.DESCRIPTION, it) }
         }
 
-        return try {
+        try {
             val uri = ContentUris.withAppendedId(
                 CalendarContract.Events.CONTENT_URI,
                 eventId.toLong()
@@ -171,8 +173,8 @@ class DeviceCalendarHelper(private val context: Context) {
     /**
      * 일정 삭제
      */
-    fun deleteEvent(eventId: String): Boolean {
-        return try {
+    suspend fun deleteEvent(eventId: String): Boolean = withContext(Dispatchers.IO) {
+        try {
             val uri = ContentUris.withAppendedId(
                 CalendarContract.Events.CONTENT_URI,
                 eventId.toLong()

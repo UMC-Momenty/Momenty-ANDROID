@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 class CalendarViewModel(
@@ -31,14 +33,13 @@ class CalendarViewModel(
     private var currentCalendar = Calendar.getInstance()
     private var allEvents: MutableList<CalendarEvent> = mutableListOf()
 
-    init {
+    fun initialize() {
         loadDummyPets()
         generateCalendarDays()
     }
 
     /**
      * 이벤트 추가 (알림에서 호출)
-     * 🔧 수정: 이벤트 추가 후 즉시 UI 업데이트
      */
     fun addEvent(event: CalendarEvent) {
         Log.d("CalendarViewModel", "Adding event: ${event.title} on ${event.scheduleDate}")
@@ -63,7 +64,7 @@ class CalendarViewModel(
     }
 
     /**
-     * 날짜 선택 처리 - 핵심 수정 부분
+     * 날짜 선택 처리
      */
     fun selectDay(day: CalendarDay) {
         val currentDays = _calendarDays.value ?: return
@@ -230,14 +231,32 @@ class CalendarViewModel(
      * 사용 가능한 캘린더 목록 로드
      */
     fun loadAvailableCalendars() {
-        // TODO: DeviceCalendarHelper에서 로드
+        viewModelScope.launch {
+            try {
+                // TODO: DeviceCalendarHelper에서 로드
+                // val calendars = repository.getDeviceCalendars()
+                // _availableCalendars.postValue(calendars)
+            } catch (e: Exception) {
+                Log.e("CalendarViewModel", "Failed to load calendars", e)
+                _error.postValue("캘린더 로드 실패")
+            }
+        }
     }
 
     /**
      * 펫 목록 로드
      */
     fun loadPets() {
-        // TODO: 실제 API 호출
+        viewModelScope.launch {
+            try {
+                // TODO: 실제 API 호출
+                // val pets = repository.getPets()
+                // _pets.postValue(pets)
+            } catch (e: Exception) {
+                Log.e("CalendarViewModel", "Failed to load pets", e)
+                _error.postValue("펫 로드 실패")
+            }
+        }
     }
 
     /**

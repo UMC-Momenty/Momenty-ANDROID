@@ -10,9 +10,11 @@ import android.widget.Button
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentAddAlarmBinding
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
 
@@ -58,7 +60,10 @@ class AddAlarmFragment : Fragment() {
         // 초기 상태 설정
         initializeButtonStates()
 
-        showActivityTypeDialog() // Fragment 생성 시 바로 다이얼로그 표시
+        // 다이얼로그는 약간 지연시켜서 표시 (ANR 방지)
+        view.post {
+            showActivityTypeDialog()
+        }
     }
 
     private fun setupViews() {
@@ -102,7 +107,9 @@ class AddAlarmFragment : Fragment() {
         binding.btnTermOnce.setOnClickListener { setRepeatMode(false) }
         binding.btnTermRepeat.setOnClickListener { setRepeatMode(true) }
         // 알림 시간
-        binding.etAlarmTime.setOnClickListener { showTimePicker() }
+        binding.etAlarmTime.setOnClickListener { showCustomTimePicker() }
+        // 지속 시간
+        binding.etAlarmContinue.setOnClickListener { showCustomDurationPicker() }
         // 요일 버튼
         dayButtons.forEach { (button, dayNum) ->
             button.setOnClickListener {
@@ -163,23 +170,29 @@ class AddAlarmFragment : Fragment() {
     /**
      * 시간 선택 다이얼로그
      */
-    private fun showTimePicker() {
-        val calendar = Calendar.getInstance()
+    private fun showCustomTimePicker() {
+        if (!isAdded || context == null) return
 
-        TimePickerDialog(
-            requireContext(),
-            { _, hourOfDay, minute ->
-                val amPm = if (hourOfDay < 12) "오전" else "오후"
-                val hour = if (hourOfDay == 0) 12
-                else if (hourOfDay > 12) hourOfDay - 12
-                else hourOfDay
-                selectedTime = String.format("%s %02d:%02d", amPm, hour, minute)
-                binding.etAlarmTime.setText(selectedTime)
-            },
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE),
-            false
-        ).show()
+        try {
+            AlarmTimePickerDialog(requireContext()) { timeString ->
+                selectedTime = timeString
+                binding.etAlarmTime.setText(timeString)
+            }.show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun showCustomDurationPicker() {
+        if (!isAdded || context == null) return
+
+        try {
+            AlarmDurationPickerDialog(requireContext()) { durationString ->
+                binding.etAlarmContinue.setText(durationString)
+            }.show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     /**
@@ -233,28 +246,35 @@ class AddAlarmFragment : Fragment() {
             note = binding.etAlarmNote.text.toString().trim().takeIf { it.isNotEmpty() }
         )
 
-        // ViewModel에 추가
-        alarmViewModel.addAlarm(alarm)
+        // ViewModel 작업은 비동기로 처리 (ANR 방지)
+        lifecycleScope.launch {
+            try {
+                // ViewModel에 추가
+                alarmViewModel.addAlarm(alarm)
 
-        // Alarm을 CalendarEvent로 변환
-        val calendarEvent = CalendarEvent(
-            id = System.currentTimeMillis().toString(),
-            petId = null, // TODO: 선택된 반려동물 ID
-            calendarId = "default_calendar",
-            title = alarm.title,
-            scheduleDate = alarm.alarmDate, // Date 객체
-            alarmTime = alarm.alarmTime,    // "오후 3:00" 형식 문자열
-            petName = null, // TODO: 선택된 반려동물 이름
-            type = alarm.activityType // "산책", "식사" 등
-        )
+                // Alarm을 CalendarEvent로 변환
+                val calendarEvent = CalendarEvent(
+                    id = System.currentTimeMillis().toString(),
+                    petId = null, // TODO: 선택된 반려동물 ID
+                    calendarId = "default_calendar",
+                    title = alarm.title,
+                    scheduleDate = alarm.alarmDate,
+                    alarmTime = alarm.alarmTime,
+                    petName = null, // TODO: 선택된 반려동물 이름
+                    type = alarm.activityType
+                )
 
-        calendarViewModel.addEvent(calendarEvent)
+                calendarViewModel.addEvent(calendarEvent)
 
-        Snackbar.make(binding.root, "알림이 추가되었습니다", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, "알림이 추가되었습니다", Snackbar.LENGTH_SHORT).show()
 
-
-        // CalendarAlarmFragment로 돌아가기
-        requireActivity().onBackPressedDispatcher.onBackPressed()
+                // CalendarAlarmFragment로 돌아가기
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Snackbar.make(binding.root, "알림 추가 중 오류가 발생했습니다", Snackbar.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onDestroyView() {

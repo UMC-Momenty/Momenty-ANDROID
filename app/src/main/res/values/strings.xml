@@ -170,6 +170,18 @@
     <string name="day_sat">토</string>
     <string name="day_sun">일</string>
 
+    <!-- 알림 추가 시간 선택 다이얼로그 -->
+    <string name="time_picker_title">시간</string>
+    <string name="time_picker_day">오전</string>
+    <string name="time_picker_night">오후</string>
+    <string name="time_picker_hour">시</string>
+    <string name="time_picker_min">분</string>
+    <string name="dialog_cancel">취소</string>
+    <string name="dialog_enter">확인</string>
+
+    <!-- 반복 시간 다이얼로그 -->
+    <string name="repeat_time_title">반복 시간</string>
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
