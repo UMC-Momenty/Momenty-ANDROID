@@ -68,10 +68,8 @@ android {
 
 dependencies {
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.8.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-firestore")
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
 
     // 카카오 SDK
     implementation("com.kakao.sdk:v2-user:2.20.1")
