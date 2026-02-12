@@ -44,8 +44,8 @@ class QuestActivity/* @Inject constructor(
         }
 
         binding.btnWriteQuestionBookmarkOn.setOnClickListener {
-            binding.btnWriteQuestionBookmarkOn.visibility = (View.GONE)
-            binding.btnWriteQuestionBookmarkOff.setVisibility(View.VISIBLE)
+            binding.btnWriteQuestionBookmarkOn.visibility = View.GONE
+            binding.btnWriteQuestionBookmarkOff.visibility = View.VISIBLE
         }
 
         binding.btnWriteQuestionBack.setOnClickListener {
