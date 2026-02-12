@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_record"
+        android:icon="@drawable/ic_bottom_nav_record"
+        android:title="기록" />
+
+    <item
+        android:id="@+id/nav_calendar"
+        android:icon="@drawable/ic_bottom_nav_calander"
+        android:title="일정 관리" />
+
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_bottom_nav_home"
+        android:title="홈" />
+
+    <item
+        android:id="@+id/nav_chatbot"
+        android:icon="@drawable/ic_bottom_nav_chatbot"
+        android:title="챗봇" />
+
+    <item
+        android:id="@+id/nav_mypage"
+        android:icon="@drawable/ic_bottom_nav_mypage"
+        android:title="마이페이지" />
+
+</menu>

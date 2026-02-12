@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="end"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/tv_user_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="240dp"
+        android:background="@drawable/bg_bot_bubble"
+        android:padding="12dp"
+        android:textColor="@android:color/white"
+        android:textSize="15sp" />
+
+</LinearLayout>

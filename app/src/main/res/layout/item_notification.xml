@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:gravity="center_vertical">
+
+    <!-- 발바닥 아이콘 -->
+    <ImageView
+        android:id="@+id/iv_notification_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_top_sole_orange"
+        android:scaleType="centerInside"
+        android:layout_marginEnd="12dp" />
+
+    <!-- 텍스트 영역 -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- 날짜 -->
+        <TextView
+            android:id="@+id/tv_notification_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2025.01.12"
+            android:textSize="14sp"
+            android:textColor="@color/text_body_1"
+            android:textStyle="bold" />
+
+        <!-- 메시지 -->
+        <TextView
+            android:id="@+id/tv_notification_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="오늘의 모먼트를 아직 기록하지 않았어요!"
+            android:textSize="13sp"
+            android:textColor="@color/text_body_2"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <!-- 시간 표시 -->
+    <TextView
+        android:id="@+id/tv_realtime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1일 전"
+        android:textSize="11sp"
+        android:textColor="@color/text_caption_1"
+        android:layout_marginStart="8dp" />
+
+</LinearLayout>

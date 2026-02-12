@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme (Night Mode) -->
+    <style name="Base.Theme.MOMENTY" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/orange</item>
+        <item name="colorPrimaryVariant">@color/background_brown</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/background_brown</item>
+        <item name="colorSecondaryVariant">@color/option_1</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Background color -->
+        <item name="android:colorBackground">@color/body_1</item>
+        <item name="colorSurface">@color/body_2</item>
+        <item name="colorOnSurface">@color/white</item>
+
+        <!-- Error color -->
+        <item name="colorError">@color/orange</item>
+    </style>
+
+    <style name="Theme.MOMENTY" parent="Base.Theme.MOMENTY" />
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#FF9B4E</color>
+    <color name="primary_sub">#FFE2C7</color>
+    <color name="primary_bg">#FFF6ED</color>
+    <color name="secondary">#5B5242</color>
+    <color name="status_error">#ff4d4d</color>
+    <color name="status_success">#00c73c</color>
+    <color name="neutral_bg">#FDFDFD</color>
+    <color name="neutral_text">#929292</color>
+    <color name="text_body_1">#181600</color>
+    <color name="text_body_2">#333333</color>
+    <color name="text_caption_1">#929292</color>
+    <color name="text_caption_2">#bebebe</color>
+    <color name="text_caption_3">#f5f5f5</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="body_1">#181600</color>
+    <color name="body_2">#333333</color>
+    <color name="caption_1">#929292</color>
+    <color name="caption_2">#bebebe</color>
+    <color name="caption_3">#f5f5f5</color>
+    <color name="background">#FFFFFF</color>
+    <color name="background_brown">#5B5242</color>
+    <color name="orange">#FF9B4E</color>
+    <color name="option_1">#C8B4A0</color>
+    <color name="option_2">#FFFFFF</color>
+    <color name="notification_unread">#FFF6ED</color>
+    <color name="notification_read">#FFFFFF</color>
+
+    <color name="message_bot">#E9E9EB</color> <color name="message_user">#FF9B4E</color> <color name="chatbot_bg">#FDFDFD</color>  </resources>

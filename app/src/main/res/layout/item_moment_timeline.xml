@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 알림 아이템 (아이콘 + 텍스트) -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:gravity="center_vertical">
+
+    <!-- 알림 내용 (날짜 포함) -->
+    <TextView
+        android:id="@+id/tv_notification_message"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="2025.01.17\n오늘의 모먼트를 아직 기록하지 않았어요!"
+        android:textSize="14sp"
+        android:textColor="@color/text_body_1"
+        android:lineSpacingExtra="4dp" />
+
+    <!-- 시간 표시 -->
+    <TextView
+        android:id="@+id/tv_realtime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="10분 전"
+        android:textSize="12sp"
+        android:textColor="@color/text_caption_3" />
+
+</LinearLayout>
