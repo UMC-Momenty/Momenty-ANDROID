@@ -1,6 +1,7 @@
 package com.example.momenty.domain.calendar
 
 import android.util.Log
+import com.example.momenty.global.security.TokenManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -8,50 +9,63 @@ import java.util.Date
 
 /**
  * 캘린더 Repository - ANR 방지 및 에러 처리 개선
+ * 서버에서 실제 반려동물 데이터 로드
  */
 class CalendarRepository(
     private val apiService: CalendarApiService,
-    private val deviceCalendarHelper: DeviceCalendarHelper
+    private val petApiService: PetApiService,
+    private val deviceCalendarHelper: DeviceCalendarHelper,
+    private val tokenManager: TokenManager
 ) {
     companion object {
         private const val TAG = "CalendarRepository"
         private const val NETWORK_TIMEOUT = 10000L // 10초
+        private const val IMAGE_BASE_URL = "https://your-s3-bucket.s3.amazonaws.com/" // S3 버킷 URL로 변경 필요
     }
 
     /**
-     * 서버에서 반려동물 목록 가져오기
+     * 서버에서 사용자의 반려동물 목록 가져오기
      * Timeout 설정으로 ANR 방지
      */
     suspend fun getPets(): List<Pet> = withContext(Dispatchers.IO) {
         try {
-            // 네트워크 요청에 타임아웃 설정
-            val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
-                apiService.getPets()
+            // 로그인 확인
+            if (!tokenManager.isLoggedIn()) {
+                Log.w(TAG, "User not logged in, returning empty pet list")
+                return@withContext emptyList()
             }
 
-            if (response?.isSuccessful == true && response.body() != null) {
-                response.body()!!
+            // 네트워크 요청에 타임아웃 설정
+            val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
+                petApiService.getUserPets()
+            }
+
+            if (response?.isSuccessful == true && response.body()?.isSuccess == true) {
+                val petDtos = response.body()?.result ?: emptyList()
+
+                // DTO를 Pet 모델로 변환
+                petDtos.map { dto ->
+                    Pet(
+                        id = dto.petId,
+                        name = dto.petName,
+                        imageUrl = dto.petImageKey?.let { key ->
+                            // S3 이미지 키를 전체 URL로 변환
+                            if (key.isNotEmpty()) "$IMAGE_BASE_URL$key" else null
+                        },
+                        color = null  // 추후 필요시 서버에서 색상 정보 추가
+                    )
+                }.also {
+                    Log.d(TAG, "Loaded ${it.size} pets from server")
+                }
             } else {
-                // 실패 시 더미 데이터 반환
-                Log.w(TAG, "Failed to fetch pets from server, using dummy data")
-                getDummyPets()
+                Log.w(TAG, "Failed to fetch pets from server: ${response?.code()}")
+                emptyList()
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching pets", e)
-            // 에러 발생 시에도 더미 데이터 반환하여 앱이 동작하도록 함
-            getDummyPets()
+            // 에러 발생 시 빈 리스트 반환
+            emptyList()
         }
-    }
-
-    /**
-     * 더미 펫 데이터
-     */
-    private fun getDummyPets(): List<Pet> {
-        return listOf(
-            Pet(id = "1", name = "코코", imageUrl = null, color = null),
-            Pet(id = "2", name = "몽이", imageUrl = null, color = null),
-            Pet(id = "3", name = "초코", imageUrl = null, color = null)
-        )
     }
 
     /**

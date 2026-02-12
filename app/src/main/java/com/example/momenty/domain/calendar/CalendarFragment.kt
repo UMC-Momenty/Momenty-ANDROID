@@ -26,14 +26,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentCalendarBinding
+import com.example.momenty.global.security.TokenManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class CalendarFragment : Fragment() {
 
     private var _binding: FragmentCalendarBinding? = null
@@ -48,12 +52,18 @@ class CalendarFragment : Fragment() {
     // 추가: ItemDecoration 중복 방지 플래그
     private var isItemDecorationAdded = false
 
+    // Hilt로 TokenManager 주입
+    @Inject
+    lateinit var tokenManager: TokenManager
+
     // 수정: activityViewModels로 변경 (AddAlarmFragment와 공유)
     private val viewModel: CalendarViewModel by activityViewModels {
         val helper = DeviceCalendarHelper(requireContext())
         val repo = CalendarRepository(
             apiService = RetrofitClient.calendarApiService,
-            deviceCalendarHelper = helper
+            petApiService = RetrofitClient.petApiService,
+            deviceCalendarHelper = helper,
+            tokenManager = tokenManager
         )
         CalendarViewModelFactory(repo)
     }
@@ -86,6 +96,8 @@ class CalendarFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        RetrofitClient.initialize(tokenManager)
 
         // UI 먼저 초기화
         setupWeekdayHeader()

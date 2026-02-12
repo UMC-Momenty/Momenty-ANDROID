@@ -208,20 +208,37 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
     }
 
     private fun selectGallery() {
-        val writePermission = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        val readPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
+        // Fragment가 Activity에 attach되어 있는지 확인
+        if (!isAdded || context == null) {
+            Log.e("CustomerCenter", "Fragment not attached to activity")
+            return
+        }
 
-        if (writePermission == PackageManager.PERMISSION_DENIED || readPermission == PackageManager.PERMISSION_DENIED) {
+        val writePermission = ContextCompat.checkSelfPermission(
+            requireContext(),  // ← context를 requireContext()로 변경
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+        val readPermission = ContextCompat.checkSelfPermission(
+            requireContext(),  // ← context를 requireContext()로 변경
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        )
+
+        if (writePermission == PackageManager.PERMISSION_DENIED ||
+            readPermission == PackageManager.PERMISSION_DENIED) {
             Log.d("myTag", "need permission")
-            ActivityCompat.requestPermissions(activity, arrayOf(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE), REQ_GALLERY)
+            requestPermissions(  // ← ActivityCompat.requestPermissions 대신 Fragment의 requestPermissions 사용
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
+                REQ_GALLERY
+            )
         } else {
             Log.d("myTag", "running")
-            val intent = Intent(Intent.ACTION_GET_CONTENT)
-            intent.type = "image/*"
-            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-
+            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "image/*"
+                putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            }
             imageResult.launch(Intent.createChooser(intent, "사진을 선택하세요"))
         }
     }

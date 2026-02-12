@@ -12,22 +12,34 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.databinding.FragmentAddAlarmBinding
+import com.example.momenty.global.security.TokenManager
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
+import javax.inject.Inject
 
+@AndroidEntryPoint  // ← Hilt 어노테이션 추가
 class AddAlarmFragment : Fragment() {
 
     private var _binding: FragmentAddAlarmBinding? = null
     private val binding get() = _binding!!
 
+    // TokenManager 주입
+    @Inject
+    lateinit var tokenManager: TokenManager
+
     private val alarmViewModel: AlarmViewModel by activityViewModels()
+
+    // ViewModel Factory 제거하고 직접 주입받기
     private val calendarViewModel: CalendarViewModel by activityViewModels {
         val helper = DeviceCalendarHelper(requireContext())
         val repo = CalendarRepository(
             apiService = RetrofitClient.calendarApiService,
-            deviceCalendarHelper = helper
+            petApiService = RetrofitClient.petApiService,  // ← 추가
+            deviceCalendarHelper = helper,
+            tokenManager = tokenManager  // ← 추가
         )
         CalendarViewModelFactory(repo)
     }
@@ -53,6 +65,9 @@ class AddAlarmFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // RetrofitClient 초기화
+        RetrofitClient.initialize(tokenManager)
 
         // Calendar Fragment에서 선택한 날짜 사용
         calendarViewModel.uiState.value.selectedDate?.let { calendarDay ->

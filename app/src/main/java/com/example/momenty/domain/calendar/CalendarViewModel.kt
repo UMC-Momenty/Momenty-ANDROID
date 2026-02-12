@@ -36,21 +36,15 @@ class CalendarViewModel(
 
     fun initialize() {
         viewModelScope.launch {
-            // Update state immediately with dummy data (lightweight)
-            _uiState.update { it.copy(pets = getDummyPets()) }
+            // 로딩 상태 표시
+            _uiState.update { it.copy(isLoading = true) }
 
-            // Defer calendar generation slightly
+            // 달력 생성 (빈 상태로)
             delay(50)
             generateCalendarDays()
-        }
-    }
 
-    private fun getDummyPets(): List<Pet> {
-        return listOf(
-            Pet(id = "1", name = "코코", imageUrl = null, color = null),
-            Pet(id = "2", name = "몽이", imageUrl = null, color = null),
-            Pet(id = "3", name = "초코", imageUrl = null, color = null)
-        )
+            _uiState.update { it.copy(isLoading = false) }
+        }
     }
 
     /**
@@ -274,17 +268,18 @@ class CalendarViewModel(
         val prevMonth = if (currentMonth == Calendar.JANUARY) Calendar.DECEMBER else currentMonth - 1
         val prevYear = if (currentMonth == Calendar.JANUARY) currentYear - 1 else currentYear
 
-        val calendar = Calendar.getInstance().apply {
+        val prevMonthCalendar = Calendar.getInstance().apply {
             set(Calendar.YEAR, prevYear)
             set(Calendar.MONTH, prevMonth)
         }
-        val daysInPrevMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-        val prevMonthStartDay = daysInPrevMonth - (firstDayOfWeek - Calendar.SUNDAY) + 1
+        val daysInPrevMonth = prevMonthCalendar.getActualMaximum(Calendar.DAY_OF_MONTH)
 
-        for (i in prevMonthStartDay..daysInPrevMonth) {
+        val emptyDays = firstDayOfWeek - 1
+        for (i in 0 until emptyDays) {
+            val day = daysInPrevMonth - emptyDays + i + 1
             days.add(
                 CalendarDay(
-                    day = i,
+                    day = day,
                     month = prevMonth,
                     year = prevYear,
                     isCurrentMonth = false,
@@ -307,22 +302,21 @@ class CalendarViewModel(
         today: Calendar,
         currentSelectedDate: CalendarDay?
     ) {
-        for (i in 1..daysInMonth) {
-            val isToday = year == today.get(Calendar.YEAR) &&
-                    month == today.get(Calendar.MONTH) &&
-                    i == today.get(Calendar.DAY_OF_MONTH)
+        for (day in 1..daysInMonth) {
+            val isToday = today.get(Calendar.YEAR) == year &&
+                    today.get(Calendar.MONTH) == month &&
+                    today.get(Calendar.DAY_OF_MONTH) == day
 
-            val isSelected = currentSelectedDate?.let { selected ->
-                year == selected.year &&
-                        month == selected.month &&
-                        i == selected.day
+            val isSelected = currentSelectedDate?.let {
+                it.day == day && it.month == month && it.year == year
             } ?: false
 
-            val eventsForDay = getEventsForDate(year, month, i)
+            // 해당 날짜의 이벤트 가져오기
+            val eventsForDay = getEventsForDate(year, month, day)
 
             days.add(
                 CalendarDay(
-                    day = i,
+                    day = day,
                     month = month,
                     year = year,
                     isCurrentMonth = true,
@@ -451,33 +445,37 @@ class CalendarViewModel(
     }
 
     /**
-     * 펫 목록 로드
+     * 펫 목록 로드 - 서버에서 실제 데이터 가져오기
      */
     fun loadPets() {
         viewModelScope.launch {
             try {
+                _uiState.update { it.copy(isLoading = true) }
+
                 val pets = withContext(Dispatchers.IO) {
                     repository.getPets()
                 }
-                _uiState.update { it.copy(pets = pets) }
+
+                _uiState.update {
+                    it.copy(
+                        pets = pets,
+                        isLoading = false,
+                        error = if (pets.isEmpty()) null else null
+                    )
+                }
+
+                Log.d(TAG, "Loaded ${pets.size} pets")
 
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load pets", e)
-                _uiState.update { it.copy(error = "펫 로드 실패") }
+                _uiState.update {
+                    it.copy(
+                        error = "반려동물 정보 로드 실패",
+                        isLoading = false
+                    )
+                }
             }
         }
-    }
-
-    /**
-     * 더미 펫 데이터 로드
-     */
-    private fun loadDummyPets() {
-        val dummyPets = listOf(
-            Pet(id = "1", name = "코코", imageUrl = null, color = null),
-            Pet(id = "2", name = "몽이", imageUrl = null, color = null),
-            Pet(id = "3", name = "초코", imageUrl = null, color = null)
-        )
-        _uiState.update { it.copy(pets = dummyPets) }
     }
 
     /**
