@@ -19,7 +19,7 @@ class CalendarRepository(
 ) {
     companion object {
         private const val TAG = "CalendarRepository"
-        private const val NETWORK_TIMEOUT = 10000L // 10초
+        private const val NETWORK_TIMEOUT = 30000L // 30초로 증가
         private const val IMAGE_BASE_URL = "https://your-s3-bucket.s3.amazonaws.com/" // S3 버킷 URL로 변경 필요
     }
 
@@ -29,22 +29,30 @@ class CalendarRepository(
      */
     suspend fun getPets(): List<Pet> = withContext(Dispatchers.IO) {
         try {
+            Log.d(TAG, "getPets() called")
+
             // 로그인 확인
             if (!tokenManager.isLoggedIn()) {
                 Log.w(TAG, "User not logged in, returning empty pet list")
                 return@withContext emptyList()
             }
 
+            Log.d(TAG, "User is logged in, fetching pets from server")
+
             // 네트워크 요청에 타임아웃 설정
             val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
                 petApiService.getUserPets()
             }
 
+            Log.d(TAG, "API response: isSuccessful=${response?.isSuccessful}, code=${response?.code()}")
+
             if (response?.isSuccessful == true && response.body()?.isSuccess == true) {
                 val petDtos = response.body()?.result ?: emptyList()
+                Log.d(TAG, "Received ${petDtos.size} pets from server")
 
                 // DTO를 Pet 모델로 변환
                 petDtos.map { dto ->
+                    Log.d(TAG, "Pet: id=${dto.petId}, name=${dto.petName}, imageKey=${dto.petImageKey}")
                     Pet(
                         id = dto.petId,
                         name = dto.petName,
@@ -55,10 +63,10 @@ class CalendarRepository(
                         color = null  // 추후 필요시 서버에서 색상 정보 추가
                     )
                 }.also {
-                    Log.d(TAG, "Loaded ${it.size} pets from server")
+                    Log.d(TAG, "Loaded ${it.size} pets from server successfully")
                 }
             } else {
-                Log.w(TAG, "Failed to fetch pets from server: ${response?.code()}")
+                Log.w(TAG, "Failed to fetch pets from server: code=${response?.code()}, message=${response?.body()?.message}")
                 emptyList()
             }
         } catch (e: Exception) {

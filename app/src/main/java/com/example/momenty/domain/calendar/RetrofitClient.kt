@@ -1,5 +1,6 @@
 package com.example.momenty.domain.calendar
 
+import com.example.momenty.global.mock.MockApiInterceptor
 import com.example.momenty.global.security.TokenManager
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -10,7 +11,8 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+    // Mock을 사용할 때는 URL이 중요하지 않지만, 일관성을 위해 설정
+    private const val BASE_URL = "https://api.momenty.com/"
 
     // TokenManager 인스턴스 (Hilt로 주입받거나 싱글톤으로 접근)
     // 주의: 실제 프로젝트에서는 Hilt를 통해 주입받는 것을 권장
@@ -26,6 +28,16 @@ object RetrofitClient {
     private val loggingInterceptor by lazy {
         HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
+        }
+    }
+
+    /**
+     * Mock API 인터셉터
+     */
+    private val mockApiInterceptor by lazy {
+        MockApiInterceptor().apply {
+            // Mock 모드 활성화 (개발 중에는 true, 배포 시에는 false)
+            MockApiInterceptor.isMockEnabled = true
         }
     }
 
@@ -58,6 +70,7 @@ object RetrofitClient {
 
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
+            .addInterceptor(mockApiInterceptor)   // ✨ Mock 인터셉터 (가장 먼저!)
             .addInterceptor(authInterceptor)      // 인증 인터셉터 추가
             .addInterceptor(loggingInterceptor)   // 로깅 인터셉터
             .connectTimeout(30, TimeUnit.SECONDS)

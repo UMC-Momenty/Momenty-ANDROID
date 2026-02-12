@@ -129,12 +129,23 @@ class AddAlarmFragment : Fragment() {
      * ViewModel 관찰 - StateFlow 사용
      */
     private fun observeViewModel() {
+        // 즉시 현재 상태로 UI 업데이트
+        val currentState = calendarViewModel.uiState.value
+        android.util.Log.d("AddAlarmFragment", "Initial pets: ${currentState.pets.size}")
+        if (currentState.pets.isNotEmpty()) {
+            petFilterAdapter.updatePets(currentState.pets)
+            petFilterAdapter.selectPet(currentState.selectedPet)
+        }
+
+        // 이후 변경사항 관찰
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 calendarViewModel.uiState.collect { state ->
+                    android.util.Log.d("AddAlarmFragment", "Received pets: ${state.pets.size}")
                     // 반려동물 목록 업데이트
                     if (state.pets.isNotEmpty()) {
                         petFilterAdapter.updatePets(state.pets)
+                        petFilterAdapter.selectPet(state.selectedPet)
                     }
 
                     // 선택된 날짜가 변경되면 업데이트

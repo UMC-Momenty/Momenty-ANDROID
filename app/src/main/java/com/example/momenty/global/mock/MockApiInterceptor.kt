@@ -104,6 +104,11 @@ class MockApiInterceptor : Interceptor {
                 mockGetNotices()
             }
 
+            // ==================== 반려동물 API ====================
+            path.endsWith("/api/pets") && method == "GET" -> {
+                mockGetPets()
+            }
+
             else -> {
                 mockNotImplemented(path)
             }
@@ -537,6 +542,55 @@ class MockApiInterceptor : Interceptor {
                             }
                         ]
                     }
+                }
+            """.trimIndent()
+        )
+    }
+
+    /**
+     * 반려동물 목록 조회 Mock
+     */
+    private fun mockGetPets(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "isSuccess": true,
+                    "code": "PETS_SUCCESS",
+                    "message": "반려동물 조회 성공",
+                    "result": [
+                        {
+                            "petId": "pet_001",
+                            "petName": "뭉치",
+                            "petImageKey": "pets/mungchi.jpg",
+                            "petType": "DOG",
+                            "petBreed": "포메라니안",
+                            "petGender": "MALE",
+                            "petBirthDate": "2020-03-10",
+                            "petIntroduction": "귀여운 우리 강아지"
+                        },
+                        {
+                            "petId": "pet_002",
+                            "petName": "나비",
+                            "petImageKey": "pets/nabi.jpg",
+                            "petType": "CAT",
+                            "petBreed": "코리안숏헤어",
+                            "petGender": "FEMALE",
+                            "petBirthDate": "2019-07-22",
+                            "petIntroduction": "도도한 우리 고양이"
+                        },
+                        {
+                            "petId": "pet_003",
+                            "petName": "초코",
+                            "petImageKey": "pets/choco.jpg",
+                            "petType": "DOG",
+                            "petBreed": "골든리트리버",
+                            "petGender": "MALE",
+                            "petBirthDate": "2021-01-15",
+                            "petIntroduction": "순한 우리 대형견"
+                        }
+                    ]
                 }
             """.trimIndent()
         )
