@@ -27,7 +27,7 @@ object NetworkModule {
      * build.gradle에서 USE_MOCK_API = true로 설정하면 활성화
      */
     private val useMockApi: Boolean
-        get() = false // 디버그 빌드에서만 Mock 사용 가능
+        get() = true // 디버그 빌드에서만 Mock 사용 가능
 
     @Provides
     @Singleton
