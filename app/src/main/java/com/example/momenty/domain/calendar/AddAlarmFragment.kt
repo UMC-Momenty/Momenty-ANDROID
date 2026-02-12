@@ -33,7 +33,6 @@ class AddAlarmFragment : Fragment() {
     }
 
     private lateinit var petFilterAdapter: PetFilterAdapter
-    private var selectedPet: Pet? = null
     private var selectedActivityType: String? = null
     private var isRepeatMode = false
     private var selectedDate: Date = Date()
@@ -74,24 +73,30 @@ class AddAlarmFragment : Fragment() {
         setupClickListeners()
         observeViewModel()
 
-        // 초기 상태 설정
+        // 초기 상태 설정 - onViewCreated에서 명시적으로 설정
         initializeButtonStates()
     }
 
     /**
-     * 반려동물 필터 설정
+     * 반려동물 필터 설정 - 다중 선택 가능
      */
     private fun setupPetFilter() {
-        petFilterAdapter = PetFilterAdapter(emptyList()) { pet ->
-            selectedPet = pet
+        petFilterAdapter = PetFilterAdapter(
+            pets = emptyList(),
+            multiSelect = true, // 다중 선택 모드 활성화
+            onPetClick = { pet ->
+                // Adapter 내부에서 선택/해제 처리됨
+                // getSelectedPets()로 현재 선택된 펫 목록 가져오기
+                val currentSelected = petFilterAdapter.getSelectedPets()
 
-            val message = if (pet == null) {
-                "전체 반려동물 알림으로 설정됩니다"
-            } else {
-                "${pet.name}의 알림으로 설정됩니다"
+                if (currentSelected.isEmpty()) {
+                    showSnackbar("반려동물을 선택해주세요", Snackbar.LENGTH_SHORT)
+                } else {
+                    val names = currentSelected.joinToString(", ") { it.name }
+                    showSnackbar("$names 선택됨", Snackbar.LENGTH_SHORT)
+                }
             }
-            showSnackbar(message, Snackbar.LENGTH_SHORT)
-        }
+        )
 
         binding.rvAlarmPetList.apply {
             layoutManager = LinearLayoutManager(
@@ -115,12 +120,6 @@ class AddAlarmFragment : Fragment() {
                     // 반려동물 목록 업데이트
                     if (state.pets.isNotEmpty()) {
                         petFilterAdapter.updatePets(state.pets)
-                    }
-
-                    // 선택된 반려동물이 있으면 자동 선택
-                    state.selectedPet?.let { pet ->
-                        selectedPet = pet
-                        petFilterAdapter.selectPet(pet)
                     }
 
                     // 선택된 날짜가 변경되면 업데이트
@@ -149,13 +148,13 @@ class AddAlarmFragment : Fragment() {
 
     private fun setupViews() {
         dayButtons = listOf(
-            binding.btnDayMon to Calendar.MONDAY,
-            binding.btnDayTue to Calendar.TUESDAY,
-            binding.btnDayWed to Calendar.WEDNESDAY,
-            binding.btnDayThr to Calendar.THURSDAY,
-            binding.btnDayFri to Calendar.FRIDAY,
-            binding.btnDaySat to Calendar.SATURDAY,
-            binding.btnDaySun to Calendar.SUNDAY
+            binding.btnDayMon to 1, // 월요일 = 1
+            binding.btnDayTue to 2, // 화요일 = 2
+            binding.btnDayWed to 3, // 수요일 = 3
+            binding.btnDayThr to 4, // 목요일 = 4
+            binding.btnDayFri to 5, // 금요일 = 5
+            binding.btnDaySat to 6, // 토요일 = 6
+            binding.btnDaySun to 7  // 일요일 = 7
         )
     }
 
@@ -174,7 +173,8 @@ class AddAlarmFragment : Fragment() {
 
         // 일회성 모드로 시작 (요일 섹션 숨김)
         isRepeatMode = false
-        updateRepeatDayVisibility()
+        binding.tvAlramDateLabel.visibility = View.GONE
+        binding.llDateBtns.visibility = View.GONE
     }
 
     private fun setupClickListeners() {
@@ -182,35 +182,47 @@ class AddAlarmFragment : Fragment() {
         binding.ivAlarmBack.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
-        // 활동 유형 버튼 - 클릭 시에만 다이얼로그 표시
-        binding.btnAlarmActivity.setOnClickListener {
+
+        // 일정 이름 EditText - 클릭 시 활동 유형 다이얼로그 표시
+        binding.etAlarmName.setOnClickListener {
             if (isAdded && !isDetached) {
                 showActivityTypeDialog()
             }
         }
+
         // 일회성/반복성 토글
-        binding.btnTermOnce.setOnClickListener { setRepeatMode(false) }
-        binding.btnTermRepeat.setOnClickListener { setRepeatMode(true) }
+        binding.btnTermOnce.setOnClickListener {
+            setRepeatMode(false)
+        }
+        binding.btnTermRepeat.setOnClickListener {
+            setRepeatMode(true)
+        }
+
         // 알림 시간
         binding.etAlarmTime.setOnClickListener {
             if (isAdded && !isDetached) {
                 showCustomTimePicker()
             }
         }
+
         // 지속 시간
         binding.etAlarmContinue.setOnClickListener {
             if (isAdded && !isDetached) {
                 showCustomDurationPicker()
             }
         }
+
         // 요일 버튼
         dayButtons.forEach { (button, dayNum) ->
             button.setOnClickListener {
                 toggleDaySelection(button, dayNum)
             }
         }
+
         // 저장
-        binding.btnAlarmSave.setOnClickListener { saveAlarm() }
+        binding.btnAlarmSave.setOnClickListener {
+            saveAlarm()
+        }
     }
 
     /**
@@ -219,17 +231,16 @@ class AddAlarmFragment : Fragment() {
     private fun showActivityTypeDialog() {
         if (!isAdded || isDetached || context == null) return
 
-        try{
+        try {
             ActivityTypeDialog(requireContext()) { activityType ->
-                if(isAdded) {
+                if (isAdded) {
                     selectedActivityType = activityType
-                    binding.btnAlarmActivity.text = activityType
+                    binding.etAlarmName.setText(activityType)
                 }
             }.show()
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
     }
 
     /**
@@ -314,70 +325,75 @@ class AddAlarmFragment : Fragment() {
      * 알람 저장
      */
     private fun saveAlarm() {
-        // 유효성 검사
+        // 유효성 검사 1: 반려동물 선택 필수
+        val selectedPets = petFilterAdapter.getSelectedPets()
+        if (selectedPets.isEmpty()) {
+            Snackbar.make(binding.root, "반려동물을 최소 1개 선택해주세요", Snackbar.LENGTH_SHORT).show()
+            return
+        }
+
+        // 유효성 검사 2: 활동 유형 선택 필수
         if (selectedActivityType == null) {
             Snackbar.make(binding.root, "활동 유형을 선택해주세요", Snackbar.LENGTH_SHORT).show()
             return
         }
 
-        val title = binding.etAlarmName.text.toString().trim()
-        if (title.isEmpty()) {
-            Snackbar.make(binding.root, "알림 이름을 입력해주세요", Snackbar.LENGTH_SHORT).show()
-            return
-        }
-
+        // 유효성 검사 3: 알림 시간 선택 필수
         if (selectedTime == null) {
             Snackbar.make(binding.root, "알림 시간을 선택해주세요", Snackbar.LENGTH_SHORT).show()
             return
         }
 
+        // 유효성 검사 4: 반복성일 경우 요일 선택 필수
         if (isRepeatMode && selectedRepeatDays.isEmpty()) {
             Snackbar.make(binding.root, "알림 요일을 선택해주세요", Snackbar.LENGTH_SHORT).show()
             return
         }
 
-        // 알람 생성 - 백그라운드에서 처리
+        // 선택한 각 반려동물별로 알람 생성
         lifecycleScope.launch {
             try {
-                val alarm = Alarm(
-                    activityType = selectedActivityType!!,
-                    title = title,
-                    isRepeat = isRepeatMode,
-                    repeatDays = if (isRepeatMode) selectedRepeatDays.toList() else null,
-                    alarmDate = selectedDate,
-                    alarmTime = selectedTime!!,
-                    duration = binding.etAlarmContinue.text.toString().trim().takeIf { it.isNotEmpty() },
-                    note = binding.etAlarmNote.text.toString().trim().takeIf { it.isNotEmpty() }
-                )
+                selectedPets.forEach { pet ->
+                    val alarm = Alarm(
+                        activityType = selectedActivityType!!,
+                        petId = pet.id,
+                        title = selectedActivityType!!,
+                        isRepeat = isRepeatMode,
+                        repeatDays = if (isRepeatMode) selectedRepeatDays.toList() else null,
+                        alarmDate = selectedDate,
+                        alarmTime = selectedTime!!,
+                        duration = binding.etAlarmContinue.text.toString().trim().takeIf { it.isNotEmpty() },
+                        note = binding.etAlarmNote.text.toString().trim().takeIf { it.isNotEmpty() }
+                    )
 
-                alarmViewModel.addAlarm(alarm)
+                    alarmViewModel.addAlarm(alarm)
 
-                val eventCalendar = Calendar.getInstance().apply {
-                    time = selectedDate
-                    // 시간 부분은 00:00:00으로 초기화 (날짜만 비교하도록)
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
+                    val eventCalendar = Calendar.getInstance().apply {
+                        time = selectedDate
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+
+                    // Alarm을 CalendarEvent로 변환
+                    val calendarEvent = CalendarEvent(
+                        id = System.currentTimeMillis().toString() + "_" + pet.id,
+                        petId = pet.id,
+                        calendarId = "default_calendar",
+                        title = alarm.title,
+                        scheduleDate = eventCalendar.time,
+                        alarmTime = alarm.alarmTime,
+                        petName = pet.name,
+                        type = alarm.activityType
+                    )
+
+                    calendarViewModel.addEvent(calendarEvent)
                 }
 
-                // Alarm을 CalendarEvent로 변환
-                val calendarEvent = CalendarEvent(
-                    id = System.currentTimeMillis().toString(),
-                    petId = calendarViewModel.uiState.value.selectedPet?.id,
-                    calendarId = "default_calendar",
-                    title = alarm.title,
-                    scheduleDate = eventCalendar.time,
-                    alarmTime = alarm.alarmTime,
-                    petName = calendarViewModel.uiState.value.selectedPet?.name,
-                    type = alarm.activityType
-                )
-
-                calendarViewModel.addEvent(calendarEvent)
-
                 if (isAdded) {
-                    showSnackbar("알림이 추가되었습니다", Snackbar.LENGTH_SHORT)
-
+                    val petNames = selectedPets.joinToString(", ") { it.name }
+                    showSnackbar("$petNames 의 알림이 추가되었습니다", Snackbar.LENGTH_SHORT)
                     requireActivity().onBackPressedDispatcher.onBackPressed()
                 }
             } catch (e: Exception) {
@@ -389,9 +405,9 @@ class AddAlarmFragment : Fragment() {
         }
     }
 
-    private fun showSnackbar(message: String, lengthShort: Int) {
+    private fun showSnackbar(message: String, duration: Int) {
         if (isAdded && view != null) {
-            Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(binding.root, message, duration).show()
         }
     }
 

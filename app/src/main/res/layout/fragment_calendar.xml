@@ -29,16 +29,6 @@
         app:layout_constraintTop_toTopOf="@id/iv_calendar_back"
         app:layout_constraintBottom_toBottomOf="@id/iv_calendar_back"/>
 
-    <ImageView
-        android:id="@+id/iv_calendar_add"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:src="@drawable/ic_add_my_page"
-        android:layout_marginEnd="20dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/iv_calendar_back"
-        app:layout_constraintBottom_toBottomOf="@id/iv_calendar_back"/>
-
     <!-- 반려동물 별 필터 (RecyclerView) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_pet_filter"

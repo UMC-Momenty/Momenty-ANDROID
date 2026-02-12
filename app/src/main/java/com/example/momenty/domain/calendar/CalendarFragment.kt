@@ -96,11 +96,21 @@ class CalendarFragment : Fragment() {
         // StateFlow 관찰
         observeViewModel()
 
-        // Defer initialization
+        // ViewModel 초기화 및 권한 확인
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(100)
+            // ViewModel 초기화 - 즉시 실행하여 달력 표시
+            viewModel.initialize()
+
+            // 초기 달력 표시를 위한 강제 업데이트
+            delay(50)
             if (isAdded) {
-                viewModel.initialize()
+                calendarAdapter.updateDays(viewModel.uiState.value.calendarDays)
+                binding.tvYearMonthLabel.text = viewModel.getYearMonthText()
+            }
+
+            // 권한 확인 및 데이터 로드
+            delay(50)
+            if (isAdded) {
                 checkCalendarPermission()
             }
         }
@@ -131,16 +141,23 @@ class CalendarFragment : Fragment() {
      * 반려동물 필터 설정
      */
     private fun setupPetFilter() {
-        petFilterAdapter = PetFilterAdapter(emptyList()) { pet ->
-            viewModel.selectPetFilter(pet)
+        petFilterAdapter = PetFilterAdapter(
+            pets = emptyList(),
+            multiSelect = false, // 단일 선택 모드
+            onPetClick = { pet ->
+                viewModel.selectPetFilter(pet)
 
-            val message = if (pet == null) {
-                "전체 일정을 표시합니다"
-            } else {
-                "${pet.name}의 일정을 표시합니다"
+                val message = if (pet == null) {
+                    "전체 일정을 표시합니다"
+                } else {
+                    "${pet.name}의 일정을 표시합니다"
+                }
+                showSnackbar(message, Snackbar.LENGTH_SHORT)
+
+                // 반려동물 필터 클릭 시 바텀시트 표시
+                showScheduleBottomSheet()
             }
-            showSnackbar(message, Snackbar.LENGTH_SHORT)
-        }
+        )
 
         binding.rvPetFilter.apply {
             layoutManager = LinearLayoutManager(
@@ -195,6 +212,8 @@ class CalendarFragment : Fragment() {
     private fun setupCalendarRecyclerView() {
         calendarAdapter = CalendarAdapter { day ->
             viewModel.selectDay(day)
+            // 날짜 클릭 시 바텀시트 표시
+            showScheduleBottomSheet(day)
         }
 
         binding.calendarRecyclerView.apply {
@@ -280,11 +299,8 @@ class CalendarFragment : Fragment() {
             viewModel.goToNextMonth()
         }
 
+        // 일정 추가 화면으로 이동 (바텀시트는 날짜/필터 클릭 시에만 표시)
         binding.btnCalendarManage.setOnClickListener {
-            showScheduleBottomSheet()
-        }
-
-        binding.ivCalendarAdd.setOnClickListener {
             showAddEventDialog()
         }
     }
@@ -306,14 +322,9 @@ class CalendarFragment : Fragment() {
      * UI 업데이트
      */
     private fun updateUi(state: CalendarUiState) {
-        // 달력 업데이트
-        if (state.calendarDays.isNotEmpty()) {
-            calendarAdapter.updateDays(state.calendarDays)
-            binding.tvYearMonthLabel.text = viewModel.getYearMonthText()
-        }
-
-        // 선택된 날짜 처리 - 바텀시트는 사용자가 클릭했을 때만 표시
-        // state.selectedDate가 변경되어도 자동으로 바텀시트를 표시하지 않음
+        // 달력 업데이트 - 항상 업데이트하여 초기화 시에도 표시되도록 함
+        calendarAdapter.updateDays(state.calendarDays)
+        binding.tvYearMonthLabel.text = viewModel.getYearMonthText()
 
         // 펫 목록 업데이트
         if (state.pets.isNotEmpty()) {
