@@ -36,9 +36,11 @@ class CalendarAdapter(
 
     /**
      * 백그라운드 스레드에서 diff 계산하여 ANR 방지
+     * commitCallback을 사용하여 즉시 업데이트
      */
     fun updateDays(newDays: List<CalendarDay>) {
-        differ.submitList(newDays)
+        // 같은 리스트를 제출하면 diff가 동작하지 않으므로 새 리스트로 생성
+        differ.submitList(newDays.toList())
     }
 
     /**

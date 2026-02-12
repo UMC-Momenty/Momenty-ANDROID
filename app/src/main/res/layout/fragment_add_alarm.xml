@@ -29,299 +29,301 @@
         app:layout_constraintTop_toTopOf="@id/iv_alarm_back"
         app:layout_constraintBottom_toBottomOf="@id/iv_alarm_back"/>
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="25dp"
-        android:layout_marginTop="30dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
         app:layout_constraintTop_toBottomOf="@id/tv_alarm_title"
-        android:orientation="vertical">
-        
-        <TextView
-            android:id="@+id/tv_alram_name_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/alarm_name"
-            android:fontFamily="@font/pretendard_regular"
-            android:textSize="14sp"
-            android:textColor="@color/caption_1"/>
-        
-        <!-- 알림 추가 디자인에서 활동 버튼 선택 부분이 없어서 여기에 추가했어요! -->
+        app:layout_constraintBottom_toTopOf="@id/btn_alarm_save">
+
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="10dp">
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="25dp"
+            android:orientation="vertical"
+            android:paddingBottom="20dp">
 
-            <Button
-                android:id="@+id/btn_alarm_activity"
+            <!-- 반려동물 선택 -->
+            <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="6dp"
-                android:background="@drawable/bg_button_alarm_activity"
+                android:layout_height="wrap_content"
+                android:text="@string/alarm_pet_filter"
                 android:fontFamily="@font/pretendard_regular"
-                android:text="@string/alarm_action_type"
-                android:textColor="@color/white"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:textColor="@color/caption_1"
+                android:layout_marginBottom="5dp"/>
 
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_alarm_pet_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp"
+                android:layout_marginBottom="10dp"/>
+
+            <TextView
+                android:id="@+id/tv_alram_name_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/alarm_name"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/caption_1"/>
+
+            <!-- 일정 이름 EditText - 클릭 시 다이얼로그 표시 -->
             <EditText
                 android:id="@+id/et_alarm_name"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="46dp"
                 android:background="@drawable/bg_edittext_normal"
                 android:paddingHorizontal="20dp"
-                android:hint="일정"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
+                android:hint="유형 선택 (산책, 식사, 미용 등)"
+                android:textColorHint="@color/caption_1"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:focusable="false"
+                android:clickable="true"/>
+
+            <TextView
+                android:id="@+id/tv_alarm_terms_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/alarm_term"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/caption_1"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp">
+
+                <androidx.constraintlayout.utils.widget.MotionButton
+                    android:id="@+id/btn_term_once"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="3dp"
+                    android:background="@drawable/bg_button_alarm_toggle"
+                    android:text="@string/alarm_once"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textSize="14sp"
+                    android:textColor="@color/btn_text_color_selector"
+                    android:stateListAnimator="@null" />
+
+                <androidx.constraintlayout.utils.widget.MotionButton
+                    android:id="@+id/btn_term_repeat"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="3dp"
+                    android:background="@drawable/bg_button_alarm_toggle"
+                    android:text="@string/alarm_repeat"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textSize="14sp"
+                    android:textColor="@color/btn_text_color_selector"
+                    android:stateListAnimator="@null"/>
+
+            </LinearLayout>
+
+            <!-- 요일 : 반복성에만 존재 (선택된 날짜부터) -->
+            <TextView
+                android:id="@+id/tv_alram_date_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/alarm_date"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/caption_1"
+                android:visibility="gone"/>
+
+            <LinearLayout
+                android:id="@+id/ll_date_btns"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
+                android:paddingHorizontal="10dp"
+                android:visibility="gone">
+
+                <!-- 월 - 일 button : 회색 원형 배경이고, 클릭 시 주황색으로 변함-->
+                <androidx.constraintlayout.utils.widget.MotionButton
+                    android:id="@+id/btn_day_mon"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:padding="0dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_alarm_date_selected"
+                    android:text="@string/day_mon"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textSize="14sp"
+                    android:textColor="@color/btn_text_color_selector"
+                    android:stateListAnimator="@null"/>
+
+                <androidx.constraintlayout.utils.widget.MotionButton
+                    android:id="@+id/btn_day_tue"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:padding="0dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_alarm_date_selected"
+                    android:text="@string/day_tue"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textSize="14sp"
+                    android:textColor="@color/btn_text_color_selector"
+                    android:stateListAnimator="@null"/>
+
+                <androidx.constraintlayout.utils.widget.MotionButton
+                    android:id="@+id/btn_day_wed"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:padding="0dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_alarm_date_selected"
+                    android:text="@string/day_wed"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textSize="14sp"
+                    android:textColor="@color/btn_text_color_selector"
+                    android:stateListAnimator="@null"/>
+
+                <androidx.constraintlayout.utils.widget.MotionButton
+                    android:id="@+id/btn_day_thr"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:padding="0dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_alarm_date_selected"
+                    android:text="@string/day_thr"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textSize="14sp"
+                    android:textColor="@color/btn_text_color_selector"
+                    android:stateListAnimator="@null"/>
+
+                <androidx.constraintlayout.utils.widget.MotionButton
+                    android:id="@+id/btn_day_fri"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:padding="0dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_alarm_date_selected"
+                    android:text="@string/day_fri"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textSize="14sp"
+                    android:textColor="@color/btn_text_color_selector"
+                    android:stateListAnimator="@null"/>
+
+                <androidx.constraintlayout.utils.widget.MotionButton
+                    android:id="@+id/btn_day_sat"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:padding="0dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_alarm_date_selected"
+                    android:text="@string/day_sat"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textSize="14sp"
+                    android:textColor="@color/btn_text_color_selector"
+                    android:stateListAnimator="@null"/>
+
+                <androidx.constraintlayout.utils.widget.MotionButton
+                    android:id="@+id/btn_day_sun"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:padding="0dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_alarm_date_selected"
+                    android:text="@string/day_sun"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textSize="14sp"
+                    android:textColor="@color/btn_text_color_selector"
+                    android:stateListAnimator="@null"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_alram_time_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/alarm_time"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/caption_1"/>
+
+            <EditText
+                android:id="@+id/et_alarm_time"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:background="@drawable/bg_edittext_normal"
+                android:paddingHorizontal="20dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
+                android:hint="ex) 오후 2:00"
+                android:textColorHint="@color/caption_1"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:focusable="false"
+                android:clickable="true"/>
+
+            <TextView
+                android:id="@+id/tv_alram_continue_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/alarm_continue"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/caption_1"/>
+
+            <EditText
+                android:id="@+id/et_alarm_continue"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:background="@drawable/bg_edittext_normal"
+                android:paddingHorizontal="20dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
+                android:hint="ex) 1시간"
+                android:textColorHint="@color/caption_1"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:focusable="false"
+                android:clickable="true"/>
+
+            <TextView
+                android:id="@+id/tv_alram_note_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/alarm_note"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="14sp"
+                android:textColor="@color/caption_1"/>
+
+            <EditText
+                android:id="@+id/et_alarm_note"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:background="@drawable/bg_edittext_normal"
+                android:paddingHorizontal="20dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
+                android:hint="메모"
                 android:textColorHint="@color/caption_1"
                 android:fontFamily="@font/pretendard_regular"
                 android:textSize="14sp"/>
 
         </LinearLayout>
-        
-        <TextView
-            android:id="@+id/tv_alarm_terms_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/alarm_term"
-            android:fontFamily="@font/pretendard_regular"
-            android:textSize="14sp"
-            android:textColor="@color/caption_1"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="10dp">
-
-            <Button
-                android:id="@+id/btn_term_once"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:layout_marginEnd="3dp"
-                android:background="@drawable/bg_button_alarm_toggle"
-                android:text="@string/alarm_once"
-                android:fontFamily="@font/pretendard_regular"
-                android:textSize="14sp"
-                android:textColor="@color/btn_text_color_selector"
-                android:stateListAnimator="@null" />
-
-            <Button
-                android:id="@+id/btn_term_repeat"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:layout_marginStart="3dp"
-                android:background="@drawable/bg_button_alarm_toggle"
-                android:text="@string/alarm_repeat"
-                android:fontFamily="@font/pretendard_regular"
-                android:textSize="14sp"
-                android:textColor="@color/btn_text_color_selector"
-                android:stateListAnimator="@null"/>
-
-        </LinearLayout>
-
-        <!-- 요일 : 반복성에만 존재 (선택된 날짜부터) -->
-        <TextView
-            android:id="@+id/tv_alram_date_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/alarm_date"
-            android:fontFamily="@font/pretendard_regular"
-            android:textSize="14sp"
-            android:textColor="@color/caption_1"
-            android:visibility="gone"/>
-
-        <LinearLayout
-            android:id="@+id/ll_date_btns"
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:orientation="horizontal"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="10dp"
-            android:paddingHorizontal="10dp"
-            android:visibility="gone">
-
-            <!-- 월 - 일 button : 회색 원형 배경이고, 클릭 시 주황색으로 변함-->
-            <Button
-                android:id="@+id/btn_day_mon"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
-                android:padding="0dp"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/bg_alarm_date_selected"
-                android:text="@string/day_mon"
-                android:fontFamily="@font/pretendard_regular"
-                android:textSize="14sp"
-                android:textColor="@color/btn_text_color_selector"
-                android:stateListAnimator="@null"/>
-
-            <Button
-                android:id="@+id/btn_day_tue"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
-                android:padding="0dp"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/bg_alarm_date_selected"
-                android:text="@string/day_tue"
-                android:fontFamily="@font/pretendard_regular"
-                android:textSize="14sp"
-                android:textColor="@color/btn_text_color_selector"
-                android:stateListAnimator="@null"/>
-
-            <Button
-                android:id="@+id/btn_day_wed"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
-                android:padding="0dp"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/bg_alarm_date_selected"
-                android:text="@string/day_wed"
-                android:fontFamily="@font/pretendard_regular"
-                android:textSize="14sp"
-                android:textColor="@color/btn_text_color_selector"
-                android:stateListAnimator="@null"/>
-
-            <Button
-                android:id="@+id/btn_day_thr"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
-                android:padding="0dp"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/bg_alarm_date_selected"
-                android:text="@string/day_thr"
-                android:fontFamily="@font/pretendard_regular"
-                android:textSize="14sp"
-                android:textColor="@color/btn_text_color_selector"
-                android:stateListAnimator="@null"/>
-
-            <Button
-                android:id="@+id/btn_day_fri"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
-                android:padding="0dp"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/bg_alarm_date_selected"
-                android:text="@string/day_fri"
-                android:fontFamily="@font/pretendard_regular"
-                android:textSize="14sp"
-                android:textColor="@color/btn_text_color_selector"
-                android:stateListAnimator="@null"/>
-
-            <Button
-                android:id="@+id/btn_day_sat"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
-                android:padding="0dp"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/bg_alarm_date_selected"
-                android:text="@string/day_sat"
-                android:fontFamily="@font/pretendard_regular"
-                android:textSize="14sp"
-                android:textColor="@color/btn_text_color_selector"
-                android:stateListAnimator="@null"/>
-
-            <Button
-                android:id="@+id/btn_day_sun"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
-                android:padding="0dp"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/bg_alarm_date_selected"
-                android:text="@string/day_sun"
-                android:fontFamily="@font/pretendard_regular"
-                android:textSize="14sp"
-                android:textColor="@color/btn_text_color_selector"
-                android:stateListAnimator="@null"/>
-
-        </LinearLayout>
-
-        <!--<EditText
-            android:id="@+id/et_alarm_date"
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:background="@drawable/bg_edittext_normal"
-            android:paddingHorizontal="20dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="10dp"
-            android:hint="ex) 월요일"
-            android:textColorHint="@color/caption_1"
-            android:fontFamily="@font/pretendard_regular"
-            android:textSize="14sp"/>-->
-
-        <TextView
-            android:id="@+id/tv_alram_time_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/alarm_time"
-            android:fontFamily="@font/pretendard_regular"
-            android:textSize="14sp"
-            android:textColor="@color/caption_1"/>
-
-        <EditText
-            android:id="@+id/et_alarm_time"
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:background="@drawable/bg_edittext_normal"
-            android:paddingHorizontal="20dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="10dp"
-            android:hint="ex) 오후 2:00"
-            android:textColorHint="@color/caption_1"
-            android:fontFamily="@font/pretendard_regular"
-            android:textSize="14sp"/>
-
-        <TextView
-            android:id="@+id/tv_alram_continue_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/alarm_continue"
-            android:fontFamily="@font/pretendard_regular"
-            android:textSize="14sp"
-            android:textColor="@color/caption_1"/>
-
-        <EditText
-            android:id="@+id/et_alarm_continue"
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:background="@drawable/bg_edittext_normal"
-            android:paddingHorizontal="20dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="10dp"
-            android:hint="ex) 1시간"
-            android:textColorHint="@color/caption_1"
-            android:fontFamily="@font/pretendard_regular"
-            android:textSize="14sp"/>
-
-        <TextView
-            android:id="@+id/tv_alram_note_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/alarm_note"
-            android:fontFamily="@font/pretendard_regular"
-            android:textSize="14sp"
-            android:textColor="@color/caption_1"/>
-
-        <EditText
-            android:id="@+id/et_alarm_note"
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:background="@drawable/bg_edittext_normal"
-            android:paddingHorizontal="20dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="10dp"
-            android:hint="메모"
-            android:textColorHint="@color/caption_1"
-            android:fontFamily="@font/pretendard_regular"
-            android:textSize="14sp"/>
-
-    </LinearLayout>
+    </ScrollView>
 
     <Button
         android:id="@+id/btn_alarm_save"
