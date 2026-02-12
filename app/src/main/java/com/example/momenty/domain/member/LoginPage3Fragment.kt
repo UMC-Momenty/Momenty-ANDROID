@@ -1,4 +1,4 @@
-package com.example.momenty.domain.member.presentation
+package com.example.momenty.domain.member
 
 import android.app.Activity
 import android.os.Bundle
@@ -15,7 +15,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentLoginPage3Binding
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.navigation.NavOptions
+import com.example.momenty.domain.main.presentation.MainActivity
 import com.example.momenty.ui.auth.AuthUiState
 import com.example.momenty.ui.auth.AuthViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -114,7 +114,7 @@ class LoginPage3Fragment : Fragment() {
         showToast("${userName ?: "사용자"}님, 환영합니다!")
 
         // MainActivity에 사용자 정보 저장 (기존 로직 유지)
-        (activity as? com.example.momenty.domain.main.presentation.MainActivity)?.apply {
+        (activity as? MainActivity)?.apply {
             saveLoggedIn("temp_user_id", userName ?: "사용자")
         }
 

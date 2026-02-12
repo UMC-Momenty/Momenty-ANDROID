@@ -1,9 +1,8 @@
-package com.example.momenty.domain.member.presentation
+package com.example.momenty.domain.member
 
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup

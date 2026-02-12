@@ -3,7 +3,6 @@ package com.example.momenty.data.repository
 import android.content.Context
 import android.util.Log
 import com.example.momenty.BuildConfig
-import com.example.momenty.R
 import com.example.momenty.data.remote.auth.AuthApi
 import com.example.momenty.data.remote.auth.SocialLoginRequest
 import com.example.momenty.global.api.ApiException
@@ -50,9 +49,8 @@ class AuthRepository @Inject constructor(
      * Firebase용이 아닌 구글 로그인용
      */
     val googleSignInClient: GoogleSignInClient by lazy {
-        val webClientId = context.getString(R.string.default_web_client_id)
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(webClientId)  // JWT idToken 획득용
+            .requestIdToken(context.getString(com.example.momenty.R.string.default_web_client_id))  // JWT idToken 획득용
             .requestEmail()
             .build()
         GoogleSignIn.getClient(context, gso)
