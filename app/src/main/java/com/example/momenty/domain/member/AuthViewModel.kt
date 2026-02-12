@@ -37,7 +37,7 @@ class AuthViewModel @Inject constructor(
     /**
      * 구글 로그인
      */
-    fun startGoogleSignIn(launcher: ActivityResultLauncher<android.content.Intent>){
+    fun startGoogleSignIn(launcher: ActivityResultLauncher<android.content.Intent>) {
         val signInIntent = authRepository.googleSignInClient.signInIntent
         launcher.launch(signInIntent)
     }
@@ -48,7 +48,7 @@ class AuthViewModel @Inject constructor(
 
             when (val result = authRepository.loginWithGoogle(account)) {
                 is AuthResult.Success -> {
-                    _uiState.value = AuthUiState.Success(result.user.displayName)
+                    _uiState.value = AuthUiState.Success(result.userName)
                 }
                 is AuthResult.Error -> {
                     _uiState.value = AuthUiState.Error(getErrorMessage(result))
@@ -66,7 +66,7 @@ class AuthViewModel @Inject constructor(
 
             when (val result = authRepository.loginWithKakao()) {
                 is AuthResult.Success -> {
-                    _uiState.value = AuthUiState.Success(result.user.displayName)
+                    _uiState.value = AuthUiState.Success(result.userName)
                 }
                 is AuthResult.Error -> {
                     _uiState.value = AuthUiState.Error(getErrorMessage(result))
@@ -85,9 +85,9 @@ class AuthViewModel @Inject constructor(
             override fun onSuccess() {
                 // 로그인 성공 -> 액세스 토큰으로 사용자 정보 가져옴
                 viewModelScope.launch {
-                    when(val result = authRepository.loginWithNaver()){
+                    when (val result = authRepository.loginWithNaver()) {
                         is AuthResult.Success -> {
-                            _uiState.value = AuthUiState.Success(result.user.displayName)
+                            _uiState.value = AuthUiState.Success(result.userName)
                         }
                         is AuthResult.Error -> {
                             _uiState.value = AuthUiState.Error(getErrorMessage(result))
@@ -101,7 +101,7 @@ class AuthViewModel @Inject constructor(
             }
 
             override fun onError(errorCode: Int, message: String) {
-                _uiState.value = when(errorCode){
+                _uiState.value = when (errorCode) {
                     -1 -> AuthUiState.Error("로그인이 취소되었습니다.")
                     else -> AuthUiState.Error("네이버 로그인 오류: $message")
                 }
@@ -122,7 +122,6 @@ class AuthViewModel @Inject constructor(
         return when (error) {
             is AuthResult.Error.Network -> "네트워크 연결을 확인해주세요"
             is AuthResult.Error.Api -> "서버 오류: ${error.message}"
-            is AuthResult.Error.Firebase -> "인증 실패: ${error.message}"
             is AuthResult.Error.Cancelled -> "로그인이 취소되었습니다"
             is AuthResult.Error.Timeout -> "요청 시간이 초과되었습니다. 다시 시도해주세요"
             is AuthResult.Error.Unknown -> error.message
