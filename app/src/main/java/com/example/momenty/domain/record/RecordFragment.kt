@@ -5,6 +5,7 @@ import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.R
@@ -31,6 +32,12 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             insets
         }
 
+
+
+        binding.btnGoCommunity.setOnClickListener {
+            findNavController().navigate(R.id.action_global_to_community)
+
+        }
 
 
         binding.rvRecord.layoutManager = LinearLayoutManager(requireContext())

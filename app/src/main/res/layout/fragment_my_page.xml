@@ -83,7 +83,7 @@
             android:layout_marginEnd="24dp"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/layout_my_page_manage_pet"
+            android:id="@+id/layout_my_page_add_pet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
@@ -95,8 +95,8 @@
                 android:layout_width="45dp"
                 android:layout_height="45dp"
                 android:src="@drawable/ic_ellipse_my_page"
-                app:layout_constraintTop_toBottomOf="@id/iv_my_page_pet_profile"
-                app:layout_constraintStart_toStartOf="@id/iv_my_page_pet_profile" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <ImageView
                 android:layout_width="20dp"
@@ -127,7 +127,7 @@
             android:layout_height="1dp"
             android:background="@color/caption_2"
             android:layout_marginTop="10dp"
-            app:layout_constraintTop_toBottomOf="@id/layout_my_page_manage_pet"/>
+            app:layout_constraintTop_toBottomOf="@id/layout_my_page_add_pet"/>
 
         <LinearLayout
             android:id="@+id/layout_my_page_service"

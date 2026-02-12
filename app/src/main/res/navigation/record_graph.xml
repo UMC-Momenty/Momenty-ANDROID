@@ -9,9 +9,12 @@
         android:id="@+id/recordFragment"
         android:name="com.example.momenty.domain.record.RecordFragment"
         tools:layout="@layout/fragment_record">
+
         <action
             android:id="@+id/action_record_to_write"
             app:destination="@id/recordWriteFragment" />
+
+
     </fragment>
 
     <fragment
