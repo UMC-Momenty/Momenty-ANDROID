@@ -46,7 +46,6 @@
             android:paddingHorizontal="10dp"
             android:layout_marginBottom="10dp"/>
 
-
         <TextView
             android:id="@+id/tv_alram_name_label"
             android:layout_width="wrap_content"
@@ -55,7 +54,7 @@
             android:fontFamily="@font/pretendard_regular"
             android:textSize="14sp"
             android:textColor="@color/caption_1"/>
-        
+
         <!-- 알림 추가 디자인에서 활동 버튼 선택 부분이 없어서 여기에 추가했어요! -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -86,7 +85,7 @@
                 android:textSize="14sp"/>
 
         </LinearLayout>
-        
+
         <TextView
             android:id="@+id/tv_alarm_terms_label"
             android:layout_width="wrap_content"

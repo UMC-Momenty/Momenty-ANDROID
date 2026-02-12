@@ -1,19 +1,16 @@
 package com.example.momenty.domain.calendar
 
-import android.app.TimePickerDialog
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.example.momenty.R
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.databinding.FragmentAddAlarmBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
@@ -35,6 +32,8 @@ class AddAlarmFragment : Fragment() {
         CalendarViewModelFactory(repo)
     }
 
+    private lateinit var petFilterAdapter: PetFilterAdapter
+    private var selectedPet: Pet? = null
     private var selectedActivityType: String? = null
     private var isRepeatMode = false
     private var selectedDate: Date = Date()
@@ -71,11 +70,39 @@ class AddAlarmFragment : Fragment() {
         }
 
         setupViews()
+        setupPetFilter()
         setupClickListeners()
         observeViewModel()
 
         // 초기 상태 설정
         initializeButtonStates()
+    }
+
+    /**
+     * 반려동물 필터 설정
+     */
+    private fun setupPetFilter() {
+        petFilterAdapter = PetFilterAdapter(emptyList()) { pet ->
+            selectedPet = pet
+
+            val message = if (pet == null) {
+                "전체 반려동물 알림으로 설정됩니다"
+            } else {
+                "${pet.name}의 알림으로 설정됩니다"
+            }
+            showSnackbar(message, Snackbar.LENGTH_SHORT)
+        }
+
+        binding.rvAlarmPetList.apply {
+            layoutManager = LinearLayoutManager(
+                requireContext(),
+                LinearLayoutManager.HORIZONTAL,
+                false
+            )
+            adapter = petFilterAdapter
+            setHasFixedSize(true)
+            isNestedScrollingEnabled = false
+        }
     }
 
     /**
@@ -85,6 +112,17 @@ class AddAlarmFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 calendarViewModel.uiState.collect { state ->
+                    // 반려동물 목록 업데이트
+                    if (state.pets.isNotEmpty()) {
+                        petFilterAdapter.updatePets(state.pets)
+                    }
+
+                    // 선택된 반려동물이 있으면 자동 선택
+                    state.selectedPet?.let { pet ->
+                        selectedPet = pet
+                        petFilterAdapter.selectPet(pet)
+                    }
+
                     // 선택된 날짜가 변경되면 업데이트
                     state.selectedDate?.let { calendarDay ->
                         val calendar = Calendar.getInstance().apply {
@@ -101,7 +139,7 @@ class AddAlarmFragment : Fragment() {
 
                     // 에러 처리
                     state.error?.let { error ->
-                        showSnackbar(error)
+                        showSnackbar(error, Snackbar.LENGTH_SHORT)
                         calendarViewModel.clearError()
                     }
                 }
@@ -338,20 +376,20 @@ class AddAlarmFragment : Fragment() {
                 calendarViewModel.addEvent(calendarEvent)
 
                 if (isAdded) {
-                    showSnackbar("알림이 추가되었습니다")
+                    showSnackbar("알림이 추가되었습니다", Snackbar.LENGTH_SHORT)
 
                     requireActivity().onBackPressedDispatcher.onBackPressed()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 if (isAdded) {
-                    showSnackbar("알림 추가 중 오류가 발생했습니다")
+                    showSnackbar("알림 추가 중 오류가 발생했습니다", Snackbar.LENGTH_SHORT)
                 }
             }
         }
     }
 
-    private fun showSnackbar(message: String) {
+    private fun showSnackbar(message: String, lengthShort: Int) {
         if (isAdded && view != null) {
             Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
         }
