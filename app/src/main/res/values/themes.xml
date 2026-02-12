@@ -1,29 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Base application theme -->
-    <style name="Base.Theme.MOMENTY" parent="Theme.Material3.Light.NoActionBar">
-        <!-- Primary brand color -->
-        <item name="colorPrimary">@color/orange</item>
-        <item name="colorPrimaryVariant">@color/background_brown</item>
-        <item name="colorOnPrimary">@color/white</item>
-
-        <!-- Secondary brand color -->
-        <item name="colorSecondary">@color/background_brown</item>
-        <item name="colorSecondaryVariant">@color/option_1</item>
-        <item name="colorOnSecondary">@color/white</item>
-
-        <!-- Status bar color -->
-        <item name="android:statusBarColor">@color/white</item>
-        <item name="android:windowLightStatusBar">true</item>
-
-        <!-- Background color -->
-        <item name="android:colorBackground">@color/background</item>
-        <item name="colorSurface">@color/background</item>
-        <item name="colorOnSurface">@color/body_1</item>
-
-        <!-- Error color -->
-        <item name="colorError">@color/orange</item>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Momenty" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
-    <style name="Theme.MOMENTY" parent="Base.Theme.MOMENTY" />
+    <style name="Theme.Momenty" parent="Base.Theme.Momenty" />
 </resources>

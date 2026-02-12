@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.momenty" />
+                  <option name="mobileSdkAppId" value="1:866926800654:android:db5e6a093b51e7ea31715f" />
+                  <option name="projectId" value="momenty-aa71c" />
+                  <option name="projectNumber" value="866926800654" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
