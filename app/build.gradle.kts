@@ -7,6 +7,7 @@ plugins {
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("com.google.gms.google-services")
+    id("androidx.navigation.safeargs.kotlin") // 네비게이션 인수 전달
 }
 
 android {
@@ -42,8 +43,16 @@ android {
     }
 
     buildTypes {
+        debug {
+            versionNameSuffix = "-dev"
+            isDebuggable = true
+            buildConfigField("Boolean", "USE_MOCK_API", "true")  // ← 추가
+            buildConfigField("String", "API_BASE_URL", "\"https://dev.api.momenty.com/\"")  // ← 추가
+        }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            buildConfigField("Boolean", "USE_MOCK_API", "false")
+            buildConfigField("String", "API_BASE_URL", "\"https://api.momenty.com/\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -69,10 +78,8 @@ android {
 
 dependencies {
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-firestore")
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
 
 
     // 카카오 SDK
@@ -119,6 +126,7 @@ dependencies {
 
     // Glide
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.github.bumptech.glide:compiler:4.11.0")
 
     // Splash
     implementation("androidx.core:core-splashscreen:1.0.1")

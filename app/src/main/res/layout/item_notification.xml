@@ -19,6 +19,7 @@
         android:layout_marginEnd="10dp"/>
 
     <LinearLayout
+        android:id="@+id/layout_notification_enabled"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -27,6 +28,7 @@
         app:layout_constraintBottom_toBottomOf="@id/tv_notification_title">
 
         <TextView
+            android:id="@+id/tv_notification_enabled"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="ON"

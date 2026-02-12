@@ -9,6 +9,103 @@
         android:id="@+id/myPageFragment"
         android:name="com.example.momenty.domain.mypage.MyPageFragment"
         android:label="마이페이지"
-        tools:layout="@layout/fragment_my_page" />
+        tools:layout="@layout/fragment_my_page" >
+        <action
+            android:id="@+id/action_myPageFragment_to_notificationFragment"
+            app:destination="@id/notificationFragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_noticeFragment"
+            app:destination="@id/noticeFragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_customerCenterFragment"
+            app:destination="@id/customerCenterFragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_appInfoFragment"
+            app:destination="@id/appInfoFragment" />
+        <action
+            android:id="@+id/action_myPageFragment_to_customerCenterInquiryWriteFragment"
+            app:destination="@id/customerCenterInquiryWriteFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.example.momenty.domain.mypage.NotificationFragment"
+        android:label="마이페이지_알림"
+        tools:layout="@layout/fragment_notification" />
+
+    <fragment
+        android:id="@+id/noticeFragment"
+        android:name="com.example.momenty.domain.mypage.NoticeFragment"
+        android:label="마이페이지_공지사항"
+        tools:layout="@layout/fragment_notice" >
+        <action
+            android:id="@+id/action_noticeFragment_to_noticeDetailFragment"
+            app:destination="@id/noticeDetailFragment">
+
+            <argument
+                android:name="title"
+                app:argType="string" />
+            <argument
+                android:name="content"
+                app:argType="string" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/customerCenterFragment"
+        android:name="com.example.momenty.domain.mypage.CustomerCenterFragment"
+        android:label="마이페이지_고객센터"
+        tools:layout="@layout/fragment_customer_center" />
+
+    <fragment
+        android:id="@+id/appInfoFragment"
+        android:name="com.example.momenty.domain.mypage.AppInfoFragment"
+        android:label="마이페이지_앱정보"
+        tools:layout="@layout/fragment_app_info" >
+        <action
+            android:id="@+id/action_appInfoFragment_to_appInfoTermsFragment"
+            app:destination="@id/appInfoTermsFragment">
+
+            <argument
+                android:name="title"
+                app:argType="string" />
+            <argument
+                android:name="content"
+                app:argType="string" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/customerCenterInquiryWriteFragment"
+        android:name="com.example.momenty.domain.mypage.CustomerCenterInquiryWriteFragment"
+        android:label="마이페이지_고객센터_문의하기"
+        tools:layout="@layout/fragment_customer_center_inquiry_write"/>
+
+    <fragment
+        android:id="@+id/appInfoTermsFragment"
+        android:name="com.example.momenty.domain.mypage.AppInfoTermsFragment"
+        android:label="마이페이지_앱정보_서비스이용약관"
+        tools:layout="@layout/fragment_app_info_terms">
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <argument
+            android:name="content"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/noticeDetailFragment"
+        android:name="com.example.momenty.domain.mypage.NoticeDetailFragment"
+        android:label="마이페이지_공지사항"
+        tools:layout="@layout/fragment_notice_detail">
+
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <argument
+            android:name="content"
+            app:argType="string" />
+    </fragment>
 
 </navigation>

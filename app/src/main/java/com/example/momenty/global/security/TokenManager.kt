@@ -99,4 +99,11 @@ class TokenManager @Inject constructor(
             apply()
         }
     }
+
+    /**
+     * 토큰 존재 여부 확인
+     */
+    fun hasValidToken(): Boolean {
+        return !getAccessToken().isNullOrEmpty()
+    }
 }

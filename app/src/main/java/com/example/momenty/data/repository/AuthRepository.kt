@@ -1,26 +1,16 @@
-// data/repository/AuthRepository.kt
 package com.example.momenty.data.repository
 
 import android.content.Context
 import android.util.Log
 import com.example.momenty.BuildConfig
-import com.example.momenty.R
 import com.example.momenty.data.remote.auth.AuthApi
-import com.example.momenty.data.remote.auth.GoogleLoginRequest
-import com.example.momenty.data.remote.auth.KakaoLoginRequest
-import com.example.momenty.data.remote.auth.LoginResponse
-import com.example.momenty.data.remote.auth.NaverLoginRequest
+import com.example.momenty.data.remote.auth.SocialLoginRequest
 import com.example.momenty.global.api.ApiException
-import com.example.momenty.global.api.BaseResponse
 import com.example.momenty.global.security.TokenManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.FirebaseException
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
@@ -29,7 +19,6 @@ import com.navercorp.nid.NaverIdLoginSDK
 import com.navercorp.nid.oauth.NidOAuthLogin
 import com.navercorp.nid.oauth.OAuthLoginCallback
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -38,58 +27,31 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 /**
- * 인증 결과를 나타내는 Sealed Class
- */
-sealed class AuthResult {
-    data class Success(val user: FirebaseUser) : AuthResult()
-
-    sealed class Error(open val message: String) : AuthResult() {
-        data class Network(override val message: String) : Error(message)
-        data class Api(override val message: String, val code: String) : Error(message)
-        data class Firebase(override val message: String) : Error(message)
-        data class Cancelled(override val message: String = "로그인이 취소되었습니다") : Error(message)
-        data class Timeout(override val message: String = "요청 시간이 초과되었습니다") : Error(message)
-        data class Unknown(override val message: String, val throwable: Throwable? = null) : Error(message)
-    }
-}
-
-/**
- * 네이버 토큰 정보
- */
-data class NaverToken(
-    val accessToken: String,
-    val tokenType: String
-)
-
-/**
  * 인증 관련 Repository
  *
- * Google/Kakao 소셜 로그인 및 Firebase 인증을 처리합니다.
- * Mock 모드를 지원하여 백엔드 없이도 개발이 가능합니다.
+ * Firebase는 FCM 용도로만 사용
+ * 인증은 백엔드 JWT만 사용
  */
 @Singleton
 class AuthRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val authApi: AuthApi,
-    private val tokenManager: TokenManager,
-    private val firebaseAuth: FirebaseAuth
+    private val tokenManager: TokenManager
 ) {
 
     companion object {
         private const val TAG = "AuthRepository"
         private const val LOGIN_TIMEOUT_MS = 30_000L // 30초
-
-        // BuildConfig에서 관리 (프로덕션에서는 항상 false)
-        private val USE_MOCK = BuildConfig.DEBUG
+        private const val BACKEND_LOG = "BACKEND_LOGIN"
     }
 
     /**
      * Google Sign-In Client (Lazy 초기화)
+     * Firebase용이 아닌 구글 로그인용
      */
     val googleSignInClient: GoogleSignInClient by lazy {
-        val webClientId = context.getString(R.string.default_web_client_id)
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(webClientId)
+            .requestIdToken(context.getString(com.example.momenty.R.string.default_web_client_id))  // JWT idToken 획득용
             .requestEmail()
             .build()
         GoogleSignIn.getClient(context, gso)
@@ -106,53 +68,47 @@ class AuthRepository @Inject constructor(
             withTimeout(LOGIN_TIMEOUT_MS) {
                 logLoginAttempt("Google", account.email)
 
-                if (USE_MOCK) {
-                    return@withTimeout signInWithGoogleFirebase(account)
+                // 1. Google ID Token 획득
+                val idToken = account.idToken
+                    ?: return@withTimeout AuthResult.Error.Unknown("Google ID Token을 가져올 수 없습니다")
+
+                Log.i(BACKEND_LOG, "========================================")
+                Log.i(BACKEND_LOG, "Provider: GOOGLE")
+                Log.i(BACKEND_LOG, "Access Token: $idToken")
+                Log.i(BACKEND_LOG, "========================================")
+
+                // 2. 백엔드로 ID Token 전송
+                val response = authApi.socialLogin(
+                    SocialLoginRequest(
+                        provider = "GOOGLE",
+                        accessToken = idToken  // 구글은 idToken 전송
+                    )
+                )
+
+                // 3. 응답 검증
+                if (!response.isSuccess || response.result == null) {
+                    return@withTimeout AuthResult.Error.Api(
+                        response.message,
+                        response.code
+                    )
                 }
 
-                executeLoginFlow(
-                    getIdToken = {
-                        account.idToken ?: throw IllegalStateException("Google ID Token을 가져올 수 없습니다")
-                    },
-                    loginRequest = { idToken ->
-                        authApi.googleLogin(GoogleLoginRequest(idToken))
-                    },
-                    mockLogin = { signInWithGoogleFirebase(account) }
+                // 4. 백엔드 JWT 토큰 저장
+                tokenManager.saveTokens(
+                    accessToken = response.result.accessToken,
+                    refreshToken = response.result.refreshToken
+                )
+
+                Log.d(TAG, "Google 로그인 성공: ${account.displayName}")
+
+                // 5. 성공 반환 (사용자 정보 포함)
+                AuthResult.Success(
+                    userName = account.displayName,
+                    email = account.email
                 )
             }
         } catch (e: Exception) {
             handleLoginError("Google", e)
-        }
-    }
-
-    /**
-     * Google Firebase 직접 로그인 (Mock 모드)
-     */
-    private suspend fun signInWithGoogleFirebase(account: GoogleSignInAccount): AuthResult {
-        return try {
-            Log.d(TAG, "MOCK 모드: Google Firebase 로그인 시도")
-
-            val idToken = account.idToken
-                ?: return AuthResult.Error.Firebase("Google ID Token을 가져올 수 없습니다")
-
-            val credential = GoogleAuthProvider.getCredential(idToken, null)
-            val authResult = firebaseAuth.signInWithCredential(credential).await()
-
-            val user = authResult.user
-                ?: return AuthResult.Error.Firebase("Firebase 사용자 정보를 가져올 수 없습니다")
-
-            // Mock JWT 토큰 저장 (실제 환경에서는 사용 금지)
-            saveMockTokens("google")
-
-            Log.d(TAG, "Google Mock 로그인 성공: uid=${user.uid}")
-            AuthResult.Success(user)
-
-        } catch (e: FirebaseException) {
-            Log.e(TAG, "Google Firebase 로그인 실패", e)
-            AuthResult.Error.Firebase(e.message ?: "Google 로그인에 실패했습니다")
-        } catch (e: Exception) {
-            Log.e(TAG, "Google Mock 로그인 실패", e)
-            AuthResult.Error.Unknown(e.message ?: "Google 로그인에 실패했습니다", e)
         }
     }
 
@@ -170,17 +126,42 @@ class AuthRepository @Inject constructor(
                 val kakaoToken = kakaoLogin()
                 Log.d(TAG, "카카오 토큰 획득 성공")
 
-                if (USE_MOCK) {
-                    return@withTimeout loginWithFirebaseMock()
+                // 2. 사용자 정보 가져오기
+                val userInfo = getKakaoUserInfo()
+
+                Log.i(BACKEND_LOG, "========================================")
+                Log.i(BACKEND_LOG, "Provider: KAKAO")
+                Log.i(BACKEND_LOG, "Access Token: ${kakaoToken.accessToken}")
+                Log.i(BACKEND_LOG, "========================================")
+
+                // 3. 백엔드로 Access Token 전송
+                val response = authApi.socialLogin(
+                    SocialLoginRequest(
+                        provider = "KAKAO",
+                        accessToken = kakaoToken.accessToken  // 카카오는 accessToken 전송
+                    )
+                )
+
+                // 4. 응답 검증
+                if (!response.isSuccess || response.result == null) {
+                    return@withTimeout AuthResult.Error.Api(
+                        response.message,
+                        response.code
+                    )
                 }
 
-                // 2. 백엔드로 토큰 전송
-                executeLoginFlow(
-                    getIdToken = { kakaoToken.accessToken },
-                    loginRequest = { accessToken ->
-                        authApi.kakaoLogin(KakaoLoginRequest(accessToken))
-                    },
-                    mockLogin = { loginWithFirebaseMock() }
+                // 5. 백엔드 JWT 토큰 저장
+                tokenManager.saveTokens(
+                    accessToken = response.result.accessToken,
+                    refreshToken = response.result.refreshToken
+                )
+
+                Log.d(TAG, "Kakao 로그인 성공: ${userInfo.nickname}")
+
+                // 6. 성공 반환
+                AuthResult.Success(
+                    userName = userInfo.nickname,
+                    email = userInfo.email
                 )
             }
         } catch (e: Exception) {
@@ -189,26 +170,56 @@ class AuthRepository @Inject constructor(
     }
 
     /**
-     * 네이버 로그인 (카카오와 동일한 방법)
+     * 네이버 로그인 전체 플로우
+     *
+     * @return AuthResult 로그인 성공 또는 실패 결과
      */
     suspend fun loginWithNaver(): AuthResult {
-        return try{
-            withTimeout(LOGIN_TIMEOUT_MS){
+        return try {
+            withTimeout(LOGIN_TIMEOUT_MS) {
                 logLoginAttempt("Naver", null)
 
+                // 1. 네이버 Access Token 획득
                 val naverToken = getNaverAccessToken()
                 Log.d(TAG, "네이버 토큰 획득 성공")
 
-                if(USE_MOCK){
-                    return@withTimeout loginWithFirebaseMock()
+                // 2. 사용자 정보 가져오기
+                val userInfo = getNaverUserInfo()
+
+                Log.i(BACKEND_LOG, "========================================")
+                Log.i(BACKEND_LOG, "Provider: NAVER")
+                Log.i(BACKEND_LOG, "Access Token: ${naverToken.accessToken}")
+                Log.i(BACKEND_LOG, "========================================")
+
+
+                // 3. 백엔드로 Access Token 전송
+                val response = authApi.socialLogin(
+                    SocialLoginRequest(
+                        provider = "NAVER",
+                        accessToken = naverToken.accessToken  // 네이버는 accessToken 전송
+                    )
+                )
+
+                // 4. 응답 검증
+                if (!response.isSuccess || response.result == null) {
+                    return@withTimeout AuthResult.Error.Api(
+                        response.message,
+                        response.code
+                    )
                 }
 
-                executeLoginFlow(
-                    getIdToken = {naverToken.accessToken},
-                    loginRequest = {accessToken ->
-                        authApi.naverLogin(NaverLoginRequest(accessToken))
-                    },
-                    mockLogin = { loginWithFirebaseMock() }
+                // 5. 백엔드 JWT 토큰 저장
+                tokenManager.saveTokens(
+                    accessToken = response.result.accessToken,
+                    refreshToken = response.result.refreshToken
+                )
+
+                Log.d(TAG, "Naver 로그인 성공: ${userInfo.name}")
+
+                // 6. 성공 반환
+                AuthResult.Success(
+                    userName = userInfo.name,
+                    email = userInfo.email
                 )
             }
         } catch (e: Exception) {
@@ -217,151 +228,53 @@ class AuthRepository @Inject constructor(
     }
 
     /**
-     * 공통 로그인 플로우 실행
-     */
-    private suspend fun executeLoginFlow(
-        getIdToken: suspend () -> String,
-        loginRequest: suspend (String) -> BaseResponse<LoginResponse>,
-        mockLogin: suspend () -> AuthResult
-    ): AuthResult {
-        return try {
-            if (USE_MOCK) {
-                return mockLogin()
-            }
-
-            // ID Token 획득
-            val idToken = getIdToken()
-
-            // 백엔드 API 호출
-            val response = loginRequest(idToken)
-
-            if (!response.isSuccess || response.result == null) {
-                return AuthResult.Error.Api(
-                    message = response.message,
-                    code = response.code
-                )
-            }
-
-            // 토큰 저장 및 Firebase 로그인
-            saveTokensAndSignInWithFirebase(response.result)
-
-        } catch (e: ApiException) {
-            Log.e(TAG, "API 에러", e)
-            AuthResult.Error.Api(e.message, e.code)
-        } catch (e: Exception) {
-            throw e
-        }
-    }
-
-    /**
-     * JWT 토큰 저장 및 Firebase 로그인
-     */
-    private suspend fun saveTokensAndSignInWithFirebase(loginData: LoginResponse): AuthResult {
-        return try {
-            // JWT 토큰 저장
-            tokenManager.saveAccessToken(loginData.accessToken)
-            tokenManager.saveRefreshToken(loginData.refreshToken)
-
-            // Firebase Custom Token으로 로그인
-            val firebaseUser = signInWithFirebaseCustomToken(loginData.firebaseCustomToken)
-
-            AuthResult.Success(firebaseUser)
-        } catch (e: Exception) {
-            Log.e(TAG, "토큰 저장 또는 Firebase 로그인 실패", e)
-            AuthResult.Error.Firebase(e.message ?: "인증 처리 중 오류가 발생했습니다")
-        }
-    }
-
-    /**
-     * Firebase Mock 로그인 (익명 로그인)
-     */
-    private suspend fun loginWithFirebaseMock(): AuthResult {
-        return try {
-            Log.d(TAG, "Mock 모드: Firebase 익명 로그인 시도")
-
-            val authResult = firebaseAuth.signInAnonymously().await()
-            val user = authResult.user
-                ?: return AuthResult.Error.Firebase("Firebase 사용자 정보를 가져올 수 없습니다")
-
-            // Mock JWT 토큰 저장
-            saveMockTokens("kakao")
-
-            Log.d(TAG, "Mock 로그인 성공: uid=${user.uid}")
-            AuthResult.Success(user)
-
-        } catch (e: FirebaseException) {
-            Log.e(TAG, "Firebase Mock 로그인 실패", e)
-            AuthResult.Error.Firebase(e.message ?: "로그인에 실패했습니다")
-        } catch (e: Exception) {
-            Log.e(TAG, "Mock 로그인 실패", e)
-            AuthResult.Error.Unknown(e.message ?: "로그인에 실패했습니다", e)
-        }
-    }
-
-    /**
-     * 카카오 SDK를 통한 로그인
+     * 카카오 로그인 실행
      */
     private suspend fun kakaoLogin(): OAuthToken = suspendCoroutine { continuation ->
         val callback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
             when {
                 error != null -> {
-                    Log.e(TAG, "카카오 로그인 실패: ${error.message}")
-
                     if (error is ClientError && error.reason == ClientErrorCause.Cancelled) {
                         continuation.resumeWithException(
-                            UserCancellationException("로그인이 취소되었습니다")
+                            UserCancellationException("카카오 로그인이 취소되었습니다")
                         )
                     } else {
                         continuation.resumeWithException(error)
                     }
                 }
-
-                token != null -> {
-                    Log.d(TAG, "카카오 로그인 성공")
-                    continuation.resume(token)
-                }
-
-                else -> {
-                    continuation.resumeWithException(
-                        IllegalStateException("카카오 토큰을 받지 못했습니다")
-                    )
-                }
+                token != null -> continuation.resume(token)
+                else -> continuation.resumeWithException(
+                    IllegalStateException("카카오 로그인 결과가 없습니다")
+                )
             }
         }
 
-        // 카카오톡 설치 여부에 따라 로그인 방식 선택
+        // 카카오톡 앱 설치 여부에 따라 로그인 방식 선택
         if (UserApiClient.instance.isKakaoTalkLoginAvailable(context)) {
-            Log.d(TAG, "카카오톡으로 로그인 시도")
-            UserApiClient.instance.loginWithKakaoTalk(context) { token, error ->
-                when {
-                    error != null -> {
-                        Log.w(TAG, "카카오톡 로그인 실패, 카카오 계정으로 재시도")
-
-                        // 사용자가 취소한 경우 재시도 안 함
-                        if (error is ClientError && error.reason == ClientErrorCause.Cancelled) {
-                            callback(null, error)
-                        } else {
-                            // 카카오톡 로그인 실패 시 카카오 계정으로 재시도
-                            Log.d(TAG, "카카오 계정으로 로그인 시도")
-                            UserApiClient.instance.loginWithKakaoAccount(
-                                context,
-                                callback = callback
-                            )
-                        }
-                    }
-
-                    token != null -> {
-                        callback(token, null)
-                    }
-
-                    else -> {
-                        callback(null, IllegalStateException("카카오톡 로그인 실패"))
-                    }
-                }
-            }
+            UserApiClient.instance.loginWithKakaoTalk(context, callback = callback)
         } else {
-            Log.d(TAG, "카카오 계정으로 로그인 시도")
             UserApiClient.instance.loginWithKakaoAccount(context, callback = callback)
+        }
+    }
+
+    /**
+     * 카카오 사용자 정보 가져오기
+     */
+    private suspend fun getKakaoUserInfo(): KakaoUserInfo = suspendCoroutine { continuation ->
+        UserApiClient.instance.me { user, error ->
+            when {
+                error != null -> continuation.resumeWithException(error)
+                user != null -> continuation.resume(
+                    KakaoUserInfo(
+                        id = user.id.toString(),
+                        nickname = user.kakaoAccount?.profile?.nickname,
+                        email = user.kakaoAccount?.email
+                    )
+                )
+                else -> continuation.resumeWithException(
+                    IllegalStateException("카카오 사용자 정보를 가져올 수 없습니다")
+                )
+            }
         }
     }
 
@@ -370,7 +283,7 @@ class AuthRepository @Inject constructor(
      */
     private fun getNaverAccessToken(): NaverToken {
         val accessToken = NaverIdLoginSDK.getAccessToken()
-            ?: throw IllegalStateException("네이버 액세스 토큰을 가져올 수 없습니다.")
+            ?: throw IllegalStateException("네이버 액세스 토큰을 가져올 수 없습니다")
 
         val tokenType = NaverIdLoginSDK.getTokenType() ?: "Bearer"
 
@@ -378,42 +291,46 @@ class AuthRepository @Inject constructor(
     }
 
     /**
-     * Firebase Custom Token으로 로그인
+     * 네이버 사용자 정보 가져오기
      */
-    private suspend fun signInWithFirebaseCustomToken(customToken: String): FirebaseUser {
-        Log.d(TAG, "Firebase Custom Token 로그인 시도")
-        val authResult = firebaseAuth.signInWithCustomToken(customToken).await()
-        val user = authResult.user
-            ?: throw IllegalStateException("Firebase 사용자 정보를 가져올 수 없습니다")
-        Log.d(TAG, "Firebase 로그인 성공: uid=${user.uid}")
-        return user
+    private suspend fun getNaverUserInfo(): NaverUserInfo = suspendCoroutine { continuation ->
+        NidOAuthLogin().callProfileApi(object : com.navercorp.nid.profile.NidProfileCallback<com.navercorp.nid.profile.data.NidProfileResponse> {
+            override fun onSuccess(result: com.navercorp.nid.profile.data.NidProfileResponse) {
+                val profile = result.profile
+                if (profile != null) {
+                    continuation.resume(
+                        NaverUserInfo(
+                            id = profile.id ?: "",
+                            name = profile.name,
+                            email = profile.email
+                        )
+                    )
+                } else {
+                    continuation.resumeWithException(
+                        IllegalStateException("네이버 사용자 정보를 가져올 수 없습니다")
+                    )
+                }
+            }
+
+            override fun onError(errorCode: Int, message: String) {
+                continuation.resumeWithException(
+                    Exception("네이버 사용자 정보 조회 실패: $message")
+                )
+            }
+
+            override fun onFailure(httpStatus: Int, message: String) {
+                continuation.resumeWithException(
+                    Exception("네이버 사용자 정보 조회 실패: $message")
+                )
+            }
+        })
     }
 
     /**
-     * Mock 토큰 저장 (개발용)
-     * 주의: 프로덕션 환경에서는 절대 사용 금지
-     */
-    private fun saveMockTokens(provider: String) {
-        if (!BuildConfig.DEBUG) {
-            Log.w(TAG, "프로덕션 환경에서 Mock 토큰 저장 시도 - 무시됨")
-            return
-        }
-
-        val timestamp = System.currentTimeMillis()
-        tokenManager.saveAccessToken("mock_${provider}_access_$timestamp")
-        tokenManager.saveRefreshToken("mock_${provider}_refresh_$timestamp")
-    }
-
-    /**
-     * 현재 로그인된 Firebase 사용자 반환
-     */
-    fun getCurrentUser(): FirebaseUser? = firebaseAuth.currentUser
-
-    /**
-     * 로그인 상태 확인
+     * 현재 로그인 상태 확인
      */
     fun isLoggedIn(): Boolean {
-        return tokenManager.isLoggedIn() && getCurrentUser() != null
+        return tokenManager.isLoggedIn()
     }
 
     /**
@@ -444,7 +361,7 @@ class AuthRepository @Inject constructor(
 
             // 2. Google 로그아웃
             runCatching {
-                googleSignInClient.signOut().await()
+                googleSignInClient.signOut()
                 Log.d(TAG, "Google 로그아웃 성공")
             }.onFailure {
                 Log.e(TAG, "Google 로그아웃 실패", it)
@@ -460,9 +377,8 @@ class AuthRepository @Inject constructor(
                 errors.add(it)
             }
 
-            // 4. 토큰 정리 및 Firebase 로그아웃 (항상 실행)
+            // 4. 토큰 정리 (항상 실행)
             tokenManager.clearTokens()
-            firebaseAuth.signOut()
 
             if (errors.isNotEmpty()) {
                 Log.w(TAG, "로그아웃 완료 (일부 오류 발생: ${errors.size}개)")
@@ -477,7 +393,6 @@ class AuthRepository @Inject constructor(
             // 심각한 오류가 발생해도 최소한의 정리는 수행
             try {
                 tokenManager.clearTokens()
-                firebaseAuth.signOut()
             } catch (cleanupError: Exception) {
                 Log.e(TAG, "정리 작업 실패", cleanupError)
             }
@@ -512,25 +427,16 @@ class AuthRepository @Inject constructor(
                 errors.add(it)
             }
 
-            // 2. Firebase 계정 삭제
+            // 2. Google 로그아웃 (연결 끊기는 별도 API 필요)
             runCatching {
-                getCurrentUser()?.delete()?.await()
-                Log.d(TAG, "Firebase 계정 삭제 성공")
-            }.onFailure {
-                Log.e(TAG, "Firebase 계정 삭제 실패", it)
-                errors.add(it)
-            }
-
-            // 3. Google 로그아웃 (연결 끊기는 별도 API 필요)
-            runCatching {
-                googleSignInClient.signOut().await()
+                googleSignInClient.signOut()
                 Log.d(TAG, "Google 로그아웃 성공")
             }.onFailure {
                 Log.e(TAG, "Google 로그아웃 실패", it)
                 errors.add(it)
             }
 
-            // 4. 네이버 연결 끊기
+            // 3. 네이버 연결 끊기
             runCatching {
                 suspendCoroutine<Unit> { continuation ->
                     NidOAuthLogin().callDeleteTokenApi(object : OAuthLoginCallback {
@@ -559,7 +465,7 @@ class AuthRepository @Inject constructor(
                 errors.add(it)
             }
 
-            // 5. 토큰 정리 (항상 실행)
+            // 4. 토큰 정리 (항상 실행)
             tokenManager.clearTokens()
 
             if (errors.isNotEmpty()) {
@@ -578,7 +484,6 @@ class AuthRepository @Inject constructor(
             // 실패해도 최소한의 정리는 수행
             try {
                 tokenManager.clearTokens()
-                firebaseAuth.signOut()
             } catch (cleanupError: Exception) {
                 Log.e(TAG, "정리 작업 실패", cleanupError)
             }
@@ -612,9 +517,6 @@ class AuthRepository @Inject constructor(
             is ApiException -> {
                 AuthResult.Error.Api(error.message, error.code)
             }
-            is FirebaseException -> {
-                AuthResult.Error.Firebase(error.message ?: "$provider 인증 실패")
-            }
             is UserCancellationException -> {
                 AuthResult.Error.Cancelled()
             }
@@ -639,13 +541,24 @@ class AuthRepository @Inject constructor(
      * 리소스 정리 (필요시 호출)
      */
     fun cleanup() {
-        // GoogleSignInClient는 lazy로 초기화되므로
-        // 명시적 정리가 필요한 경우 여기서 처리
         Log.d(TAG, "AuthRepository 리소스 정리")
     }
 }
 
 /**
- * 사용자 취소를 나타내는 Exception
+ * 카카오 사용자 정보
  */
-private class UserCancellationException(message: String) : Exception(message)
+data class KakaoUserInfo(
+    val id: String,
+    val nickname: String?,
+    val email: String?
+)
+
+/**
+ * 네이버 사용자 정보
+ */
+data class NaverUserInfo(
+    val id: String,
+    val name: String?,
+    val email: String?
+)
