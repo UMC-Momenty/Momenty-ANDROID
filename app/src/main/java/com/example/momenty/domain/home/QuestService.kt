@@ -37,7 +37,7 @@ class QuestService {
             }
 
             override fun onFailure(call: Call<LoadQuestResponse?>, t: Throwable) {
-                Log.d("LoadQuest/Failure", t.message.toString())
+                Log.d("API", "호출 실패", t)
             }
         })
     }

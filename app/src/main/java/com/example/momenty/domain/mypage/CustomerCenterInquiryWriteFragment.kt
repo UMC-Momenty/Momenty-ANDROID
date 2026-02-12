@@ -208,12 +208,12 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
     }
 
     private fun selectGallery() {
-        val writePermission = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        val readPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
+        val writePermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        val readPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
 
         if (writePermission == PackageManager.PERMISSION_DENIED || readPermission == PackageManager.PERMISSION_DENIED) {
             Log.d("myTag", "need permission")
-            ActivityCompat.requestPermissions(activity, arrayOf(
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_EXTERNAL_STORAGE), REQ_GALLERY)
         } else {

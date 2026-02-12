@@ -83,6 +83,9 @@
 
         <!-- 마이페이지_사용자 프로필 수정-->
         <activity android:name=".domain.mypage.UserProfileActivity"/>
+
+        <!-- 오늘의 질문 액티비티 -->
+        <activity android:name=".domain.home.QuestActivity"/>
     </application>
 
 </manifest>

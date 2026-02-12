@@ -49,8 +49,7 @@
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
                 android:text="저장"
-                style="@style/TextAppearance.App.Body02"
-                android:backgroundTint="@color/caption_2"/>
+                style="@style/TextAppearance.App.Body02"/>
 
 
             <!--
