@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_rounded">
+
+    <!--  제목  -->
+    <TextView
+        android:id="@+id/tv_time_picker_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/time_picker_title"
+        android:fontFamily="@font/pretendard_regular"
+        android:textSize="14sp"
+        android:textColor="@color/body_2"
+        android:layout_marginBottom="10dp"/>
+
+
+    <!-- EditText 입력 영역 -->
+    <LinearLayout
+        android:id="@+id/ll_time_picker_blanks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="30dp"
+        android:layout_marginBottom="5dp">
+
+        <EditText
+            android:id="@+id/et_time_picker_day_night"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="5dp"
+            android:fontFamily="@font/pretendard_regular"
+            android:textSize="14sp"
+            android:textColor="@color/body_2"
+            android:gravity="center"
+            android:inputType="none"
+            android:focusable="false"
+            android:cursorVisible="false"/>
+
+        <EditText
+            android:id="@+id/et_time_picker_hour"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/pretendard_regular"
+            android:textSize="14sp"
+            android:textColor="@color/body_2"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="2"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:text="@string/time_picker_hour"
+            android:fontFamily="@font/pretendard_regular"
+            android:textSize="12sp"
+            android:textColor="@color/caption_1"/>
+
+        <EditText
+            android:id="@+id/et_time_picker_min"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/pretendard_regular"
+            android:textSize="14sp"
+            android:textColor="@color/body_2"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="2"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:fontFamily="@font/pretendard_regular"
+            android:text="@string/time_picker_min"
+            android:textColor="@color/caption_1"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+
+    <!-- 선택 영역 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="20dp"
+        android:layout_marginTop="5dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginHorizontal="10dp">
+
+            <RadioGroup
+                android:id="@+id/rg_time_picker_day_night"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:orientation="vertical"
+                android:background="@drawable/bg_gender_selector">
+
+                <RadioButton
+                    android:id="@+id/rb_time_picker_day"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/time_picker_day"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textSize="14sp"
+                    android:textColor="@color/gender_text_selected"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:background="@drawable/bg_gender_item"
+                    android:paddingVertical="8dp"/>
+
+                <RadioButton
+                    android:id="@+id/rb_time_picker_night"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/time_picker_night"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textSize="14sp"
+                    android:textColor="@color/gender_text_selected"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:background="@drawable/bg_gender_item"
+                    android:paddingVertical="8dp"/>
+
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="10dp"
+            android:orientation="vertical"
+            android:background="@drawable/bg_gender_selector"
+            android:padding="5dp">
+
+            <ScrollView
+                android:id="@+id/sv_hour_picker"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:scrollbars="none"
+                android:overScrollMode="never"
+                android:fadeScrollbars="false">
+
+                <LinearLayout
+                    android:id="@+id/ll_hour_items"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"/>
+
+            </ScrollView>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="10dp"
+            android:orientation="vertical"
+            android:background="@drawable/bg_gender_selector"
+            android:padding="5dp">
+
+            <ScrollView
+                android:id="@+id/sv_minute_picker"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:scrollbars="none"
+                android:overScrollMode="never"
+                android:fadeScrollbars="false">
+
+                <LinearLayout
+                    android:id="@+id/ll_minute_items"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"/>
+
+            </ScrollView>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="right"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="30dp">
+
+        <TextView
+            android:id="@+id/tv_btn_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:text="@string/dialog_cancel"
+            android:fontFamily="@font/pretendard_regular"
+            android:textSize="14sp"
+            android:textColor="@color/body_2" />
+
+        <TextView
+            android:id="@+id/tv_btn_enter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dialog_enter"
+            android:fontFamily="@font/pretendard_regular"
+            android:textSize="14sp"
+            android:textColor="@color/body_2" />
+
+    </LinearLayout>
+</LinearLayout>

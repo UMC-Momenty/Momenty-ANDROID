@@ -95,6 +95,7 @@ dependencies {
 
     // Hilt
     implementation("com.google.dagger:hilt-android:2.52")
+    implementation(libs.androidx.ui)
     kapt("com.google.dagger:hilt-compiler:2.52")
 
 

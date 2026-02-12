@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/tv_pet_profile_title"
+        android:id="@+id/tv_calendar_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/calendar_title"
@@ -48,10 +48,9 @@
         android:layout_marginStart="20dp"
         android:paddingEnd="20dp"
         android:clipToPadding="false"
-        android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_pet_profile_title"/>
+        app:layout_constraintTop_toBottomOf="@id/tv_calendar_title"/>
 
     <!-- 년월 선택 -->
     <LinearLayout
@@ -66,7 +65,7 @@
         app:layout_constraintTop_toBottomOf="@id/rv_pet_filter">
 
         <ImageView
-            android:id="@+id/iv_month_defore"
+            android:id="@+id/iv_month_before"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/img_arrow_left"
@@ -84,7 +83,7 @@
             android:textSize="16sp"/>
 
         <ImageView
-            android:id="@+id/iv_month_atfer"
+            android:id="@+id/iv_month_after"
             android:layout_width="18dp"
             android:layout_height="20dp"
             android:src="@drawable/img_arrow_right"

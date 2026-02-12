@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 체크된 상태 (ON) -->
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="100dp" />
+            <solid android:color="@color/primary" />
+        </shape>
+    </item>
+
+    <!-- 체크 안된 상태 (OFF) -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="100dp" />
+            <solid android:color="@color/caption_1" />
+        </shape>
+    </item>
+</selector>
