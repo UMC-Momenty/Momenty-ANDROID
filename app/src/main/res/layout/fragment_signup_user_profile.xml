@@ -72,8 +72,8 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="bottom|end"
-                    android:tint="@color/white"
-                    android:src="@drawable/dot_record_unselected" />
+                    android:src="@drawable/dot_record_unselected"
+                    app:tint="@color/white" />
 
                 <ImageView
                     android:layout_width="30dp"

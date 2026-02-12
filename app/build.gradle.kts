@@ -43,8 +43,16 @@ android {
     }
 
     buildTypes {
+        debug {
+            versionNameSuffix = "-dev"
+            isDebuggable = true
+            buildConfigField("Boolean", "USE_MOCK_API", "true")  // ← 추가
+            buildConfigField("String", "API_BASE_URL", "\"https://dev.api.momenty.com/\"")  // ← 추가
+        }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            buildConfigField("Boolean", "USE_MOCK_API", "false")
+            buildConfigField("String", "API_BASE_URL", "\"https://api.momenty.com/\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -70,10 +78,8 @@ android {
 
 dependencies {
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-firestore")
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
 
 
     // 카카오 SDK
