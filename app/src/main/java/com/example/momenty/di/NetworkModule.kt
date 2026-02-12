@@ -91,6 +91,13 @@ object NetworkModule {
         return retrofit.create(AuthApi::class.java)
     }
 
+
+    fun getRetrofit(): Retrofit{
+        val retrofit = Retrofit.Builder().baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create()).build()
+
+        return retrofit
+
     @Provides
     @Singleton
     fun provideProfileApi(retrofit: Retrofit): ProfileApi {

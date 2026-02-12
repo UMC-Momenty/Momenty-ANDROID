@@ -59,6 +59,19 @@
         app:layout_constraintTop_toBottomOf="@id/rl_write_question_1"/>
 
     <TextView
+        android:id="@+id/tv_write_question_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="날짜"
+        style="@style/TextAppearance.App.Body02"
+        android:textSize="12sp"
+        android:layout_marginStart="12dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@id/tv_write_question_number"
+        app:layout_constraintTop_toTopOf="@id/tv_write_question_number"
+        app:layout_constraintBottom_toBottomOf="@id/tv_write_question_number"/>
+
+    <TextView
         android:id="@+id/tv_write_question_content"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
