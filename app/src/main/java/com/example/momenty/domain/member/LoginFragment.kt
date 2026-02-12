@@ -1,4 +1,4 @@
-package com.example.momenty.domain.member.presentation
+package com.example.momenty.domain.member
 
 import android.os.Bundle
 import android.os.Handler

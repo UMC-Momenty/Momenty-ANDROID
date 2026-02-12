@@ -1,4 +1,4 @@
-package com.example.momenty.domain.member.presentation
+package com.example.momenty.domain.member
 
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter

@@ -8,7 +8,7 @@
     <!-- 로그인 관련 화면들 -->
     <fragment
         android:id="@+id/termsFragment"
-        android:name="com.example.momenty.domain.member.presentation.TermsFragment"
+        android:name="com.example.momenty.domain.member.TermsFragment"
         android:label="Terms"
         tools:layout="@layout/fragment_terms">
         <action
@@ -23,7 +23,7 @@
 
     <fragment
         android:id="@+id/termsDetailFragment"
-        android:name="com.example.momenty.domain.member.presentation.TermsDetailFragment"
+        android:name="com.example.momenty.domain.member.TermsDetailFragment"
         android:label="TermsDetail"
         tools:layout="@layout/fragment_terms_detail">
         <argument
@@ -33,7 +33,7 @@
 
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.example.momenty.domain.member.presentation.LoginFragment"
+        android:name="com.example.momenty.domain.member.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login">
         <action
@@ -45,7 +45,7 @@
 
     <fragment
         android:id="@+id/userProfileFragment"
-        android:name="com.example.momenty.domain.member.presentation.UserProfileFragment"
+        android:name="com.example.momenty.domain.member.UserProfileFragment"
         android:label="UserProfile"
         tools:layout="@layout/fragment_signup_user_profile">
         <action
@@ -57,7 +57,7 @@
 
     <fragment
         android:id="@+id/petProfileFragment"
-        android:name="com.example.momenty.domain.member.presentation.PetProfileFragment"
+        android:name="com.example.momenty.domain.member.PetProfileFragment"
         android:label="PetProfile"
         tools:layout="@layout/fragment_signup_pet_profile">
     </fragment>
