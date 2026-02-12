@@ -115,6 +115,12 @@
         <item>기타:</item>
     </string-array>
 
+    <!-- 문의 유형 -->
+    <string-array name="inquiry_type">
+        <item>계정</item>
+        <item>서비스</item>
+    </string-array>
+
     <!-- 일정 관리 -->
     <string name="calendar_title">일정 관리</string>
     <string name="calendar_year">년</string>
@@ -158,6 +164,7 @@
     <string name="comment_label">댓글</string>
     <string name="comment_hint">댓글을 입력해 주세요</string>
     <string name="comment_submit">등록</string>
+
 
 
 

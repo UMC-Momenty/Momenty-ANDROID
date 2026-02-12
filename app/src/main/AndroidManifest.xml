@@ -6,6 +6,10 @@
     <uses-permission android:name="android.permission.READ_CALENDAR"/>
     <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
 
+    <!-- 갤러리 권한 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
     <application
         android:name=".MomentyApplication"
         android:allowBackup="true"
@@ -54,6 +58,15 @@
                     android:scheme="kakao${KAKAO_NATIVE_APP_KEY}" />
             </intent-filter>
         </activity>
+
+        <!-- 마이페이지_반려동물 관리-->
+        <activity android:name=".domain.mypage.PetFormManageActivity"/>
+
+        <!-- 마이페이지_반려동물 추가-->
+        <activity android:name=".domain.mypage.PetFormAddActivity"/>
+
+        <!-- 마이페이지_사용자 프로필 수정-->
+        <activity android:name=".domain.mypage.UserProfileActivity"/>
     </application>
 
 </manifest>
