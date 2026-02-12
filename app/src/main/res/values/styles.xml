@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Heading Styles -->
+    <style name="TextAppearance.App.Heading01" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/pretendard_semibold</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@color/body_1</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="TextAppearance.App.Heading02" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/pretendard_semibold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/body_1</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <!-- Body Styles -->
+    <style name="TextAppearance.App.Body01" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/pretendard_medium</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/body_2</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="TextAppearance.App.Body02" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/pretendard_regular</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/body_2</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <!-- Caption Styles -->
+    <style name="TextAppearance.App.Caption01" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/pretendard_regular</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/caption_1</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="TextAppearance.App.Caption02" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/pretendard_regular</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/caption_2</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="TextAppearance.App.Caption03" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/pretendard_regular</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/caption_3</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <!-- EditText Styles -->
+    <style name="Widget.App.EditText" parent="Widget.AppCompat.EditText">
+        <item name="android:background">@drawable/bg_edittext_selector</item>
+        <item name="android:fontFamily">@font/pretendard_regular</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/body_2</item>
+        <item name="android:textColorHint">@color/caption_2</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+</resources>

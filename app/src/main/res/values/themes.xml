@@ -1,9 +1,51 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
     <style name="Base.Theme.Momenty" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Primary Colors -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_sub</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+
+        <!-- Secondary Colors -->
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+
+        <!-- Background -->
+        <item name="android:colorBackground">@color/neutral_bg</item>
+        <item name="colorSurface">@android:color/white</item>
+
+        <!-- Error -->
+        <item name="colorError">@color/status_error</item>
+
+        <!-- Status Bar -->
+        <item name="android:statusBarColor">@color/neutral_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Navigation Bar -->
+        <item name="android:navigationBarColor">@color/neutral_bg</item>
+
+        <!-- Default Text Styles -->
+        <item name="textAppearanceHeadline1">@style/TextAppearance.App.Heading01</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.App.Heading02</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.App.Body01</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.App.Body02</item>
+        <item name="textAppearanceCaption">@style/TextAppearance.App.Caption01</item>
+
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:fitsSystemWindows">false</item>
+    </style>
+
+    <style name="Theme.Splash" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/primary</item>
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:navigationBarColor">@color/primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+
+        <item name="android:windowDisablePreview">true</item>
     </style>
 
     <style name="Theme.Momenty" parent="Base.Theme.Momenty" />
+
 </resources>

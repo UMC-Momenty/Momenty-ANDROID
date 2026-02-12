@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/termsFragment">
+
+    <!-- 로그인 관련 화면들 -->
+    <fragment
+        android:id="@+id/termsFragment"
+        android:name="com.example.momenty.domain.member.presentation.TermsFragment"
+        android:label="Terms"
+        tools:layout="@layout/fragment_terms">
+        <action
+            android:id="@+id/action_termsFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/termsFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_termsFragment_to_termsDetailFragment"
+            app:destination="@id/termsDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/termsDetailFragment"
+        android:name="com.example.momenty.domain.member.presentation.TermsDetailFragment"
+        android:label="TermsDetail"
+        tools:layout="@layout/fragment_terms_detail">
+        <argument
+            android:name="termsType"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.momenty.domain.member.presentation.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_loginFragment_to_recordFragment"
+            app:destination="@id/recordFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <!-- 메인 기능 화면들 -->
+    <fragment
+        android:id="@+id/recordFragment"
+        android:name="com.example.momenty.domain.record.RecordFragment"
+        android:label="Record"
+        tools:layout="@layout/fragment_record">
+        <action
+            android:id="@+id/action_recordFragment_to_writeFragment"
+            app:destination="@id/recordWriteFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/recordWriteFragment"
+        android:name="com.example.momenty.domain.record.RecordWriteFragment"
+        android:label="Write"
+        tools:layout="@layout/fragment_record_write">
+        <action
+            android:id="@+id/action_recordWriteFragment_to_recordFragment"
+            app:destination="@id/recordFragment" />
+    </fragment>
+
+</navigation>

@@ -12,6 +12,7 @@
           "package_name": "com.example.momenty"
         }
       },
+<<<<<<< HEAD
       "oauth_client": [
         {
           "client_id": "866926800654-dflednoba970votrfcefjp7t0fchm179.apps.googleusercontent.com",
@@ -26,6 +27,9 @@
           "client_type": 3
         }
       ],
+=======
+      "oauth_client": [],
+>>>>>>> 2a237663fcdb49f22093c37f5c3ef65f282e54e2
       "api_key": [
         {
           "current_key": "AIzaSyDjrVGuYn-Nys6ZoPWQjj6VQxqeQVOo0h8"
@@ -33,12 +37,16 @@
       ],
       "services": {
         "appinvite_service": {
+<<<<<<< HEAD
           "other_platform_oauth_client": [
             {
               "client_id": "866926800654-qec6k8eerj4goqb6tq78jr399od5b5mc.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
+=======
+          "other_platform_oauth_client": []
+>>>>>>> 2a237663fcdb49f22093c37f5c3ef65f282e54e2
         }
       }
     }
