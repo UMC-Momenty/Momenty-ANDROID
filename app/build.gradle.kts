@@ -42,8 +42,16 @@ android {
     }
 
     buildTypes {
+        debug {
+            versionNameSuffix = "-dev"
+            isDebuggable = true
+            buildConfigField("Boolean", "USE_MOCK_API", "true")  // ← 추가
+            buildConfigField("String", "API_BASE_URL", "\"https://dev.api.momenty.com/\"")  // ← 추가
+        }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            buildConfigField("Boolean", "USE_MOCK_API", "false")
+            buildConfigField("String", "API_BASE_URL", "\"https://api.momenty.com/\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

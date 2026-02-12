@@ -42,6 +42,7 @@ class AuthRepository @Inject constructor(
     companion object {
         private const val TAG = "AuthRepository"
         private const val LOGIN_TIMEOUT_MS = 30_000L // 30초
+        private const val BACKEND_LOG = "BACKEND_LOGIN"
     }
 
     /**
@@ -70,6 +71,11 @@ class AuthRepository @Inject constructor(
                 // 1. Google ID Token 획득
                 val idToken = account.idToken
                     ?: return@withTimeout AuthResult.Error.Unknown("Google ID Token을 가져올 수 없습니다")
+
+                Log.i(BACKEND_LOG, "========================================")
+                Log.i(BACKEND_LOG, "Provider: GOOGLE")
+                Log.i(BACKEND_LOG, "Access Token: $idToken")
+                Log.i(BACKEND_LOG, "========================================")
 
                 // 2. 백엔드로 ID Token 전송
                 val response = authApi.socialLogin(
@@ -123,6 +129,11 @@ class AuthRepository @Inject constructor(
                 // 2. 사용자 정보 가져오기
                 val userInfo = getKakaoUserInfo()
 
+                Log.i(BACKEND_LOG, "========================================")
+                Log.i(BACKEND_LOG, "Provider: KAKAO")
+                Log.i(BACKEND_LOG, "Access Token: ${kakaoToken.accessToken}")
+                Log.i(BACKEND_LOG, "========================================")
+
                 // 3. 백엔드로 Access Token 전송
                 val response = authApi.socialLogin(
                     SocialLoginRequest(
@@ -174,6 +185,12 @@ class AuthRepository @Inject constructor(
 
                 // 2. 사용자 정보 가져오기
                 val userInfo = getNaverUserInfo()
+
+                Log.i(BACKEND_LOG, "========================================")
+                Log.i(BACKEND_LOG, "Provider: NAVER")
+                Log.i(BACKEND_LOG, "Access Token: ${naverToken.accessToken}")
+                Log.i(BACKEND_LOG, "========================================")
+
 
                 // 3. 백엔드로 Access Token 전송
                 val response = authApi.socialLogin(

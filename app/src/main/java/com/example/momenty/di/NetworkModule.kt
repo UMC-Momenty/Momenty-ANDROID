@@ -1,10 +1,10 @@
 package com.example.momenty.di
 
-import com.example.momenty.BuildConfig
 import com.example.momenty.data.remote.auth.AuthApi
 import com.example.momenty.data.remote.profile.ProfileApi
 import com.example.momenty.global.mock.MockApiInterceptor
 import com.example.momenty.global.security.AuthInterceptor
+import com.kakao.sdk.v2.auth.BuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,7 +27,7 @@ object NetworkModule {
      * build.gradle에서 USE_MOCK_API = true로 설정하면 활성화
      */
     private val useMockApi: Boolean
-        get() = BuildConfig.DEBUG && BuildConfig.BUILD_TYPE == "debug" // 디버그 빌드에서만 Mock 사용 가능
+        get() = false // 디버그 빌드에서만 Mock 사용 가능
 
     @Provides
     @Singleton
