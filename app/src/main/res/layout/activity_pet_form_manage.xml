@@ -99,32 +99,41 @@
                 android:orientation="horizontal"
                 android:layout_marginTop="8dp">
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="50dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_record_round_input"
+                <RadioGroup
+                    android:id="@+id/rg_pet_gender"
+                    android:layout_width="wrap_content"
+                    android:layout_height="46dp"
+                    android:padding="5dp"
                     android:orientation="horizontal"
-                    android:padding="5dp">
-                    <android.widget.Button
-                        android:id="@+id/btn_pet_form_manage_gender_male"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:text="남"
-                        android:background="@drawable/bg_round_stroke_profile"
-                        style="@style/TextAppearance.App.Body01"/>
+                    android:background="@drawable/bg_gender_selector"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_gender_label">
 
-
-                    <android.widget.Button
-                        android:id="@+id/btn_pet_form_manage_gender_female"
-                        android:layout_width="0dp"
+                    <RadioButton
+                        android:id="@+id/rb_gender_male"
+                        android:layout_width="65dp"
                         android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:text="여"
-                        android:background="@color/white"
-                        style="@style/TextAppearance.App.Body02"/>/>
-                </LinearLayout>
+                        android:text="@string/gender_male"
+                        android:fontFamily="@font/pretendard_regular"
+                        android:textSize="16sp"
+                        android:textColor="@color/gender_text_selected"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:background="@drawable/bg_gender_item" />
+
+                    <RadioButton
+                        android:id="@+id/rb_gender_female"
+                        android:layout_width="65dp"
+                        android:layout_height="match_parent"
+                        android:text="@string/gender_female"
+                        android:fontFamily="@font/pretendard_regular"
+                        android:textSize="16sp"
+                        android:textColor="@color/gender_text_selected"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:background="@drawable/bg_gender_item" />
+
+                </RadioGroup>
 
                 <View
                     android:layout_width="16dp"
@@ -134,12 +143,15 @@
                 <EditText
                     android:id="@+id/et_pet_form_manage_birthday"
                     android:layout_width="0dp"
-                    android:layout_height="50dp"
+                    android:layout_height="46dp"
                     android:layout_weight="1"
                     android:hint="생년월일"
+                    android:focusable="false"
                     style="@style/TextAppearance.App.Caption01"
                     android:textSize="18sp"
-                    android:background="@drawable/bg_record_round_input"/>
+                    android:padding="10dp"
+                    android:drawableEnd="@drawable/ic_bottom_nav_calendar"
+                    android:background="@drawable/bg_gender_selector"/>
                 <!--
                 <TextView
                     android:id="@+id/tv_pet_form_birthdate"
@@ -165,7 +177,7 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
                     <EditText
-                        android:id="@+id/et_pet_form_manage_species"
+                        android:id="@+id/et_pet_form_manage_type"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="종 (필수)"
@@ -183,7 +195,7 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
                     <EditText
-                        android:id="@+id/et_pet_form_manage_race"
+                        android:id="@+id/et_pet_form_manage_type_detail"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="품종 (선택)"

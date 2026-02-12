@@ -38,6 +38,12 @@ class MyPageFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        setName()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -45,7 +51,9 @@ class MyPageFragment : Fragment() {
         // Inflate the layout for this fragment
         //return inflater.inflate(R.layout.fragment_my_page, container, false)
         binding = FragmentMyPageBinding.inflate(layoutInflater)
+
         initListener()
+        setName()
 
         return binding.root
     }
@@ -101,4 +109,14 @@ class MyPageFragment : Fragment() {
         startActivity(intent)
     }
 
+    private fun setName() {
+        val spf = requireActivity().getSharedPreferences(
+            "momenty_prefs",
+            android.content.Context.MODE_PRIVATE
+        )
+        val user_name = spf.getString("user_name", "사용자")
+        val pet_name = spf.getString("pet_name", "반려동물이름")
+        binding.tvMyPageUserNickname.text = user_name
+        binding.tvMyPagePetName.text = pet_name
+    }
 }
