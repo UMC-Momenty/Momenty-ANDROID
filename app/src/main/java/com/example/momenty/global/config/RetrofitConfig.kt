@@ -1,5 +1,6 @@
 package com.example.momenty.global.config
 
+import android.content.Context
 import com.example.momenty.global.mock.MockApiInterceptor
 import com.example.momenty.global.security.AuthInterceptor
 import okhttp3.OkHttpClient
@@ -19,14 +20,31 @@ object RetrofitConfig {
     // ✨ Mock 모드 활성화 여부 (개발 중: true, 배포 시: false)
     var useMockApi: Boolean = true
 
+    private var appContext: Context? = null
+
+    /**
+     * Context 초기화
+     * Application.onCreate()나 처음 사용하기 전에 호출 필요
+     */
+    fun initialize(context: Context) {
+        appContext = context.applicationContext
+    }
+
     // HTTP 로깅 인터셉터 (개발 중 API 요청/응답 확인용)
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
     // ✨ Mock API 인터셉터
-    private val mockApiInterceptor = MockApiInterceptor().apply {
-        MockApiInterceptor.isMockEnabled = useMockApi
+    private fun createMockApiInterceptor(): MockApiInterceptor {
+        val context = appContext ?: throw IllegalStateException(
+            "RetrofitConfig가 초기화되지 않았습니다. " +
+                    "RetrofitConfig.initialize(context)를 먼저 호출하세요."
+        )
+
+        return MockApiInterceptor(context).apply {
+            MockApiInterceptor.isMockEnabled = useMockApi
+        }
     }
 
     // OkHttpClient 설정
@@ -34,7 +52,7 @@ object RetrofitConfig {
         return OkHttpClient.Builder().apply {
             // ✨ Mock 인터셉터를 가장 먼저 추가 (활성화된 경우)
             if (useMockApi) {
-                addInterceptor(mockApiInterceptor)
+                addInterceptor(createMockApiInterceptor())
             }
             addInterceptor(authInterceptor)      // 토큰 자동 추가
             addInterceptor(loggingInterceptor)   // 로깅

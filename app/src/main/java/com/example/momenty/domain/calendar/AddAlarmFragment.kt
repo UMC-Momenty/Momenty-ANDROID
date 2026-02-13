@@ -67,7 +67,7 @@ class AddAlarmFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // RetrofitClient 초기화
-        RetrofitClient.initialize(tokenManager)
+        RetrofitClient.initialize(tokenManager, requireContext())
 
         // Calendar Fragment에서 선택한 날짜 사용
         calendarViewModel.uiState.value.selectedDate?.let { calendarDay ->

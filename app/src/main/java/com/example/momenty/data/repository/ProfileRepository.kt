@@ -75,6 +75,15 @@ class ProfileRepository @Inject constructor(
 
             if (response.isSuccess) {
                 response.result?.let { data ->
+                    // 중요: 프로필 업데이트 시 새로운 JWT가 발급됨 (ROLE_GUEST → ROLE_USER)
+                    // 새로운 토큰을 저장하여 이후 요청에 사용
+                    tokenManager.saveTokens(
+                        accessToken = data.accessToken,
+                        refreshToken = data.refreshToken
+                    )
+
+                    Log.d(TAG, "프로필 업데이트 성공 - 새로운 JWT 저장 완료 (ROLE_USER 권한)")
+
                     ProfileResult.Success(
                         userId = data.userId,
                         userName = data.userName,
