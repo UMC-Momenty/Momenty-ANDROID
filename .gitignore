@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+*.jks
+app/release/
+momenty_release_key
