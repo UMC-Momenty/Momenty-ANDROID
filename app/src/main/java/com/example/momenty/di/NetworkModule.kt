@@ -1,6 +1,5 @@
 package com.example.momenty.di
 
-import android.content.Context
 import com.example.momenty.data.remote.auth.AuthApi
 import com.example.momenty.data.remote.profile.ProfileApi
 import com.example.momenty.global.mock.MockApiInterceptor
@@ -9,7 +8,6 @@ import com.kakao.sdk.v2.auth.BuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -47,10 +45,8 @@ object NetworkModule {
      */
     @Provides
     @Singleton
-    fun provideMockApiInterceptor(
-        @ApplicationContext context: Context
-    ): MockApiInterceptor {
-        return MockApiInterceptor(context).apply {
+    fun provideMockApiInterceptor(): MockApiInterceptor {
+        return MockApiInterceptor().apply {
             // Mock 활성화 여부 설정
             MockApiInterceptor.isMockEnabled = useMockApi
         }
@@ -96,12 +92,11 @@ object NetworkModule {
     }
 
 
-    fun getRetrofit(): Retrofit {
+    fun getRetrofit(): Retrofit{
         val retrofit = Retrofit.Builder().baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create()).build()
 
         return retrofit
-    }
 
     @Provides
     @Singleton
