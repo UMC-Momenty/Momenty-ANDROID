@@ -92,11 +92,12 @@ object NetworkModule {
     }
 
 
-    fun getRetrofit(): Retrofit{
+    fun getRetrofit(): Retrofit {
         val retrofit = Retrofit.Builder().baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create()).build()
 
         return retrofit
+    }
 
     @Provides
     @Singleton
