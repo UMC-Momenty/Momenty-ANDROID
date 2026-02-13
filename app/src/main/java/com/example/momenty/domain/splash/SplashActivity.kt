@@ -36,14 +36,14 @@ class SplashActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "SplashActivity"
-        private const val SPLASH_DELAY_MS = 1500L
+        private const val SPLASH_DELAY_MS = 2000L // 스플래시 최소 표시 시간 (2초)
         private const val INITIALIZATION_TIMEOUT_MS = 5000L // 5초 타임아웃
         private const val PREFS_NAME = "momenty_prefs"
         private const val KEY_PROFILE_COMPLETED = "profile_completed"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Splash Screen API 설치
+        // Splash Screen API 설치 - 반드시 super.onCreate() 전에 호출
         val splashScreen = installSplashScreen()
 
         super.onCreate(savedInstanceState)
@@ -79,13 +79,6 @@ class SplashActivity : AppCompatActivity() {
             try {
                 // 스플래시 최소 표시 시간
                 delay(SPLASH_DELAY_MS)
-
-                // ⚠️ 개발 중: 임시 강제 로그아웃
-                // TODO: 프로덕션 배포 전 제거
-                if (com.example.momenty.BuildConfig.DEBUG) {
-                    Log.d(TAG, "개발 모드: 강제 로그아웃")
-                    tokenManager.clearTokens()
-                }
 
                 // JWT 토큰 확인 (IO 작업)
                 val hasToken = tokenManager.isLoggedIn()

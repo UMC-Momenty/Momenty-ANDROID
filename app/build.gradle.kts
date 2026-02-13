@@ -1,3 +1,4 @@
+import io.grpc.internal.SharedResourceHolder.release
 import java.util.Properties
 import java.io.FileInputStream
 
@@ -13,6 +14,15 @@ plugins {
 android {
     namespace = "com.example.momenty"
     compileSdk = 36
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("momenty_release_key.jks")
+            storePassword = "momenty_key"
+            keyAlias = "momenty_key"
+            keyPassword = "momenty_key"
+        }
+    }
 
     defaultConfig {
         applicationId = "com.example.momenty"
@@ -51,6 +61,7 @@ android {
         }
         release {
             isMinifyEnabled = true
+            signingConfig = signingConfigs.getByName("release")
             buildConfigField("Boolean", "USE_MOCK_API", "false")
             buildConfigField("String", "API_BASE_URL", "\"https://api.momenty.com/\"")
             proguardFiles(

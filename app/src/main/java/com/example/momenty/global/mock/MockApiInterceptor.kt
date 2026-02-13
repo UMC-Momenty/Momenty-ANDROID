@@ -1,5 +1,6 @@
 package com.example.momenty.global.mock
 
+import android.content.Context
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Protocol
@@ -13,9 +14,9 @@ import java.util.UUID
  *
  * 사용법:
  * 1. NetworkModule에서 이 Interceptor를 OkHttpClient에 추가
- * 2. BuildConfig.USE_MOCK_API = true로 설정
+ * 2. MockApiInterceptor.isMockEnabled = true/false로 Mock 모드 제어
  */
-class MockApiInterceptor : Interceptor {
+class MockApiInterceptor(private val context: Context) : Interceptor {
 
     companion object {
         // Mock 모드 활성화 여부 (build.gradle에서 설정)
@@ -549,51 +550,55 @@ class MockApiInterceptor : Interceptor {
 
     /**
      * 반려동물 목록 조회 Mock
+     * SharedPreferences에 저장된 실제 반려동물 데이터를 반환
      */
     private fun mockGetPets(): MockResponse {
-        return MockResponse(
-            code = 200,
-            message = "OK",
-            body = """
-                {
-                    "isSuccess": true,
-                    "code": "PETS_SUCCESS",
-                    "message": "반려동물 조회 성공",
-                    "result": [
-                        {
-                            "petId": "pet_001",
-                            "petName": "뭉치",
-                            "petImageKey": "pets/mungchi.jpg",
-                            "petType": "DOG",
-                            "petBreed": "포메라니안",
-                            "petGender": "MALE",
-                            "petBirthDate": "2020-03-10",
-                            "petIntroduction": "귀여운 우리 강아지"
-                        },
-                        {
-                            "petId": "pet_002",
-                            "petName": "나비",
-                            "petImageKey": "pets/nabi.jpg",
-                            "petType": "CAT",
-                            "petBreed": "코리안숏헤어",
-                            "petGender": "FEMALE",
-                            "petBirthDate": "2019-07-22",
-                            "petIntroduction": "도도한 우리 고양이"
-                        },
-                        {
-                            "petId": "pet_003",
-                            "petName": "초코",
-                            "petImageKey": "pets/choco.jpg",
-                            "petType": "DOG",
-                            "petBreed": "골든리트리버",
-                            "petGender": "MALE",
-                            "petBirthDate": "2021-01-15",
-                            "petIntroduction": "순한 우리 대형견"
-                        }
-                    ]
-                }
-            """.trimIndent()
-        )
+        val prefs = context.getSharedPreferences("momenty_prefs", Context.MODE_PRIVATE)
+
+        // SharedPreferences에서 반려동물 정보 읽기
+        val petName = prefs.getString("pet_name", null)
+        val isPetRegistered = prefs.getBoolean("pet_profile_completed", false)
+
+        return if (isPetRegistered && petName != null) {
+            // 저장된 반려동물이 있는 경우 - 이름만 포함
+            MockResponse(
+                code = 200,
+                message = "OK",
+                body = """
+                    {
+                        "isSuccess": true,
+                        "code": "PETS_SUCCESS",
+                        "message": "반려동물 조회 성공",
+                        "result": [
+                            {
+                                "petId": "pet_001",
+                                "petName": "$petName",
+                                "petImageKey": "",
+                                "petType": "DOG",
+                                "petBreed": "",
+                                "petGender": "MALE",
+                                "petBirthDate": "2020-01-01",
+                                "petIntroduction": ""
+                            }
+                        ]
+                    }
+                """.trimIndent()
+            )
+        } else {
+            // 저장된 반려동물이 없는 경우 빈 배열 반환
+            MockResponse(
+                code = 200,
+                message = "OK",
+                body = """
+                    {
+                        "isSuccess": true,
+                        "code": "PETS_SUCCESS",
+                        "message": "반려동물 조회 성공",
+                        "result": []
+                    }
+                """.trimIndent()
+            )
+        }
     }
 
     /**
