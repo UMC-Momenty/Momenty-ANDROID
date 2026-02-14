@@ -41,6 +41,8 @@
     <color name="color_mood_toggle">#FF6F61</color>
     <color name="commuunity_delet">#5D5D5D</color>
 
+    <!-- 기록 -->
+    <color name="record_gren">#BDEFA6</color>
 
     <!-- 알림 활동 영역 -->
     <color name="alarm_walk">#F8B785</color>
