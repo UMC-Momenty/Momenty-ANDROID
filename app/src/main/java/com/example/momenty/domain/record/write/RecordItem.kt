@@ -1,4 +1,4 @@
-package com.example.momenty.domain.record
+package com.example.momenty.domain.record.write
 
 data class RecordItem(
     val date: String,

@@ -1,4 +1,4 @@
-package com.example.momenty.domain.record
+package com.example.momenty.domain.record.write
 
 import android.net.Uri
 import android.view.LayoutInflater
@@ -27,12 +27,11 @@ class PhotoPagerAdapter(
         val uri = items[position]
         Glide.with(holder.binding.ivPhoto)
             .load(uri)
+            .centerCrop()
             .into(holder.binding.ivPhoto)
     }
 
     override fun getItemCount(): Int = items.size
-
-
 
     fun submitList(newItems: List<Uri>, onComplete: (() -> Unit)? = null) {
         items.clear()
@@ -41,4 +40,5 @@ class PhotoPagerAdapter(
         onComplete?.invoke()
     }
 
+    fun getCurrentItems(): List<Uri> = items.toList()
 }

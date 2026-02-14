@@ -2,17 +2,16 @@ package com.example.momenty.domain.record
 
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentRecordBinding
+import com.example.momenty.domain.record.write.RecordItem
 
 class RecordFragment : Fragment(R.layout.fragment_record) {
 
@@ -74,7 +73,13 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
         binding.rvRecord.adapter = RecordAdapter(dummyList)
 
         binding.btnRecordCreate.setOnClickListener {
-            findNavController().navigate(R.id.recordWriteFragment)
+            findNavController().navigate(R.id.action_record_to_write)
         }
+
+        binding.btnRecordMonth.setOnClickListener {
+            findNavController().navigate(R.id.action_record_to_album)
+        }
+
+
     }
 }
