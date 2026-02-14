@@ -124,9 +124,11 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
 
+
     // Glide
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    implementation("com.github.bumptech.glide:compiler:4.11.0")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
+
 
     // Splash
     implementation("androidx.core:core-splashscreen:1.0.1")
@@ -146,6 +148,8 @@ dependencies {
     // 캘린더 recyclerView, cardView
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.cardview:cardview:1.0.0")
+
+
 
 
 }

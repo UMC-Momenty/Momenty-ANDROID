@@ -32,9 +32,13 @@ class PhotoPagerAdapter(
 
     override fun getItemCount(): Int = items.size
 
-    fun submitList(newItems: List<Uri>) {
+
+
+    fun submitList(newItems: List<Uri>, onComplete: (() -> Unit)? = null) {
         items.clear()
         items.addAll(newItems)
         notifyDataSetChanged()
+        onComplete?.invoke()
     }
+
 }

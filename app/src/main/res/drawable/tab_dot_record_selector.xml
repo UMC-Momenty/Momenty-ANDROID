@@ -1,5 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_selected="true" android:drawable="@drawable/dot_record_selected" />
-    <item android:drawable="@drawable/dot_record_unselected" />
+
+
+    <item android:state_selected="true">
+        <layer-list>
+
+            <item>
+                <shape android:shape="rectangle">
+                    <size android:width="10dp" android:height="10dp"/>
+                    <solid android:color="@android:color/transparent"/>
+                </shape>
+            </item>
+
+
+            <item
+                android:left="5dp"
+                android:top="5dp"
+                android:right="5dp"
+                android:bottom="5dp">
+                <shape android:shape="oval">
+                    <size android:width="4dp" android:height="4dp"/>
+                    <solid android:color="@color/primary"/>
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+
+
+    <item>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <size android:width="10dp" android:height="10dp"/>
+                    <solid android:color="@android:color/transparent"/>
+                </shape>
+            </item>
+
+            <item
+                android:left="5dp"
+                android:top="5dp"
+                android:right="5dp"
+                android:bottom="5dp">
+                <shape android:shape="oval">
+                    <size android:width="4dp" android:height="4dp"/>
+                    <solid android:color="@color/community_badge"/>
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+
 </selector>

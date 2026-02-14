@@ -210,6 +210,25 @@
 
 
 
+    <!-- 모먼트 기록 -->
+    <string name="moment_record">모먼트 기록</string>
+    <string name="add_photo">사진 추가</string>
+    <string name="mood_question">00와 함께한 오늘의 감정은 어땠나요?</string>
+    <string name="mood_good">좋아요!</string>
+    <string name="mood_soso">보통이에요</string>
+    <string name="mood_bad">별로예요</string>
+    <string name="moment_content_label">모먼트 내용 작성</string>
+    <string name="moment_content_hint">간단한 내용을 적어주세요</string>
+    <string name="cancel">취소</string>
+
+    <string name="record_title_placeholder">OO의 모먼트</string>
+    <string name="go_community">커뮤니티로 이동</string>
+    <string name="month">월별</string>
+    <string name="write">작성하기</string>
+    <string name="stats">통계</string>
+
+
+
 
 
 
