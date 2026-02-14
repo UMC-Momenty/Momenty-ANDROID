@@ -209,7 +209,6 @@
     <string name="comment_submit">등록</string>
 
 
-
     <!-- 모먼트 기록 -->
     <string name="moment_record">모먼트 기록</string>
     <string name="add_photo">사진 추가</string>
@@ -227,9 +226,7 @@
     <string name="write">작성하기</string>
     <string name="stats">통계</string>
 
-
-
-
+    <string name="album_count_format">%1$d개의 항목</string>
 
 
 </resources>

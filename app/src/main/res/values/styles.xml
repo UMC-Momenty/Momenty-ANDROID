@@ -96,4 +96,15 @@
         <item name="rippleColor">@android:color/transparent</item>
         <item name="strokeWidth">0dp</item>
     </style>
+
+    <style name="ShapeOverlay" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">0dp</item>
+    </style>
+
+    <style name="ShapeOverlay.Round12" parent="ShapeOverlay">
+        <item name="cornerSize">12dp</item>
+    </style>
+
+
 </resources>

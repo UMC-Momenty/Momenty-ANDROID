@@ -80,6 +80,11 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             findNavController().navigate(R.id.action_record_to_album)
         }
 
+        binding.btnRecordStatistics.setOnClickListener {
+            findNavController().navigate(R.id.action_record_to_recordStats)
+        }
+
+
 
     }
 }

@@ -4,218 +4,330 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp">
+    android:background="@color/primary_bg">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideStart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="12dp"/>
 
-    <ImageButton
-        android:id="@+id/btnBack"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@android:color/transparent"
-        android:contentDescription="back"
-        android:src="@drawable/ic_record_back_btn"
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideEnd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="12dp"/>
+
+    <View
+        android:id="@+id/headerWhiteBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/white"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/topDivider"/>
 
-    <TextView
-        android:id="@+id/tvTitle"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/topContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="모먼트 기록"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:gravity="center_vertical"
-        android:paddingStart="6dp"
-        app:layout_constraintStart_toEndOf="@id/btnBack"
-        app:layout_constraintEnd_toStartOf="@id/btnAddPhoto"
-        app:layout_constraintTop_toTopOf="@id/btnBack"
-        app:layout_constraintBottom_toBottomOf="@id/btnBack"/>
+        app:cardCornerRadius="0dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="@color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <ImageButton
-        android:id="@+id/btnAddPhoto"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@android:color/transparent"
-        android:contentDescription="add photo"
-        android:src="@drawable/ic_record_camera_btn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
 
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/back"
+                android:src="@drawable/ic_record_back_btn"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/moment_record"
+                android:textColor="@color/body_1"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@id/btnBack"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/btnBack"
+                app:layout_constraintBottom_toBottomOf="@id/btnBack"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 
     <View
         android:id="@+id/topDivider"
         android:layout_width="0dp"
         android:layout_height="1dp"
-        android:background="#E6E6E6"
-        app:layout_constraintTop_toBottomOf="@id/btnBack"
+        android:background="@color/caption_2"
+        app:layout_constraintTop_toBottomOf="@id/topContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/photoCard"
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="#F2F2F2"
+        android:fillViewport="true"
+        android:overScrollMode="never"
         app:layout_constraintTop_toBottomOf="@id/topDivider"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintDimensionRatio="7:10">
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipChildren="false"
-            android:clipToPadding="false">
-
-            <androidx.viewpager2.widget.ViewPager2
-                android:id="@+id/photoPager"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-
-
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/dotsIndicator"
-                android:layout_width="wrap_content"
-                android:layout_height="14dp"
-                android:minHeight="14dp"
-                android:layout_gravity="bottom|center_horizontal"
-                android:layout_marginBottom="10dp"
-                android:background="@android:color/transparent"
-
-                app:tabMode="fixed"
-                app:tabGravity="center"
-                app:tabIndicator="@null"
-                app:tabIndicatorHeight="0dp"
-                app:tabRippleColor="@android:color/transparent"
-                app:tabMinWidth="0dp"
-                app:tabMaxWidth="30dp"
-                app:tabPadding="0dp"
-                app:tabPaddingStart="0dp"
-                app:tabPaddingEnd="0dp"
-                app:tabBackground="@drawable/tab_dot_record_selector"/>
-
-
-        </FrameLayout>
-    </androidx.cardview.widget.CardView>
-
-
-    <TextView
-        android:id="@+id/tvQuestion"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="00와 함께한 오늘의 감정은 어땠나요?"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginTop="10dp"
-        app:layout_constraintTop_toBottomOf="@id/photoCard"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-
-    <LinearLayout
-        android:id="@+id/moodRow"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/tvQuestion"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ToggleButton
-            android:id="@+id/btnHappy"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:textOn="기쁨"
-            android:textOff="기쁨"
-            android:background="@drawable/bg_record_mood_toggle"
-            android:textColor="@color/color_mood_toggle"
-            />
-
-        <ToggleButton
-            android:id="@+id/btnNormal"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:textOn="보통"
-            android:textOff="보통"
-            android:background="@drawable/bg_record_mood_toggle"
-            android:textColor="@color/color_mood_toggle"
-            />
-
-        <ToggleButton
-            android:id="@+id/btnSad"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="1"
-            android:textOn="슬픔"
-            android:textOff="슬픔"
-            android:background="@drawable/bg_record_mood_toggle"
-            android:textColor="@color/color_mood_toggle"
-            />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/tvContentLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="모먼트 내용 작성"
-        android:textStyle="bold"
-        android:layout_marginTop="14dp"
-        app:layout_constraintTop_toBottomOf="@id/moodRow"
-        app:layout_constraintStart_toStartOf="parent"/>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/scrollContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="16dp">
 
 
-    <EditText
-        android:id="@+id/etContent"
-        android:layout_width="0dp"
-        android:layout_height="44dp"
-        android:layout_marginTop="8dp"
-        android:hint="간단한 내용을 적어주세요"
-        android:textStyle="bold"
-        android:paddingHorizontal="12dp"
-        android:background="@drawable/bg_record_round_input"
-        app:layout_constraintTop_toBottomOf="@id/tvContentLabel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/innerGuideStart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_begin="12dp"/>
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/innerGuideEnd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_end="12dp"/>
 
 
-    <Button
-        android:id="@+id/btnCancel"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:text="취소"
-        android:background="@drawable/bg_edittext_normal"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="8dp"
-        android:backgroundTint="@null"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/btnSave"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+            <androidx.cardview.widget.CardView
+                android:id="@+id/photoCard"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="12dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/primary_sub"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="@id/innerGuideStart"
+                app:layout_constraintEnd_toEndOf="@id/innerGuideEnd"
+                app:layout_constraintDimensionRatio="1:1">
 
-    <Button
-        android:id="@+id/btnSave"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:text="저장"
-        android:textColor="#FFFFFF"
-        android:background="@drawable/bg_edittext_normal"
-        android:backgroundTint="@null"
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-        android:layout_marginBottom="16dp"
-        android:layout_marginStart="8dp"
-        app:layout_constraintStart_toEndOf="@id/btnCancel"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/photoPager"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <com.google.android.material.tabs.TabLayout
+                        android:id="@+id/dotsIndicator"
+                        android:layout_width="wrap_content"
+                        android:layout_height="16dp"
+                        android:minHeight="16dp"
+                        android:layout_gravity="bottom|center_horizontal"
+                        android:layout_marginBottom="10dp"
+                        android:background="@android:color/transparent"
+                        app:tabMode="scrollable"
+                        app:tabGravity="center"
+                        app:tabIndicator="@null"
+                        app:tabIndicatorHeight="0dp"
+                        app:tabRippleColor="@android:color/transparent"
+                        app:tabMinWidth="0dp"
+                        app:tabPadding="0dp"
+                        app:tabPaddingStart="8dp"
+                        app:tabPaddingEnd="8dp"
+                        app:tabBackground="@drawable/tab_dot_record_selector" />
+                </FrameLayout>
+            </androidx.cardview.widget.CardView>
+
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/thumbGridCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/white"
+                app:layout_constraintTop_toBottomOf="@id/photoCard"
+                app:layout_constraintStart_toStartOf="@id/innerGuideStart"
+                app:layout_constraintEnd_toEndOf="@id/innerGuideEnd">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvThumbs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp"
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never"/>
+            </androidx.cardview.widget.CardView>
+
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/moodCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/white"
+                app:layout_constraintTop_toBottomOf="@id/thumbGridCard"
+                app:layout_constraintStart_toStartOf="@id/innerGuideStart"
+                app:layout_constraintEnd_toEndOf="@id/innerGuideEnd">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:id="@+id/tvQuestion"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/mood_question"
+                        android:textColor="@color/body_1"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                    <LinearLayout
+                        android:id="@+id/moodRow"
+                        android:layout_width="0dp"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:background="@null"
+                        android:padding="6dp"
+                        app:layout_constraintTop_toBottomOf="@id/tvQuestion"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent">
+
+                        <ImageButton
+                            android:id="@+id/btnHappy"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:padding="0dp"
+                            android:scaleType="center"
+                            android:contentDescription="@string/mood_good"
+                            android:src="@drawable/ic_mood_good"/>
+
+                        <ImageButton
+                            android:id="@+id/btnNormal"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:padding="0dp"
+                            android:scaleType="center"
+                            android:contentDescription="@string/mood_soso"
+                            android:src="@drawable/ic_mood_soso"/>
+
+                        <ImageButton
+                            android:id="@+id/btnSad"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:padding="0dp"
+                            android:scaleType="center"
+                            android:contentDescription="@string/mood_bad"
+                            android:src="@drawable/ic_mood_bad"/>
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+
+
+            <TextView
+                android:id="@+id/tvContentLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/moment_content_label"
+                android:textColor="@color/caption_1"
+                android:textStyle="bold"
+                app:layout_constraintTop_toBottomOf="@id/moodCard"
+                app:layout_constraintStart_toStartOf="@id/innerGuideStart"/>
+
+            <EditText
+                android:id="@+id/etContent"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:hint="@string/moment_content_hint"
+                android:paddingHorizontal="12dp"
+                android:background="@drawable/bg_record_round_input"
+                app:layout_constraintTop_toBottomOf="@id/tvContentLabel"
+                app:layout_constraintStart_toStartOf="@id/innerGuideStart"
+                app:layout_constraintEnd_toEndOf="@id/innerGuideEnd"/>
+
+
+            <LinearLayout
+                android:id="@+id/bottomActions"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:paddingBottom="16dp"
+                app:layout_constraintTop_toBottomOf="@id/etContent"
+                app:layout_constraintStart_toStartOf="@id/innerGuideStart"
+                app:layout_constraintEnd_toEndOf="@id/innerGuideEnd"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancel"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/cancel"
+                    app:cornerRadius="8dp"
+                    app:backgroundTint="@color/community_button"
+                    android:textColor="@color/white"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSave"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/save"
+                    android:textColor="@color/white"
+                    app:cornerRadius="8dp"
+                    app:backgroundTint="@color/primary"/>
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,6 +3,8 @@
 
     <dimen name="photo_grid_spacing">8dp</dimen>
     <dimen name="top_spacing_record">8dp</dimen>
+    <dimen name="thumb_grid_spacing">8dp</dimen>
+
 
 
 
