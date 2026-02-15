@@ -29,7 +29,6 @@ class AlbumFragment : Fragment(R.layout.fragment_album) {
         binding = FragmentAlbumBinding.bind(view)
 
 
-
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
             val extra = resources.getDimensionPixelSize(R.dimen.top_spacing_record)
@@ -42,13 +41,13 @@ class AlbumFragment : Fragment(R.layout.fragment_album) {
             }
 
 
-            (binding.headerWhiteBg.layoutParams as? ConstraintLayout.LayoutParams)?.let { lp ->
-                lp.topMargin = 0
-                binding.headerWhiteBg.layoutParams = lp
+            binding.headerWhiteBg.layoutParams = binding.headerWhiteBg.layoutParams.apply {
+                height = total
             }
 
             insets
         }
+
 
 
 

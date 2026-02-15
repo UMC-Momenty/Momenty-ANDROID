@@ -31,18 +31,20 @@ class AlbumDetailFragment : Fragment(R.layout.fragment_album_detail) {
             val extra = resources.getDimensionPixelSize(R.dimen.top_spacing_record)
             val total = topInset + extra
 
+
             (binding.topBar.layoutParams as? ConstraintLayout.LayoutParams)?.let { lp ->
                 lp.topMargin = total
                 binding.topBar.layoutParams = lp
             }
 
-            (binding.headerWhiteBg.layoutParams as? ConstraintLayout.LayoutParams)?.let { lp ->
-                lp.topMargin = 0
-                binding.headerWhiteBg.layoutParams = lp
+
+            binding.headerWhiteBg.layoutParams = binding.headerWhiteBg.layoutParams.apply {
+                height = total
             }
 
             insets
         }
+
 
 
 
@@ -54,13 +56,14 @@ class AlbumDetailFragment : Fragment(R.layout.fragment_album_detail) {
         adapter = AlbumDetailPhotoAdapter()
 
         binding.rvPhotos.apply {
-            layoutManager = GridLayoutManager(requireContext(), 3)
+            layoutManager = GridLayoutManager(requireContext(), 5)
             this.adapter = this@AlbumDetailFragment.adapter
             itemAnimator = null
 
             if (itemDecorationCount == 0) {
                 val spacing = resources.getDimensionPixelSize(R.dimen.photo_grid_spacing)
-                addItemDecoration(GridSpacingItemDecoration(3, spacing, includeEdge = false))
+                addItemDecoration(GridSpacingItemDecoration(5, spacing, includeEdge = false)
+                )
             }
         }
 
