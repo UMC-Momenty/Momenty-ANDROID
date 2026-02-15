@@ -16,6 +16,7 @@
 
         <attr name="chipTextColor" format="color" />
         <attr name="chipCheckedTextColor" format="color" />
+        <attr name="chipIcon" format="reference" />
     </declare-styleable>
 
 </resources>

@@ -1,56 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="0dp"
-    app:cardUseCompatPadding="true"
-    app:cardBackgroundColor="#F2F2F2">
+    android:paddingTop="12dp"
+    android:paddingBottom="0dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="14dp">
+    <androidx.cardview.widget.CardView
+        android:id="@+id/thumbCard"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:layout_marginStart="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="@color/primary_sub"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/tvDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="2025.11.21"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:textColor="@android:color/black" />
-
-        <TextView
-            android:id="@+id/tvMood"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="즐거운 날"
-            android:textSize="12sp"
-            android:textColor="#666666" />
-
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="즐거움"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:textColor="@android:color/black" />
-
-        <TextView
-            android:id="@+id/tvContent"
+        <ImageView
+            android:id="@+id/ivThumb"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="오늘은 특별한 날이었어요!"
-            android:textSize="13sp"
-            android:textColor="#333333" />
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/app_name"/>
+    </androidx.cardview.widget.CardView>
 
-    </LinearLayout>
-</androidx.cardview.widget.CardView>
+    <TextView
+        android:id="@+id/tvDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:textColor="@color/body_1"
+        app:layout_constraintStart_toEndOf="@id/thumbCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/thumbCard"
+        tools:text="2025.11.21" />
+
+
+    <TextView
+        android:id="@+id/tvMoodText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textSize="12sp"
+        android:textColor="@color/caption_1"
+        app:layout_constraintStart_toStartOf="@id/tvDate"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvDate"
+        tools:text="즐거운 날" />
+
+
+    <TextView
+        android:id="@+id/tvMoodChip"
+        android:layout_width="wrap_content"
+        android:layout_height="22dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:gravity="center"
+        android:paddingHorizontal="10dp"
+        android:textSize="12sp"
+        android:textColor="@color/primary"
+        android:background="@drawable/bg_mood_chip"
+        app:layout_constraintStart_toStartOf="@id/tvDate"
+        app:layout_constraintTop_toBottomOf="@id/tvMoodText"
+        tools:text="보통" />
+
+
+    <TextView
+        android:id="@+id/tvContent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/caption_1"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@id/tvDate"
+        app:layout_constraintTop_toBottomOf="@id/tvMoodChip"
+
+        app:layout_constraintBottom_toBottomOf="@id/thumbCard"
+        tools:text="오늘은 특별한 날이었어요!" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:background="@color/caption_3"
+        app:layout_constraintTop_toBottomOf="@id/thumbCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

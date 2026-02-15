@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.momenty.databinding.ItemRecordBinding
+import com.example.momenty.domain.record.write.RecordItem
 
 class RecordAdapter(
     private val items: List<RecordItem>
@@ -15,11 +16,14 @@ class RecordAdapter(
 
         fun bind(item: RecordItem) {
             binding.tvDate.text = item.date
-            binding.tvMood.text = item.mood
-            binding.tvTitle.text = item.title
+            binding.tvMoodChip.text = item.mood
             binding.tvContent.text = item.content
+            binding.tvMoodText.text = item.title
+            binding.ivThumb.setImageResource(item.imageRes)
         }
+
     }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecordViewHolder {
         val binding = ItemRecordBinding.inflate(
