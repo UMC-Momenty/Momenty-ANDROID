@@ -1,8 +1,6 @@
 package com.example.momenty.domain.calendar
 
 data class Pet(
-    val id: String,
-    val name: String,
-    val imageUrl: String? = null,
-    val color: String? = null
+    val petId: Long,
+    val profile: String // 프로필 URL
 )

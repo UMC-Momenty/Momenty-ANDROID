@@ -43,17 +43,9 @@ class SplashActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Splash Screen API 설치 - 반드시 super.onCreate() 전에 호출
-        val splashScreen = installSplashScreen()
-
         super.onCreate(savedInstanceState)
 
-        // Splash screen을 더 오래 유지 (초기화 완료까지)
-        var isReady = false
-        splashScreen.setKeepOnScreenCondition { !isReady }
-
         setContentView(R.layout.activity_splash)
-
         // 비동기로 초기화 및 네비게이션 처리
         lifecycleScope.launch {
             try {
@@ -63,8 +55,6 @@ class SplashActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Log.e(TAG, "초기화 실패 - 기본 화면으로 이동", e)
                 navigateToTerms() // 실패 시 안전하게 약관 화면으로
-            } finally {
-                isReady = true
             }
         }
     }

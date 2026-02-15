@@ -3,15 +3,15 @@ package com.example.momenty.domain.calendar
 import java.util.Date
 
 data class Alarm(
-    val id: Long = System.currentTimeMillis(),
-    val activityType: String, // 활동 유형 (산책, 식사, 미용 등)
-    val title: String, // 일정 이름
-    val petId: String, // 반려동물 필터
-    val isRepeat: Boolean, // true: 반복성, false: 일회성
-    val repeatDays: List<Int>? = null, // 반복 요일 (1=월, 2=화, ..., 7=일) - 반복성일 때만 사용
-    val alarmDate: Date, // 알림 날짜 (일회성일 때 사용, 반복성일 때는 시작 날짜)
-    val alarmTime: String, // 알림 시간 (예: "오후 2:00")
-    val duration: String?, // 지속 시간 (예: "1시간")
-    val note: String? = null, // 메모 (선택 사항)
-    var isEnabled: Boolean = true // 알림 활성화 여부
+    val scheduleId: Long,                    // id → scheduleId
+    val title: String,
+    val category: String,                    // activityType → category
+    val petId: Long,                         // String → Long
+    val isOneTime: Boolean,                  // isRepeat 반대 개념
+    val repeatDays: List<String>? = null,    // List<Int> → List<String>, ["MONDAY", "WEDNESDAY"]
+    val date: String? = null,                // 일회성인 경우 "YYYY-MM-DD"
+    val alarmTime: String,                   // "HH:mm:ss" 형식
+    val durationMinutes: Int,                // String → Int
+    val memo: String? = null,                // note → memo
+    var isAlarmEnabled: Boolean = true       // isEnabled → isAlarmEnabled
 )
