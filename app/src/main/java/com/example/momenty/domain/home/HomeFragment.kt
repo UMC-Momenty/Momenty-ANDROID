@@ -40,10 +40,7 @@ class HomeFragment : Fragment() {
         // Inflate the layout for this fragment
         //return inflater.inflate(R.layout.fragment_home, container, false)
         binding = FragmentHomeBinding.inflate(inflater, container, false)
-        binding.tvHome.setOnClickListener {
-            val intent = Intent(requireActivity(), QuestActivity::class.java)
-            startActivity(intent)
-        }
+//        G
 
         return binding.root
     }
