@@ -8,8 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.example.momenty.databinding.DialogNotificationConfirmBinding
-import com.example.momenty.databinding.DialogQuestSaveBinding
-import com.example.momenty.domain.mypage.NotificationData
+import com.example.momenty.domain.mypage.data.NotificationData
 
 class NotificationConfirmDialog(myInterface: MyNotifyInterface,
                           data: NotificationData, id: Int): DialogFragment() {
