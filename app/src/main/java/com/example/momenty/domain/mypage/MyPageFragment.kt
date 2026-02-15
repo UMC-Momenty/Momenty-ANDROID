@@ -2,15 +2,22 @@ package com.example.momenty.domain.mypage
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentMyPageBinding
 import com.example.momenty.domain.main.presentation.MainActivity
+import com.example.momenty.domain.mypage.RVA.MyPageRVA
+import com.example.momenty.domain.mypage.RVA.NoticeRVA
+import com.example.momenty.domain.mypage.data.MyPagePetProfileData
+import com.example.momenty.domain.mypage.data.NoticeData
+import com.google.gson.Gson
 import com.kakao.sdk.user.model.User
 
 // TODO: Rename parameter arguments, choose names that match
@@ -29,6 +36,9 @@ class MyPageFragment : Fragment() {
     private var param2: String? = null
 
     lateinit var binding: FragmentMyPageBinding
+    lateinit var rvAdapter: MyPageRVA
+
+    private var petProfileDatas = ArrayList<MyPagePetProfileData>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +63,7 @@ class MyPageFragment : Fragment() {
         binding = FragmentMyPageBinding.inflate(layoutInflater)
 
         initListener()
+        setRVA()
         setName()
 
         return binding.root
@@ -82,9 +93,9 @@ class MyPageFragment : Fragment() {
         binding.btnMyPageManageProfile.setOnClickListener {
             activityTransition(UserProfileActivity())
         }
-        binding.btnMyPageManagePet.setOnClickListener {
-            activityTransition(PetFormManageActivity())
-        }
+//        binding.btnMyPageManagePet.setOnClickListener {
+//            activityTransition(PetFormManageActivity())
+//        }
         binding.layoutMyPageAddPet.setOnClickListener {
             activityTransition(PetFormAddActivity())
         }
@@ -117,6 +128,47 @@ class MyPageFragment : Fragment() {
         val user_name = spf.getString("user_name", "사용자")
         val pet_name = spf.getString("pet_name", "반려동물이름")
         binding.tvMyPageUserNickname.text = user_name
-        binding.tvMyPagePetName.text = pet_name
+//        binding.tvMyPagePetName.text = pet_name
+
+        // 첫 번째 반려동물 데이터
+        petProfileDatas.apply {
+            clear()
+            add(MyPagePetProfileData(
+                name = spf.getString("pet_name", "반려동물이름")!!,
+                imageKey = spf.getString("pet_profile_image_key", "")!!
+            ))
+        }
+
+        // 두 번째 이상 반려동물 데이터
+        val gson = Gson()
+        val petIndex = spf.getInt("pet_index", 0)
+        Log.e("petIndex", petIndex.toString())
+        if (petIndex > 0) {
+            for (i in 1 until petIndex+1) {
+                val petData = gson.fromJson(spf.getString("pet_info_${i}", null), MyPagePetProfileData::class.java)
+                //Log.e("MyPage", "$i petData:"+petData.toString())
+                petProfileDatas.add(petData)
+            }
+        }
+
+        for (i in 0 until petProfileDatas.size) {
+            Log.e("MyPage", "$i petdata:"+petProfileDatas[i].toString())
+        }
+        rvAdapter.notifyDataSetChanged()
+    }
+
+    private fun setRVA() {
+        rvAdapter = MyPageRVA(petProfileDatas) {
+            clickedItem -> showBottomSheet(clickedItem)
+        }
+        binding.rvMyPagePetProfile.adapter = rvAdapter
+        binding.rvMyPagePetProfile.layoutManager = LinearLayoutManager(
+            context, LinearLayoutManager.VERTICAL, false
+        )
+    }
+
+    private fun showBottomSheet(data: MyPagePetProfileData) {
+        val bottomSheet = PetSelectBottomSheet()
+        bottomSheet.show(childFragmentManager, "PetSelectBottomSheet")
     }
 }

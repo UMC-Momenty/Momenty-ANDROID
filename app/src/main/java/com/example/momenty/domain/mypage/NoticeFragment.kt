@@ -7,8 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.momenty.R
 import com.example.momenty.databinding.FragmentNoticeBinding
+import com.example.momenty.domain.mypage.RVA.NoticeRVA
+import com.example.momenty.domain.mypage.data.NoticeData
 
 class NoticeFragment: Fragment() {
     lateinit var binding: FragmentNoticeBinding
@@ -38,15 +39,21 @@ class NoticeFragment: Fragment() {
     private fun inputDummyData() {
         noticeDatas.apply {
             clear()
-            add(NoticeData(
-                "이용 약관 변경 안내",
-                "1일 전",
-                "이용 약관 변경 안내 내용"))
+            add(
+                NoticeData(
+                    "이용 약관 변경 안내",
+                    "26-02-14",
+                    "이용 약관 변경 안내 내용"
+                )
+            )
 
-            add(NoticeData(
-                "시스템 점검 안내",
-                "5일 전",
-                "시스템 점검 안내 내용"))
+            add(
+                NoticeData(
+                    "시스템 점검 안내",
+                    "26-02-15",
+                    "시스템 점검 안내 내용"
+                )
+            )
         }
     }
 

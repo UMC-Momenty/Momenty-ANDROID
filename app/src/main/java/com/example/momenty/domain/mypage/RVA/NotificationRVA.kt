@@ -1,22 +1,19 @@
-package com.example.momenty.domain.mypage
+package com.example.momenty.domain.mypage.RVA
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.example.momenty.databinding.ItemInquiryHistoryBinding
 import com.example.momenty.databinding.ItemNotificationBinding
 import com.example.momenty.domain.home.MyNotifyInterface
 import com.example.momenty.domain.home.NotificationConfirmDialog
-import com.example.momenty.domain.home.WriteQuestionDialog
+import com.example.momenty.domain.mypage.data.NotificationData
 
 class NotificationRVA(
     private val notificationList: ArrayList<NotificationData>,
 ) : RecyclerView.Adapter<NotificationRVA.viewHolder>(), MyNotifyInterface {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationRVA.viewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewHolder {
         val binding: ItemNotificationBinding = ItemNotificationBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
@@ -24,7 +21,7 @@ class NotificationRVA(
         return viewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: NotificationRVA.viewHolder, position: Int) {
+    override fun onBindViewHolder(holder: viewHolder, position: Int) {
         holder.bind(notificationList[position])
         holder.binding.layoutNotificationEnabled.setOnClickListener {
             val confirmDialog = NotificationConfirmDialog(this, notificationList[position], position)
