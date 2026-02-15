@@ -45,50 +45,28 @@
             android:layout_marginEnd="24dp"/>
 
         <View
+            android:id="@+id/view_my_page_user_profile"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="12dp"
             android:background="@color/caption_2"
             app:layout_constraintTop_toBottomOf="@id/iv_my_page_user_profile"/>
 
-        <ImageView
-            android:id="@+id/iv_my_page_pet_profile"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            android:layout_marginTop="24dp"
-            android:src="@drawable/ic_ellipse_my_page"
-            app:layout_constraintTop_toBottomOf="@id/iv_my_page_user_profile"
-            app:layout_constraintStart_toStartOf="@id/iv_my_page_user_profile" />
-
-        <TextView
-            android:id="@+id/tv_my_page_pet_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="반려동물 이름"
-            style="@style/TextAppearance.App.Body01"
-            android:layout_marginStart="16dp"
-            app:layout_constraintTop_toTopOf="@id/iv_my_page_pet_profile"
-            app:layout_constraintBottom_toBottomOf="@id/iv_my_page_pet_profile"
-            app:layout_constraintStart_toEndOf="@id/iv_my_page_pet_profile" />
-
-        <Button
-            android:id="@+id/btn_my_page_manage_pet"
-            android:layout_width="120dp"
-            android:layout_height="35dp"
-            android:text="반려동물 관리"
-            style="@style/TextAppearance.App.Caption03"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/iv_my_page_pet_profile"
-            app:layout_constraintBottom_toBottomOf="@id/iv_my_page_pet_profile"
-            android:layout_marginEnd="24dp"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_my_page_pet_profile"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/view_my_page_user_profile"
+            app:layout_constraintStart_toStartOf="@id/view_my_page_user_profile"
+            app:layout_constraintEnd_toEndOf="@id/view_my_page_user_profile"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layout_my_page_add_pet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            app:layout_constraintTop_toBottomOf="@id/iv_my_page_pet_profile"
-            app:layout_constraintStart_toStartOf="@id/iv_my_page_pet_profile">
+            app:layout_constraintTop_toBottomOf="@id/rv_my_page_pet_profile"
+            app:layout_constraintStart_toStartOf="@id/rv_my_page_pet_profile">
 
             <ImageView
                 android:id="@+id/iv_my_page_add_pet_profile"

@@ -18,7 +18,6 @@ class MyPageRVA(private val petProfileList: ArrayList<MyPagePetProfileData>,
     private val onButtonClick: (MyPagePetProfileData)->Unit)
     : RecyclerView.Adapter<MyPageRVA.viewHolder>() {
 
-    private var bottomSheetDialog: BottomSheetDialog? = null
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewHolder {
@@ -33,11 +32,6 @@ class MyPageRVA(private val petProfileList: ArrayList<MyPagePetProfileData>,
         holder.bind(petProfileList[position])
         if (position == 0) {
             holder.binding.btnMyPageManagePet.visibility = View.VISIBLE
-        }
-        holder.binding.btnMyPageManagePet.setOnClickListener {
-//            val manager = (holder.itemView.context as? FragmentActivity)?.supportFragmentManager
-//            bottomSheetDialog = BottomSheetDialog(holder.itemView.context, R.style.BottomSheetStyle)
-//            val view = LayoutInflater.from(holder.itemView.context).in
         }
     }
 
@@ -63,5 +57,9 @@ class MyPageRVA(private val petProfileList: ArrayList<MyPagePetProfileData>,
                 onButtonClick(data)
             }
         }
+    }
+
+    fun notifyDataChange(pos: Int) {
+        notifyItemInserted(pos)
     }
 }
