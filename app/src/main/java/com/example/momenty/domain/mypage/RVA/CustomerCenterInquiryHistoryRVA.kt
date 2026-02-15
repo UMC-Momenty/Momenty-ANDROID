@@ -1,10 +1,14 @@
-package com.example.momenty.domain.mypage
+package com.example.momenty.domain.mypage.RVA
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.momenty.databinding.ItemInquiryHistoryBinding
+import com.example.momenty.domain.mypage.data.CustomerCenterInquiryHistoryData
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 class CustomerCenterInquiryHistoryRVA(private val historyList: ArrayList<CustomerCenterInquiryHistoryData>)
     : RecyclerView.Adapter<CustomerCenterInquiryHistoryRVA.viewHolder>() {
@@ -18,7 +22,7 @@ class CustomerCenterInquiryHistoryRVA(private val historyList: ArrayList<Custome
         mItemClickListener = itemClickListener
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomerCenterInquiryHistoryRVA.viewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewHolder {
         val binding: ItemInquiryHistoryBinding = ItemInquiryHistoryBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
@@ -26,7 +30,7 @@ class CustomerCenterInquiryHistoryRVA(private val historyList: ArrayList<Custome
         return viewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: CustomerCenterInquiryHistoryRVA.viewHolder, position: Int) {
+    override fun onBindViewHolder(holder: viewHolder, position: Int) {
         holder.bind(historyList[position])
         holder.itemView.setOnClickListener {
             mItemClickListener.onItemClick(historyList[position])
@@ -51,12 +55,31 @@ class CustomerCenterInquiryHistoryRVA(private val historyList: ArrayList<Custome
     inner class viewHolder(val binding: ItemInquiryHistoryBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(data: CustomerCenterInquiryHistoryData) {
             binding.tvInquiryHistoryTitle.text = data.title
-            binding.tvInquiryHistoryDate.text = data.date
+            binding.tvInquiryHistoryDate.text = calculateDaysAgo(data.date)
             binding.tvInquiryHistoryType.text = data.inquiryType
             binding.tvInquiryHistoryContent.text = data.inquiryContent
 //            binding.ivInquiryHistoryPhoto1.setImageResource(아이디)
 //            binding.ivInquiryHistoryPhoto2.setImageResource(아이디)
             binding.tvInquiryHistoryAnswer.text = data.answer
+        }
+    }
+
+    private fun calculateDaysAgo(dateString: String): String {
+        val formatter = DateTimeFormatter.ofPattern("yy-MM-dd")
+
+        return try {
+            val targetDate = LocalDate.parse(dateString, formatter)
+            val today = LocalDate.now()
+
+            val daysDiff = ChronoUnit.DAYS.between(targetDate, today)
+
+            when {
+                daysDiff == 0L -> "오늘"
+                daysDiff > 0 -> "${daysDiff}일 전"
+                else -> "${daysDiff}일 후(날짜 오류)"
+            }
+        } catch (e: Exception) {
+            "잘못된 날짜 형식"
         }
     }
 }

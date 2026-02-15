@@ -1,4 +1,4 @@
-package com.example.momenty.domain.mypage
+package com.example.momenty.domain.mypage.data
 
 data class NotificationData(
     val title: String = "",
