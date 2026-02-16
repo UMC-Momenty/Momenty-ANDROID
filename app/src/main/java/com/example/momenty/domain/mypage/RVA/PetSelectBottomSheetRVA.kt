@@ -2,10 +2,12 @@ package com.example.momenty.domain.mypage.RVA
 
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.momenty.R
@@ -18,6 +20,8 @@ class PetSelectBottomSheetRVA(
     private val onDismiss: () -> Unit
 ) : RecyclerView.Adapter<PetSelectBottomSheetRVA.PetSelectViewHolder>() {
 
+    private val TAG = "PetBottomRVA"
+
     inner class PetSelectViewHolder(val binding: ItemMyPagePetSelectBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
@@ -25,12 +29,18 @@ class PetSelectBottomSheetRVA(
             binding.tvMyPagePetSelectName.text = data.name
 
             if (!data.imageKey.isNullOrEmpty()) {
-                val baseUrl = "https://api.momenty.com/"
-                val imageUrl = baseUrl + data.imageKey
-
+                Log.e(TAG, "imageKey 시도")
                 Glide.with(binding.root.context)
-                    .load(imageUrl)
+                    .load(data.imageKey)
                     .circleCrop()
+                    .error(R.drawable.bg_calendar_selected)
+                    .into(binding.ivMyPagePetSelect)
+            } else if (!data.imageUri.isNullOrEmpty()) {
+                Log.e(TAG, "imageUri 시도: ${data.imageUri}")
+                Glide.with(binding.root.context)
+                    .load(Uri.parse(data.imageUri))
+                    .circleCrop()
+                    .error(R.drawable.bg_calendar_selected)
                     .into(binding.ivMyPagePetSelect)
             }
         }
