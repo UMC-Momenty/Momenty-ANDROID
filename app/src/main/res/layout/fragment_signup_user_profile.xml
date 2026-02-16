@@ -109,11 +109,26 @@
                 android:textColor="@color/body_1"
                 android:inputType="textPersonName"
                 android:maxLines="1"
-                android:background="@drawable/bg_edittext_normal"
+                android:background="@drawable/bg_edittext_selector"
                 android:drawableEnd="@drawable/img_profile_cancel"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_user_name_label"/>
+
+            <TextView
+                android:id="@+id/tv_name_error_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="-10dp"
+                android:text="@string/name_error_message"
+                android:textColor="@color/status_error"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="12sp"
+                android:background="@color/white"
+                app:layout_constraintStart_toStartOf="@id/et_user_name"
+                app:layout_constraintTop_toBottomOf="@id/et_user_name"
+                android:visibility="gone"/>
 
             <!-- 성별 -->
             <TextView
@@ -199,12 +214,12 @@
                 app:layout_constraintStart_toStartOf="@id/tv_user_name_label"
                 app:layout_constraintTop_toBottomOf="@id/rg_user_gender"/>
 
-            <Spinner
-                android:id="@+id/spinner_question_alarm"
+            <EditText
+                android:id="@+id/et_question_alarm"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
                 android:layout_marginTop="3dp"
-                android:background="@drawable/bg_spinner_profile_alarm"
+                android:background="@drawable/bg_edittext_selector"
                 android:padding="10dp"
                 android:spinnerMode="dropdown"
                 app:layout_constraintStart_toStartOf="@id/tv_alarm_label"
@@ -222,8 +237,8 @@
                 android:fontFamily="@font/pretendard_regular"
                 android:textSize="16sp"
                 android:textColor="@color/caption_1"
-                app:layout_constraintStart_toStartOf="@id/spinner_question_alarm"
-                app:layout_constraintTop_toBottomOf="@id/spinner_question_alarm"/>
+                app:layout_constraintStart_toStartOf="@id/et_question_alarm"
+                app:layout_constraintTop_toBottomOf="@id/et_question_alarm"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

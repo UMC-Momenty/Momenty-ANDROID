@@ -26,6 +26,7 @@ import com.example.momenty.R
 import com.example.momenty.data.api.ImagePickerHelper
 import com.example.momenty.data.api.PermissionHelper
 import com.example.momenty.databinding.FragmentSignupUserProfileBinding
+import com.example.momenty.domain.calendar.AlarmTimePickerDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -42,6 +43,9 @@ class UserProfileFragment : Fragment() {
 
     private var selectedImageUri: Uri? = null
     private var uploadedImageKey: String? = null
+
+    // 선택된 알람 시간 (null이면 알람 설정 안 함)
+    private var selectedAlarmTime: String? = null
 
     // ===== 권한 관련 =====
 
@@ -129,21 +133,8 @@ class UserProfileFragment : Fragment() {
     }
 
     private fun initializeViews() {
-        setupSpinner()
         setupListeners()
         updateSaveButton()
-    }
-
-    private fun setupSpinner() {
-        val timeOptions = resources.getStringArray(R.array.alarm_time_options)
-
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            timeOptions
-        )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerQuestionAlarm.adapter = adapter
     }
 
     private fun setupListeners() {
@@ -160,6 +151,7 @@ class UserProfileFragment : Fragment() {
         // 이름 입력 감지
         binding.etUserName.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
+                validateNameAndUpdateIcon(s.toString())
                 updateSaveButton()
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -167,7 +159,7 @@ class UserProfileFragment : Fragment() {
         })
 
         // 이름 입력 필드의 drawableEnd (X 버튼) 클릭 처리
-        setupClearButton(binding.etUserName)
+        setupNameFieldIconClick()
 
         // 성별 선택
         binding.rgUserGender.setOnCheckedChangeListener { _, _ ->
@@ -179,44 +171,17 @@ class UserProfileFragment : Fragment() {
             showDatePicker()
         }
 
-        // 알람 시간 스피너
-        binding.spinnerQuestionAlarm.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    if (isUpdating) return
-
-                    if (position > 0) {
-                        isUpdating = true
-                        binding.cbNoAlarm.isChecked = false
-                        isUpdating = false
-                    } else {
-                        isUpdating = true
-                        binding.spinnerQuestionAlarm.setSelection(0)
-                        binding.spinnerQuestionAlarm.isEnabled = false
-                        isUpdating = false
-                    }
-                    updateSaveButton()
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-            }
+        // 알람 시간
+        binding.etQuestionAlarm.setOnClickListener { showAlarmTimePicker() }
 
         // 알람 설정 안 함 체크박스
         binding.cbNoAlarm.setOnCheckedChangeListener { _, isChecked ->
             if (isUpdating) return@setOnCheckedChangeListener
 
             if (isChecked) {
-                isUpdating = true
-                binding.spinnerQuestionAlarm.setSelection(0)
-                binding.spinnerQuestionAlarm.isEnabled = false
-                isUpdating = false
-            } else {
-                binding.spinnerQuestionAlarm.isEnabled = true
+                // 체크하면 null로 설정 (하지만 EditText 클릭은 여전히 가능)
+                selectedAlarmTime = null
+                binding.etQuestionAlarm.setText("")
             }
             updateSaveButton()
         }
@@ -228,29 +193,77 @@ class UserProfileFragment : Fragment() {
     }
 
     /**
+     * 이름 유효성 검증 (2~10자)
+     */
+    private fun validateNameAndUpdateIcon(name: String) {
+        val isValid = name.length in 2..10
+
+        binding.etUserName.apply {
+            when {
+                name.isEmpty() -> {
+                    // 입력 없음 - 아이콘 숨김
+                    setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, 0)
+                    tag = null
+                    isActivated = false
+                }
+                isValid -> {
+                    // ✅ 정상 상태 - X 버튼 표시
+                    setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        0, 0, R.drawable.img_profile_cancel, 0
+                    )
+                    tag = "clear"
+                    isActivated = false
+                }
+                else -> {
+                    // ❌ 에러 상태 - 경고 아이콘 표시
+                    setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        0, 0, R.drawable.img_profile_warning, 0
+                    )
+                    tag = "error"
+                    isActivated = true  // 빨간 테두리 표시
+                    binding.tvNameErrorMessage.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    /**
      * EditText의 drawableEnd (Clear 버튼) 클릭 처리
      */
     @SuppressLint("ClickableViewAccessibility")
-    private fun setupClearButton(editText: android.widget.EditText) {
-        editText.setOnTouchListener { v, event ->
+    private fun setupNameFieldIconClick() {
+        binding.etUserName.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_UP) {
-                // drawableEnd (오른쪽 아이콘) 영역인지 확인
-                val drawableEnd = editText.compoundDrawables[2] // 0:left, 1:top, 2:right, 3:bottom
+                val editText = v as android.widget.EditText
+                val drawable = editText.compoundDrawablesRelative[2] // drawableEnd
 
-                if (drawableEnd != null) {
-                    // 터치 위치가 drawableEnd 영역인지 확인
+                if (drawable != null) {
+                    // 터치 위치가 아이콘 영역인지 확인
                     val touchX = event.x.toInt()
-                    val drawableWidth = drawableEnd.intrinsicWidth
+                    val drawableWidth = drawable.bounds.width()
                     val drawableStart = editText.width - editText.paddingEnd - drawableWidth
 
                     if (touchX >= drawableStart) {
-                        // Clear 버튼 클릭됨 → EditText 내용 지우기
-                        editText.text?.clear()
+                        // ✅ 아이콘 클릭됨 - tag에 따라 다르게 동작
+                        handleNameIconClick()
                         return@setOnTouchListener true
                     }
                 }
             }
             false
+        }
+    }
+
+    /**
+     * ✅ 이름 필드 아이콘 클릭 처리
+     */
+    private fun handleNameIconClick() {
+        when (binding.etUserName.tag) {
+            "clear" -> {
+                // ✅ X 버튼 클릭 - 텍스트 삭제
+                binding.etUserName.text?.clear()
+                binding.etUserName.requestFocus()
+            }
         }
     }
 
@@ -328,6 +341,24 @@ class UserProfileFragment : Fragment() {
         }
     }
 
+    /**
+     * 커스텀 알람 시간 선택 다이얼로그 표시
+     */
+    private fun showAlarmTimePicker() {
+        val dialog = AlarmTimePickerDialog(requireContext()) { timeString ->
+            // 시간이 선택되면 EditText에 표시하고 체크박스 해제
+            selectedAlarmTime = timeString
+            binding.etQuestionAlarm.setText(timeString)
+
+            isUpdating = true
+            binding.cbNoAlarm.isChecked = false
+            isUpdating = false
+
+            updateSaveButton()
+        }
+        dialog.show()
+    }
+
     private fun showDatePicker() {
         val calendar = Calendar.getInstance()
 
@@ -353,11 +384,10 @@ class UserProfileFragment : Fragment() {
     }
 
     private fun updateSaveButton() {
-        val hasName = binding.etUserName.text?.isNotBlank() == true
+        val hasName = binding.etUserName.text?.toString()?.length in 2..10
         val hasGender = binding.rgUserGender.checkedRadioButtonId != -1
         val hasBirth = binding.etUserBirth.text?.isNotBlank() == true
-        val hasAlarmSetting = binding.spinnerQuestionAlarm.selectedItemPosition > 0
-                || binding.cbNoAlarm.isChecked
+        val hasAlarmSetting = selectedAlarmTime != null || binding.cbNoAlarm.isChecked
 
         val allFieldsFilled = hasName && hasGender && hasBirth && hasAlarmSetting
 
@@ -383,10 +413,11 @@ class UserProfileFragment : Fragment() {
         }
         val birth = binding.etUserBirth.text.toString()
 
+        // 알람 시간: 체크박스가 선택되면 null, 아니면 선택된 시간
         val alarmTime = if (binding.cbNoAlarm.isChecked) {
             null
         } else {
-            binding.spinnerQuestionAlarm.selectedItem as? String
+            selectedAlarmTime
         }
 
         saveToPreferences(name, gender, birth, alarmTime, uploadedImageKey)

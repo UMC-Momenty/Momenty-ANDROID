@@ -15,6 +15,7 @@
     <string name="pet_type">종 (필수) / 품종 (선택)</string>
     <string name="type_hint">강아지 / 고양이</string>
     <string name="pet_intro">반려동물 소개 (선택)</string>
+    <string name="name_error_message">2-10자 이내로 입력해 주세요.</string>
 
     <!-- 알림 시간 -->
     <string-array name="alarm_time_options">
