@@ -10,13 +10,18 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.momenty.R
+import com.example.momenty.data.remote.moment.EmotionDto
 import com.example.momenty.databinding.FragmentRecordWriteBinding
+import com.example.momenty.domain.record.RecordViewModel
 import com.google.android.material.tabs.TabLayoutMediator
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class RecordWriteFragment : Fragment(R.layout.fragment_record_write) {
 
     private lateinit var binding: FragmentRecordWriteBinding
@@ -30,7 +35,18 @@ class RecordWriteFragment : Fragment(R.layout.fragment_record_write) {
     private val MAX_COUNT = 5
 
 
-    private enum class Mood { GOOD, SOSO, BAD }
+    private val viewModel: RecordViewModel by viewModels()
+
+    private enum class Mood {
+        GOOD, SOSO, BAD;
+
+        fun toEmotionDto(): EmotionDto = when (this) {
+            GOOD -> EmotionDto.HAPPINESS
+            SOSO -> EmotionDto.NEUTRAL
+            BAD -> EmotionDto.SADNESS
+        }
+    }
+
     private var selectedMood: Mood = Mood.SOSO
 
     private val pickImages =
@@ -91,9 +107,30 @@ class RecordWriteFragment : Fragment(R.layout.fragment_record_write) {
 
         binding.btnBack.setOnClickListener { findNavController().popBackStack() }
         binding.btnCancel.setOnClickListener { findNavController().popBackStack() }
-        binding.btnSave.setOnClickListener {
 
-            findNavController().navigate(R.id.recordFragment)
+
+        binding.btnSave.setOnClickListener {
+            val userId = 1L
+            val petId = 1L
+
+            val emotion = selectedMood.toEmotionDto()
+            val content = binding.etContent.text?.toString().orEmpty()
+
+            viewModel.createMoment(
+                userId = userId,
+                petId = petId,
+                emotion = emotion,
+                content = content,
+                imageUris = photos.toList(),
+                contentResolver = requireContext().contentResolver,
+                onSuccess = {
+                    findNavController().navigate(R.id.recordFragment)
+                },
+                onFail = { e ->
+                    e.printStackTrace()
+
+                }
+            )
         }
     }
 
@@ -193,3 +230,4 @@ class RecordWriteFragment : Fragment(R.layout.fragment_record_write) {
         }
     }
 }
+

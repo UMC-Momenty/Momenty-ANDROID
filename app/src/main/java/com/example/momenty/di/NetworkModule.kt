@@ -1,10 +1,11 @@
 package com.example.momenty.di
 
 import com.example.momenty.data.remote.auth.AuthApi
+import com.example.momenty.data.remote.moment.MomentsApi
 import com.example.momenty.data.remote.profile.ProfileApi
 import com.example.momenty.global.mock.MockApiInterceptor
 import com.example.momenty.global.security.AuthInterceptor
-import com.kakao.sdk.v2.auth.BuildConfig
+import com.example.momenty.BuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -79,6 +80,15 @@ object NetworkModule {
     fun provideProfileApi(retrofit: Retrofit): ProfileApi =
         retrofit.create(ProfileApi::class.java)
 
-    fun getRetrofit(okHttpClient: OkHttpClient): Retrofit = provideRetrofit(okHttpClient)
+    fun getRetrofit(): Retrofit {
+        val retrofit = Retrofit.Builder().baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create()).build()
+        return retrofit
+    }
+
+    @Provides
+    @Singleton
+    fun provideMomentsApi(retrofit: Retrofit): MomentsApi =
+        retrofit.create(MomentsApi::class.java)
 
 }
