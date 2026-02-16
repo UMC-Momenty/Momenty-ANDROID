@@ -4,14 +4,17 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.momenty.R
+import com.example.momenty.data.repository.AuthRepository
 import com.example.momenty.databinding.ActivityMainBinding
 import com.example.momenty.global.security.TokenManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -22,6 +25,9 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var tokenManager: TokenManager
+
+    @Inject
+    lateinit var authRepository: AuthRepository
 
     private lateinit var navController: NavController
 
@@ -79,35 +85,17 @@ class MainActivity : AppCompatActivity() {
         intent.removeExtra("navigate_to")
     }
 
-    /**
-     * 로그인 정보 저장 (UI 표시용 SharedPreferences)
-     * 실제 JWT 토큰은 TokenManager에서 관리
-     */
-    fun saveLoggedIn(userId: String, userName: String) {
-        val prefs = getSharedPreferences("momenty_prefs", Context.MODE_PRIVATE)
-        prefs.edit().apply {
-            putBoolean("is_logged_in", true)
-            putString("user_id", userId)
-            putString("user_name", userName)
-            apply()
-        }
-    }
-
     fun isLoggedIn(): Boolean = tokenManager.isLoggedIn()
 
     fun logout() {
-        val prefs = getSharedPreferences("momenty_prefs", Context.MODE_PRIVATE)
-        prefs.edit().clear().apply()
-        // JWT 삭제는 AuthRepository/TokenManager에서 처리하는 구조라면 여기서는 생략
+        lifecycleScope.launch {
+            authRepository.logout()
+            // 로그인 화면으로 이동
+            navController.navigate(R.id.auth_graph)
+        }
     }
 
-    fun getUserId(): String? =
-        getSharedPreferences("momenty_prefs", Context.MODE_PRIVATE)
-            .getString("user_id", null)
-
-    fun getUserName(): String? =
-        getSharedPreferences("momenty_prefs", Context.MODE_PRIVATE)
-            .getString("user_name", null)
+    fun getUserId(): Long = tokenManager.getUserId()
 
     /**
      * destination이 특정 graph(또는 그 하위)에 속하는지 체크

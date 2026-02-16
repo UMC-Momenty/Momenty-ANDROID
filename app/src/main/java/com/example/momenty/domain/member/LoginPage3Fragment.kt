@@ -16,6 +16,7 @@ import com.example.momenty.R
 import com.example.momenty.databinding.FragmentLoginPage3Binding
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.momenty.domain.main.presentation.MainActivity
+import com.example.momenty.global.security.TokenManager
 import com.example.momenty.ui.auth.AuthUiState
 import com.example.momenty.ui.auth.AuthViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -113,14 +114,6 @@ class LoginPage3Fragment : Fragment() {
 
         showToast("${userName ?: "사용자"}님, 환영합니다!")
 
-        // MainActivity에 사용자 정보 저장 (기존 로직 유지)
-        (activity as? MainActivity)?.apply {
-            saveLoggedIn("temp_user_id", userName ?: "사용자")
-        }
-
-        // 메인 화면으로 이동
-        //navigateToRecord()
-
         navigateToUserProfile()
     }
 
@@ -146,17 +139,6 @@ class LoginPage3Fragment : Fragment() {
         // TODO: 프로그레스바 숨김
         // binding.progressBar.visibility = View.GONE
     }
-
-    /**
-     *     private fun navigateToRecord() {
-     *         val options = NavOptions.Builder()
-     *             .setPopUpTo(R.id.auth_graph, true) // inclusive = true와 동일
-     *             .setLaunchSingleTop(true)
-     *             .build()
-     *
-     *         findNavController().navigate(R.id.home_graph, null, options)
-     *     }
-     */
 
     // 로그인 후 사용자 프로필 설정 화면으로 이동 -> 추후 회원가입 시에만 적용되도록 수정
     private fun navigateToUserProfile() {

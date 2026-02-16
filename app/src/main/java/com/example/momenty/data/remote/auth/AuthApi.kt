@@ -44,5 +44,6 @@ data class ReissueRequest(
  */
 data class LoginResponse(
     val accessToken: String,   // 백엔드 JWT
-    val refreshToken: String   // 백엔드 Refresh Token
+    val refreshToken: String,   // 백엔드 Refresh Token
+    val userId: Long
 )

@@ -41,20 +41,34 @@ class TokenManager @Inject constructor(
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_REFRESH_TOKEN = "refresh_token"
         private const val KEY_USER_ID = "user_id"
+        private const val KEY_IS_LOGGED_IN = "is_logged_in"
+    }
+
+    fun saveLoginInfo(
+        accessToken: String,
+        refreshToken: String,
+        userId: Long) {
+        prefs.edit().apply {
+            putString(KEY_ACCESS_TOKEN, accessToken)
+            putString(KEY_REFRESH_TOKEN, refreshToken)
+            putLong(KEY_USER_ID, userId)
+            putBoolean(KEY_IS_LOGGED_IN, true)
+            apply()
+        }
     }
 
     /**
-     * Access Token 저장
+     * Token 저장
      */
-    fun saveAccessToken(token: String) {
-        prefs.edit().putString(KEY_ACCESS_TOKEN, token).apply()
-    }
-
-    /**
-     * Refresh Token 저장
-     */
-    fun saveRefreshToken(token: String) {
-        prefs.edit().putString(KEY_REFRESH_TOKEN, token).apply()
+    fun saveTokens(
+        accessToken: String,
+        refreshToken: String) {
+        prefs.edit().apply{
+            putString(KEY_ACCESS_TOKEN, accessToken)
+            putString(KEY_REFRESH_TOKEN, refreshToken)
+            putBoolean(KEY_IS_LOGGED_IN, true)
+            apply()
+        }
     }
 
     /**
@@ -72,25 +86,11 @@ class TokenManager @Inject constructor(
     }
 
     /**
-     * User ID 저장
-     */
-    fun saveUserId(userId: Long) {
-        prefs.edit().putLong(KEY_USER_ID, userId).apply()
-    }
-
-    /**
      * User ID 조회
      * @return userId (없으면 -1L 반환)
      */
     fun getUserId(): Long {
         return prefs.getLong(KEY_USER_ID, -1L)
-    }
-
-    /**
-     * User ID 존재 여부 확인
-     */
-    fun hasUserId(): Boolean {
-        return getUserId() != -1L
     }
 
     /**
@@ -101,6 +101,7 @@ class TokenManager @Inject constructor(
             remove(KEY_ACCESS_TOKEN)
             remove(KEY_REFRESH_TOKEN)
             remove(KEY_USER_ID)
+            putBoolean(KEY_IS_LOGGED_IN, false)
             apply()
         }
     }
@@ -110,31 +111,7 @@ class TokenManager @Inject constructor(
      */
     fun isLoggedIn(): Boolean {
         val token = getAccessToken()
-        val userId = getUserId()
-        return !token.isNullOrEmpty() && userId != -1L
-    }
-
-    /**
-     * 두 토큰을 한 번에 저장 (로그인 성공 시)
-     */
-    fun saveTokens(accessToken: String, refreshToken: String) {
-        prefs.edit().apply {
-            putString(KEY_ACCESS_TOKEN, accessToken)
-            putString(KEY_REFRESH_TOKEN, refreshToken)
-            apply()
-        }
-    }
-
-    /**
-     * 로그인 정보 일괄 저장 (토큰 + userId)
-     */
-    fun saveLoginInfo(accessToken: String, refreshToken: String, userId: Long) {
-        prefs.edit().apply {
-            putString(KEY_ACCESS_TOKEN, accessToken)
-            putString(KEY_REFRESH_TOKEN, refreshToken)
-            putLong(KEY_USER_ID, userId)
-            apply()
-        }
+        return !token.isNullOrEmpty() && prefs.getBoolean(KEY_IS_LOGGED_IN, false)
     }
 
     /**
