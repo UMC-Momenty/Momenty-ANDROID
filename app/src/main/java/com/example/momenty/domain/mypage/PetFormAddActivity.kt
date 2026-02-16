@@ -1,21 +1,64 @@
 package com.example.momenty.domain.mypage
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
+import android.view.MotionEvent
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.momenty.R
+import com.example.momenty.data.api.ImagePickerHelper
 import com.example.momenty.databinding.ActivityPetFormAddBinding
+import com.example.momenty.domain.member.ImageUploadState
+import com.example.momenty.domain.member.ProfileUiState
+import com.example.momenty.domain.member.ProfileViewModel
+import com.example.momenty.domain.mypage.data.MyPagePetProfileData
+import kotlinx.coroutines.launch
 import java.util.Calendar
+import kotlin.getValue
+import com.google.gson.Gson
 
 class PetFormAddActivity: AppCompatActivity() {
     lateinit var binding: ActivityPetFormAddBinding
+
+    private val profileViewModel: ProfileViewModel by viewModels()
     private var selectedPetType: String? = null // 강아지 or 고양이
+    private var selectedImageUri: Uri? = null
+    private var uploadedImageKey: String? = null  // 변경: URL → Key
+    private val TAG = "PetAddAct"
+
+    private val galleryLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                handleImageSelected(uri)
+            }
+        }
+    }
+
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            imagePickerHelper?.getTempImageUri()?.let { uri ->
+                handleImageSelected(uri)
+            }
+        }
+    }
+
+    private var imagePickerHelper: ImagePickerHelper? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,12 +67,26 @@ class PetFormAddActivity: AppCompatActivity() {
         binding = ActivityPetFormAddBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initListener()
+        imagePickerHelper = ImagePickerHelper(
+            this,
+            galleryLauncher,
+            cameraLauncher
+        )
+
+        initializeViews()
+
+        // observeProfileState()
+        // observeImageUploadState()
     }
 
     private fun initListener() {
         binding.btnPetFormAddBack.setOnClickListener {
             finish()
+        }
+
+        // 프로필 이미지 변경
+        binding.layoutPetFormAddPhoto.setOnClickListener {
+            imagePickerHelper?.showImagePickerDialog()
         }
 
         // 이름 입력 감지
@@ -41,10 +98,7 @@ class PetFormAddActivity: AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        // 이름 입력 필드 clear 버튼
-        binding.etPetAddName.setOnFocusChangeListener { _, hasFocus ->
-            // EditText에 drawableEnd로 clear 아이콘이 있다면 클릭 이벤트 추가 가능
-        }
+        setupClearButton(binding.etPetAddName)
 
         // 성별 선택
         binding.rgPetGender.setOnCheckedChangeListener { _, _ ->
@@ -89,13 +143,36 @@ class PetFormAddActivity: AppCompatActivity() {
 
         // 저장 버튼
         binding.btnPetFormAddSave.setOnClickListener {
-            saveProfile()
+            // saveProfile()
+            saveProfileLocally()
+            finish() // TODO: 테스트용. API 연결 후 삭제 예정
         }
     }
 
     private fun initializeViews() {
         initListener()
         updateSaveButton()
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupClearButton(editText: android.widget.EditText) {
+        editText.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                val drawableEnd = editText.compoundDrawables[2]
+
+                if (drawableEnd != null) {
+                    val touchX = event.x.toInt()
+                    val drawableWidth = drawableEnd.intrinsicWidth
+                    val drawableStart = editText.width - editText.paddingEnd - drawableWidth
+
+                    if (touchX >= drawableStart) {
+                        editText.text?.clear()
+                        return@setOnTouchListener true
+                    }
+                }
+            }
+            false
+        }
     }
 
 
@@ -126,6 +203,31 @@ class PetFormAddActivity: AppCompatActivity() {
         datePickerDialog.show()
     }
 
+    /**
+     * 이미지 선택 처리
+     */
+    private fun handleImageSelected(uri: Uri) {
+        selectedImageUri = uri
+
+        // 이미지 미리보기
+        Glide.with(this)
+            .load(uri)
+            .circleCrop()
+            .into(binding.ivPetFormPetProfileEdit)
+
+        // Presigned URL 방식으로 이미지 업로드
+        uploadImageWithPresignedUrl(uri)
+    }
+
+    /**
+     * Presigned URL 방식으로 이미지 업로드
+     */
+    private fun uploadImageWithPresignedUrl(uri: Uri) {
+        lifecycleScope.launch {
+            profileViewModel.uploadImage(this@PetFormAddActivity, uri)
+        }
+    }
+
     private fun showPetTypeDialog() {
         val petTypes = arrayOf("강아지", "고양이")
 
@@ -145,6 +247,102 @@ class PetFormAddActivity: AppCompatActivity() {
                 dialog.dismiss()
             }
             .show()
+    }
+
+    /**
+     * 이미지 업로드 상태 관찰
+     */
+    private fun observeImageUploadState() {
+        lifecycleScope.launch {
+            profileViewModel.imageUploadState.collect { state ->
+                when (state) {
+                    is ImageUploadState.Idle -> {
+                        // 초기 상태
+                    }
+                    is ImageUploadState.Loading -> {
+                        Toast.makeText(
+                            this@PetFormAddActivity,
+                            "이미지 업로드 중...",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    is ImageUploadState.Success -> {
+                        uploadedImageKey = state.imageKey  // 변경: URL → Key
+                        Toast.makeText(
+                            this@PetFormAddActivity,
+                            "이미지 업로드 완료",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        Log.d(TAG, "업로드된 이미지 Key: $uploadedImageKey")
+                    }
+                    is ImageUploadState.Error -> {
+                        Toast.makeText(
+                            this@PetFormAddActivity,
+                            "이미지 업로드 실패: ${state.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        Log.e(TAG, "이미지 업로드 실패: ${state.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun observeProfileState() {
+        lifecycleScope.launch {
+            profileViewModel.uiState.collect { state ->
+                when (state) {
+                    is ProfileUiState.Idle -> {
+                        hideLoading()
+                    }
+                    is ProfileUiState.Loading -> {
+                        showLoading()
+                    }
+                    is ProfileUiState.Success -> {
+                        hideLoading()
+                        handleProfileSuccess(state)
+                    }
+                    is ProfileUiState.Error -> {
+                        hideLoading()
+                        handleProfileError(state.message)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleProfileSuccess(state: ProfileUiState.Success) {
+        Log.d(TAG, "프로필 저장 성공: userId=${state.userId}, petId=${state.petId}")
+
+        Toast.makeText(
+            this@PetFormAddActivity,
+            "프로필이 저장되었습니다!",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        // 로컬에도 저장 (캐싱용)
+        saveProfileLocally()
+
+        finish()
+    }
+
+    private fun handleProfileError(message: String) {
+        Log.e(TAG, "프로필 저장 실패: $message")
+        Toast.makeText(
+            this@PetFormAddActivity,
+            "프로필 저장 실패: $message",
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
+    private fun showLoading() {
+        binding.btnPetFormAddSave.isEnabled = false
+        // TODO: 프로그레스바 표시
+    }
+
+    private fun hideLoading() {
+        binding.btnPetFormAddSave.isEnabled = true
+        // TODO: 프로그레스바 숨김
     }
 
     private fun showTypeBreedDialog()  {
@@ -198,6 +396,50 @@ class PetFormAddActivity: AppCompatActivity() {
      * 프로필 정보 저장
      */
     private fun saveProfile() {
+        val prefs = getSharedPreferences(
+            "momenty_prefs",
+            Context.MODE_PRIVATE
+        )
+
+        val userName = prefs.getString("user_name", "") ?: ""
+        val userGender = prefs.getString("user_gender", "") ?: ""
+        val userBirth = prefs.getString("user_birth", "") ?: ""
+        val alarmTime = prefs.getString("alarm_time", null)
+        val userProfileImageKey = prefs.getString("user_profile_image_key", null)  // 변경
+
+        val petName = binding.etPetAddName.text.toString()
+        val petGender = when (binding.rgPetGender.checkedRadioButtonId) {
+            R.id.rb_gender_male -> "male"
+            R.id.rb_gender_female -> "female"
+            else -> ""
+        }
+        val petBirth = binding.etPetFormAddBirthday.text.toString()
+        val petType = binding.etPetFormAddType.text.toString()
+        val petTypeDetail = binding.etPetFormAddTypeDetail.text.toString()
+        val petIntro = binding.etPetFormAddIntro.text.toString()
+
+        // 날짜 형식 변환 (YY.MM.DD -> YYYY-MM-DD)
+        val userBirthFormatted = formatDateForApi(userBirth)
+        val petBirthFormatted = formatDateForApi(petBirth)
+
+        // ViewModel을 통해 API 호출 (imageKey 전달)
+        profileViewModel.updateProfile(
+            userName = userName,
+            userGender = userGender,
+            userBirthDate = userBirthFormatted,
+            userImageKey = userProfileImageKey,      // 변경: URL → Key
+            alarmTime = alarmTime,
+            petName = petName,
+            petGender = petGender,
+            petBirthDate = petBirthFormatted,
+            petImageKey = uploadedImageKey,          // 변경: URL → Key
+            petType = petType,
+            petBreed = petTypeDetail,
+            petIntroduction = petIntro
+        )
+
+
+        /*
         val name = binding.etPetAddName.text.toString()
         val gender = when (binding.rgPetGender.checkedRadioButtonId) {
             R.id.rb_gender_male -> "male"
@@ -215,8 +457,83 @@ class PetFormAddActivity: AppCompatActivity() {
 
         // 메인 화면으로 이동
         finish()
+
+         */
     }
 
+    /**
+     * 날짜 형식 변환 (YY.MM.DD -> YYYY-MM-DD)
+     */
+    private fun formatDateForApi(date: String): String {
+        return try {
+            val parts = date.split(".")
+            if (parts.size == 3) {
+                val year = parts[0].toInt()
+                val fullYear = if (year < 50) 2000 + year else 1900 + year
+                String.format("%04d-%02d-%02d", fullYear, parts[1].toInt(), parts[2].toInt())
+            } else {
+                date
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Date format error: $date", e)
+            date
+        }
+    }
+
+    /**
+     * 로컬 저장 (캐싱용)
+     */
+    private fun saveProfileLocally() {
+        val prefs = getSharedPreferences(
+            "momenty_prefs",
+            Context.MODE_PRIVATE
+        )
+        var petIndex = prefs.getInt("pet_index", 0)
+        val petData = MyPagePetProfileData(
+            binding.etPetAddName.text.toString(),
+            when (binding.rgPetGender.checkedRadioButtonId) {
+                R.id.rb_gender_male -> "male"
+                R.id.rb_gender_female -> "female"
+                else -> ""
+            },
+            binding.etPetFormAddBirthday.text.toString(),
+            binding.etPetFormAddType.text.toString(),
+            binding.etPetFormAddTypeDetail.text?.toString(),
+            binding.etPetFormAddIntro.text?.toString(),
+            uploadedImageKey
+        )
+        val gson = Gson()
+        val petData2Json = gson.toJson(petData)
+
+
+        prefs.edit().apply {
+            putString("pet_info_${petIndex+1}", petData2Json)
+            putInt("pet_index", petIndex+1)
+
+            apply()
+        }
+
+        /*
+        prefs.edit().apply {
+            putString("pet_name", binding.etPetAddName.text.toString())
+            putString("pet_gender", when (binding.rgPetGender.checkedRadioButtonId) {
+                R.id.rb_gender_male -> "male"
+                R.id.rb_gender_female -> "female"
+                else -> ""
+            })
+            putString("pet_birth", binding.etPetFormAddBirthday.text.toString())
+            putString("pet_type", binding.etPetFormAddType.text.toString())
+            putString("pet_type_detail", binding.etPetFormAddTypeDetail.text?.toString())
+            putString("pet_intro", binding.etPetFormAddIntro.text?.toString())
+            putString("pet_profile_image_key", uploadedImageKey)  // 변경: URL → Key
+            putBoolean("pet_profile_completed", true)
+            apply()
+        }
+
+         */
+    }
+
+    /*
     private fun saveToPreferences(
         name: String,
         gender: String,
@@ -230,6 +547,10 @@ class PetFormAddActivity: AppCompatActivity() {
             Context.MODE_PRIVATE
         )
 
+        val tmpData = MyPagePetProfileData(
+            name, gender, birth, type, typeDetail, intro
+        )
+
         prefs.edit().apply {
             putString("pet_name", name)
             putString("pet_gender", gender)
@@ -241,5 +562,7 @@ class PetFormAddActivity: AppCompatActivity() {
             apply()
         }
     }
+
+     */
 
 }

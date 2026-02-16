@@ -1,10 +1,27 @@
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/tvText"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
     android:layout_width="wrap_content"
     android:layout_height="36dp"
-    android:paddingHorizontal="18dp"
+    android:orientation="horizontal"
     android:gravity="center"
-    android:textSize="14sp"
-    android:textStyle="bold"
-    android:textColor="@color/body_2"
-    android:background="@drawable/bg_filter_chip"/>
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp">
+
+    <ImageView
+        android:id="@+id/ivIcon"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_marginEnd="6dp"
+        android:visibility="gone"
+        android:tint="@null"
+        app:tint="@null"/>
+
+
+    <TextView
+        android:id="@+id/tvText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+</LinearLayout>

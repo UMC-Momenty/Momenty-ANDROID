@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"/>
 
     <TextView
-        android:id="@+id/tv_my_page_pet_select"
+        android:id="@+id/tv_my_page_pet_select_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -33,8 +33,10 @@
         android:id="@+id/rb_my_page_pet_select"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:checked="true"
+        android:checked="false"
+        android:focusable="false"
         app:layout_constraintTop_toTopOf="@id/iv_my_page_pet_select"
         app:layout_constraintBottom_toBottomOf="@id/iv_my_page_pet_select"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -36,7 +36,7 @@ class SplashActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "SplashActivity"
-        private const val SPLASH_DELAY_MS = 2000L // 스플래시 최소 표시 시간 (2초)
+        private const val SPLASH_DELAY_MS = 1500L
         private const val INITIALIZATION_TIMEOUT_MS = 5000L // 5초 타임아웃
         private const val PREFS_NAME = "momenty_prefs"
         private const val KEY_PROFILE_COMPLETED = "profile_completed"

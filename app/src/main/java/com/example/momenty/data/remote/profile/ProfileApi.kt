@@ -41,7 +41,5 @@ data class UpdateProfileResponse(
     val userId: String,
     val userName: String,
     val petId: String,
-    val petName: String,
-    val accessToken: String,   // 새로 발급된 JWT Access Token
-    val refreshToken: String   // 새로 발급된 JWT Refresh Token
+    val petName: String
 )
