@@ -12,6 +12,15 @@ class AuthInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
+
+        val url = originalRequest.url
+        val host = url.host
+
+
+        if (host.contains("amazonaws.com")) {
+            return chain.proceed(originalRequest)
+        }
+
         // 토큰이 필요 없는 엔드포인트 (로그인, 회원가입 등)
         val noAuthPaths = listOf("/auth/login", "/auth/signup", "/auth/refresh")
         val isNoAuthPath = noAuthPaths.any { originalRequest.url.encodedPath.contains(it) }
