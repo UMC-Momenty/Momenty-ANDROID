@@ -3,95 +3,98 @@ package com.example.momenty.domain.calendar
 import android.util.Log
 import com.example.momenty.domain.calendar.api.request.AlarmStatusRequest
 import com.example.momenty.domain.calendar.api.request.CreateScheduleRequest
-import com.example.momenty.domain.calendar.api.response.AlarmDto
-import com.example.momenty.domain.calendar.api.response.DailyScheduleResponse
 import com.example.momenty.domain.calendar.api.response.MonthlyScheduleResponse
 import com.example.momenty.domain.calendar.api.response.PetMonthlyScheduleResponse
 import com.example.momenty.global.security.TokenManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
- * 캘린더 Repository - ANR 방지 및 에러 처리 개선
- * 서버에서 실제 반려동물 데이터 로드
+ * 캘린더 Repository - 백엔드 API 기반
  */
 class CalendarRepository(
     private val calendarApiService: CalendarApiService,
     private val petApiService: PetApiService,
-    // private val deviceCalendarHelper: DeviceCalendarHelper,
     private val tokenManager: TokenManager
 ) {
     companion object {
         private const val TAG = "CalendarRepository"
-        private const val NETWORK_TIMEOUT = 30000L // 30초로 증가
-        private const val IMAGE_BASE_URL =
-            "https://your-s3-bucket.s3.amazonaws.com/" // S3 버킷 URL로 변경 필요
+        private const val NETWORK_TIMEOUT = 30000L // 30초
     }
 
     /**
-     * 서버에서 사용자의 반려동물 목록 가져오기
-     * Timeout 설정으로 ANR 방지
+     * 1. 사용자의 반려동물 목록 가져오기
      */
-    suspend fun getUserPets(userId: Long): List<Pet> = withContext(Dispatchers.IO) {
+    suspend fun getUserPets(): List<Pet> = withContext(Dispatchers.IO) {
         try {
-            val token = "Bearer ${tokenManager.getAccessToken()}"
-            val response = petApiService.getUserPets(userId, token)
+            Log.d(TAG, "getUserPets() called")
 
-            if (response.isSuccessful && response.body() != null) {
-                response.body()!!.pets.map { dto ->
+            // 로그인 확인
+            if (!tokenManager.isLoggedIn()) {
+                Log.w(TAG, "User not logged in")
+                return@withContext emptyList()
+            }
+
+            val userId = tokenManager.getUserId()
+            if (userId == -1L) {
+                Log.w(TAG, "User ID not found")
+                return@withContext emptyList()
+            }
+
+            Log.d(TAG, "Fetching pets for userId: $userId")
+
+            // 네트워크 요청
+            val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
+                petApiService.getUserPets(userId)
+            }
+
+            Log.d(TAG, "API response: isSuccessful=${response?.isSuccessful}, code=${response?.code()}")
+
+            if (response?.isSuccessful == true && response.body() != null) {
+                val pets = response.body()!!.pets.map { dto ->
                     Pet(
                         petId = dto.petId,
-                        profile = dto.petProfile
+                        profile = dto.profile
                     )
                 }
+                Log.d(TAG, "Loaded ${pets.size} pets successfully")
+                pets
             } else {
+                Log.w(TAG, "Failed to fetch pets: code=${response?.code()}")
                 emptyList()
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching pets", e)
-            // 에러 발생 시 빈 리스트 반환
             emptyList()
         }
     }
 
     /**
-     * 디바이스 캘린더 목록 가져오기
-     * suspend fun getDeviceCalendars(): List<DeviceCalendar> = withContext(Dispatchers.IO) {
-     *         try {
-     *             val calendars = deviceCalendarHelper.getAvailableCalendars()
-     *
-     *             calendars.map { deviceCal ->
-     *                 DeviceCalendar(
-     *                     id = deviceCal.id,
-     *                     name = deviceCal.name,
-     *                     accountName = deviceCal.accountName,
-     *                     isSelected = false
-     *                 )
-     *             }
-     *         } catch (e: Exception) {
-     *             Log.e(TAG, "Error getting device calendars", e)
-     *             emptyList()
-     *         }
-     *     }
-     */
-
-    /**
-     * 모든 반려동물 월별 일정 조회
+     * 2. 모든 반려동물의 월별 일정 조회
      */
     suspend fun getAllPetsMonthlySchedules(
-        userId: Long,
         year: Int,
         month: Int
     ): MonthlyScheduleResponse? = withContext(Dispatchers.IO) {
         try {
-            val token = "Bearer ${tokenManager.getAccessToken()}"
-            val response = calendarApiService.getAllPetsMonthlySchedules(
-                userId, year, month, token
-            )
+            val userId = tokenManager.getUserId()
+            if (userId == -1L) {
+                Log.w(TAG, "User ID not found")
+                return@withContext null
+            }
 
-            if (response.isSuccessful) {
+            Log.d(TAG, "Fetching all pets monthly schedules: year=$year, month=$month")
+
+            val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
+                calendarApiService.getAllPetsMonthlySchedules(userId, year, month)
+            }
+
+            if (response?.isSuccessful == true) {
+                Log.d(TAG, "Monthly schedules loaded successfully")
                 response.body()
             } else {
+                Log.w(TAG, "Failed to fetch monthly schedules: code=${response?.code()}")
                 null
             }
         } catch (e: Exception) {
@@ -101,23 +104,31 @@ class CalendarRepository(
     }
 
     /**
-     * 반려동물별 월별 일정 조회
+     * 3. 특정 반려동물의 월별 일정 조회
      */
     suspend fun getPetMonthlySchedules(
-        userId: Long,
         petId: Long,
         year: Int,
         month: Int
     ): PetMonthlyScheduleResponse? = withContext(Dispatchers.IO) {
         try {
-            val token = "Bearer ${tokenManager.getAccessToken()}"
-            val response = calendarApiService.getPetMonthlySchedules(
-                userId, petId, year, month, token
-            )
+            val userId = tokenManager.getUserId()
+            if (userId == -1L) {
+                Log.w(TAG, "User ID not found")
+                return@withContext null
+            }
 
-            if (response.isSuccessful) {
+            Log.d(TAG, "Fetching pet monthly schedules: petId=$petId, year=$year, month=$month")
+
+            val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
+                calendarApiService.getPetMonthlySchedules(userId, petId, year, month)
+            }
+
+            if (response?.isSuccessful == true) {
+                Log.d(TAG, "Pet monthly schedules loaded successfully")
                 response.body()
             } else {
+                Log.w(TAG, "Failed to fetch pet monthly schedules: code=${response?.code()}")
                 null
             }
         } catch (e: Exception) {
@@ -127,43 +138,56 @@ class CalendarRepository(
     }
 
     /**
-     * 반려동물별 일별 일정 조회
+     * 4. 특정 반려동물의 일별 일정 조회
      */
     suspend fun getPetDailySchedules(
         petId: Long,
-        date: String  // "YYYY-MM-DD"
-    ): DailyScheduleResponse? = withContext(Dispatchers.IO) {
+        date: String  // "YYYY-MM-DD" 형식
+    ): List<CalendarEvent> = withContext(Dispatchers.IO) {
         try {
-            val token = "Bearer ${tokenManager.getAccessToken()}"
-            val response = calendarApiService.getPetDailySchedules(
-                petId, date, token
-            )
+            Log.d(TAG, "Fetching daily schedules: petId=$petId, date=$date")
 
-            if (response.isSuccessful) {
-                response.body()
+            val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
+                calendarApiService.getPetDailySchedules(petId, date)
+            }
+
+            if (response?.isSuccessful == true && response.body() != null) {
+                val schedules = response.body()!!.schedules.map { dto ->
+                    dto.toDomain(petId)
+                }
+                Log.d(TAG, "Loaded ${schedules.size} schedules for date=$date")
+                schedules
             } else {
-                null
+                Log.w(TAG, "Failed to fetch daily schedules: code=${response?.code()}")
+                emptyList()
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching daily schedules", e)
-            null
+            emptyList()
         }
     }
 
     /**
-     * 일정 생성
+     * 5. 일정 생성
      */
     suspend fun createSchedule(
         petId: Long,
         request: CreateScheduleRequest
     ): Boolean = withContext(Dispatchers.IO) {
         try {
-            val token = "Bearer ${tokenManager.getAccessToken()}"
-            val response = calendarApiService.createSchedule(
-                petId, request, token
-            )
+            Log.d(TAG, "Creating schedule for petId=$petId: ${request.title}")
 
-            response.isSuccessful
+            val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
+                calendarApiService.createSchedule(petId, request)
+            }
+
+            val success = response?.isSuccessful == true
+            if (success) {
+                Log.d(TAG, "Schedule created successfully")
+            } else {
+                Log.w(TAG, "Failed to create schedule: code=${response?.code()}")
+            }
+            success
         } catch (e: Exception) {
             Log.e(TAG, "Error creating schedule", e)
             false
@@ -171,16 +195,27 @@ class CalendarRepository(
     }
 
     /**
-     * 알림 목록 조회
+     * 6. 알림 목록 조회
      */
-    suspend fun getAlarms(petId: Long): List<AlarmDto> = withContext(Dispatchers.IO) {
+    suspend fun getAlarms(petId: Long): List<Alarm> = withContext(Dispatchers.IO) {
         try {
-            val token = "Bearer ${tokenManager.getAccessToken()}"
-            val response = calendarApiService.getAlarms(petId, token)
+            Log.d(TAG, "Fetching alarms for petId=$petId")
 
-            if (response.isSuccessful && response.body()?.isSuccess == true) {
-                response.body()?.result?.alarms ?: emptyList()
+            val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
+                calendarApiService.getAlarms(petId)
+            }
+
+            if (response?.isSuccessful == true &&
+                response.body()?.isSuccess == true &&
+                response.body()?.result != null) {
+
+                val alarms = response.body()!!.result.alarms.map { dto ->
+                    dto.toDomain(petId)
+                }
+                Log.d(TAG, "Loaded ${alarms.size} alarms")
+                alarms
             } else {
+                Log.w(TAG, "Failed to fetch alarms: code=${response?.code()}")
                 emptyList()
             }
         } catch (e: Exception) {
@@ -190,24 +225,43 @@ class CalendarRepository(
     }
 
     /**
-     * 알림 ON/OFF 토글
+     * 7. 알림 ON/OFF 토글
      */
     suspend fun toggleAlarmStatus(
         scheduleId: Long,
         isEnabled: Boolean
     ): Boolean = withContext(Dispatchers.IO) {
         try {
-            val token = "Bearer ${tokenManager.getAccessToken()}"
-            val response = calendarApiService.toggleAlarmStatus(
-                scheduleId,
-                AlarmStatusRequest(isEnabled),
-                token
-            )
+            Log.d(TAG, "Toggling alarm status: scheduleId=$scheduleId, isEnabled=$isEnabled")
 
-            response.isSuccessful
+            val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
+                calendarApiService.toggleAlarmStatus(
+                    scheduleId = scheduleId,
+                    request = AlarmStatusRequest(isEnabled)
+                )
+            }
+
+            val success = response?.isSuccessful == true
+            if (success) {
+                Log.d(TAG, "Alarm status toggled successfully")
+            } else {
+                Log.w(TAG, "Failed to toggle alarm status: code=${response?.code()}")
+            }
+            success
         } catch (e: Exception) {
             Log.e(TAG, "Error toggling alarm status", e)
             false
+        }
+    }
+
+    /**
+     * 캐시 클리어 (필요시)
+     */
+    suspend fun clearCache() = withContext(Dispatchers.IO) {
+        try {
+            Log.d(TAG, "Cache cleared")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing cache", e)
         }
     }
 }

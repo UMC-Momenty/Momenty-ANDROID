@@ -40,6 +40,7 @@ class TokenManager @Inject constructor(
         private const val PREF_NAME = "momenty_secure_prefs"
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_REFRESH_TOKEN = "refresh_token"
+        private const val KEY_USER_ID = "user_id"
     }
 
     /**
@@ -71,12 +72,35 @@ class TokenManager @Inject constructor(
     }
 
     /**
+     * User ID 저장
+     */
+    fun saveUserId(userId: Long) {
+        prefs.edit().putLong(KEY_USER_ID, userId).apply()
+    }
+
+    /**
+     * User ID 조회
+     * @return userId (없으면 -1L 반환)
+     */
+    fun getUserId(): Long {
+        return prefs.getLong(KEY_USER_ID, -1L)
+    }
+
+    /**
+     * User ID 존재 여부 확인
+     */
+    fun hasUserId(): Boolean {
+        return getUserId() != -1L
+    }
+
+    /**
      * 모든 토큰 삭제 (로그아웃 시)
      */
     fun clearTokens() {
         prefs.edit().apply {
             remove(KEY_ACCESS_TOKEN)
             remove(KEY_REFRESH_TOKEN)
+            remove(KEY_USER_ID)
             apply()
         }
     }
@@ -86,7 +110,8 @@ class TokenManager @Inject constructor(
      */
     fun isLoggedIn(): Boolean {
         val token = getAccessToken()
-        return !token.isNullOrEmpty()
+        val userId = getUserId()
+        return !token.isNullOrEmpty() && userId != -1L
     }
 
     /**
@@ -96,6 +121,18 @@ class TokenManager @Inject constructor(
         prefs.edit().apply {
             putString(KEY_ACCESS_TOKEN, accessToken)
             putString(KEY_REFRESH_TOKEN, refreshToken)
+            apply()
+        }
+    }
+
+    /**
+     * 로그인 정보 일괄 저장 (토큰 + userId)
+     */
+    fun saveLoginInfo(accessToken: String, refreshToken: String, userId: Long) {
+        prefs.edit().apply {
+            putString(KEY_ACCESS_TOKEN, accessToken)
+            putString(KEY_REFRESH_TOKEN, refreshToken)
+            putLong(KEY_USER_ID, userId)
             apply()
         }
     }

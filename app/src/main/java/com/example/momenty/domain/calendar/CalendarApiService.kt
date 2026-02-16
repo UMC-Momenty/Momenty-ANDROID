@@ -17,8 +17,7 @@ interface CalendarApiService {
     suspend fun getAllPetsMonthlySchedules(
         @Path("userId") userId: Long,
         @Query("year") year: Int,
-        @Query("month") month: Int,
-        @Header("Authorization") token: String
+        @Query("month") month: Int
     ): Response<MonthlyScheduleResponse>
 
     /**
@@ -29,8 +28,7 @@ interface CalendarApiService {
         @Path("userId") userId: Long,
         @Path("petId") petId: Long,
         @Query("year") year: Int,
-        @Query("month") month: Int,
-        @Header("Authorization") token: String
+        @Query("month") month: Int
     ): Response<PetMonthlyScheduleResponse>
 
     /**
@@ -39,8 +37,7 @@ interface CalendarApiService {
     @GET("api/pets/{petId}/schedules")
     suspend fun getPetDailySchedules(
         @Path("petId") petId: Long,
-        @Query("date") date: String,  // "YYYY-MM-DD" 형식
-        @Header("Authorization") token: String
+        @Query("date") date: String  // "YYYY-MM-DD" 형식
     ): Response<DailyScheduleResponse>
 
     /**
@@ -49,8 +46,7 @@ interface CalendarApiService {
     @POST("api/pets/{petId}/schedules")
     suspend fun createSchedule(
         @Path("petId") petId: Long,
-        @Body request: CreateScheduleRequest,
-        @Header("Authorization") token: String
+        @Body request: CreateScheduleRequest
     ): Response<Unit>  // 또는 생성된 일정 반환
 
     /**
@@ -58,8 +54,7 @@ interface CalendarApiService {
      */
     @GET("api/pets/{petId}/alarms")
     suspend fun getAlarms(
-        @Path("petId") petId: Long,
-        @Header("Authorization") token: String
+        @Path("petId") petId: Long
     ): Response<AlarmListResponse>
 
     /**
@@ -68,7 +63,6 @@ interface CalendarApiService {
     @PATCH("api/schedules/{scheduleId}/alarm-status")
     suspend fun toggleAlarmStatus(
         @Path("scheduleId") scheduleId: Long,
-        @Body request: AlarmStatusRequest,
-        @Header("Authorization") token: String
+        @Body request: AlarmStatusRequest
     ): Response<Unit>
 }
