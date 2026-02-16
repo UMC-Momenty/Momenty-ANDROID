@@ -18,6 +18,7 @@ class CustomerCenterInquiryHistoryRVA(private val historyList: ArrayList<Custome
         }
 
     private lateinit var mItemClickListener: MyItemClickListener
+
     fun setMyItemClickListener(itemClickListener: MyItemClickListener) {
         mItemClickListener = itemClickListener
     }
