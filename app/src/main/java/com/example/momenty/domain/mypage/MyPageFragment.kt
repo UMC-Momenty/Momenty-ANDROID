@@ -50,9 +50,10 @@ class MyPageFragment : Fragment() {
 
     lateinit var binding: FragmentMyPageBinding
     lateinit var tokenManager: TokenManager
+    private var bSuccessApi = false
     lateinit var rvAdapter: MyPageRVA
 
-    private var loadProfileByApi = ArrayList<LoadProfileData<PetProfileData>>()
+    private var loadProfileByApi: LoadProfileData ?= null
 
     private var petProfileDatas = ArrayList<MyPagePetProfileData>()
 
@@ -152,10 +153,11 @@ class MyPageFragment : Fragment() {
     }
 
     private fun setName() {
-        if (!loadProfileByApi.isNullOrEmpty()) {
+        if (bSuccessApi) {
             Log.e(TAG, "api 로드 성공")
-            setUserProfile(loadProfileByApi[0].username, loadProfileByApi[0].profileUrl)
-            setPetProfileByApi(loadProfileByApi[0].pets)
+
+            setUserProfile(loadProfileByApi!!.username, loadProfileByApi!!.profileUrl)
+            //setPetProfileByApi(loadProfileByApi.pets)
         }
 
         else {
@@ -272,14 +274,13 @@ class MyPageFragment : Fragment() {
             result.onSuccess { data ->
                 Toast.makeText(requireActivity(), "프로필 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
-                loadProfileByApi.apply {
-                    clear()
-                    add(data)
-                }
+                loadProfileByApi = data
+                bSuccessApi = true
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
                 Toast.makeText(requireActivity(), "프로필 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "프로필 로드 실패: $message")
+                bSuccessApi = false
             }
         }
     }

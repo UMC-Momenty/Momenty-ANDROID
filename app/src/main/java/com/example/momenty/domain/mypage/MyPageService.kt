@@ -20,7 +20,7 @@ interface MyPageService {
     suspend fun loadProfile(
         @Header("Authorization") token: String,
         @Path("userId") id: Long
-    ): Response<BaseResponse<LoadProfileData<PetProfileData>>>
+    ): Response<BaseResponse<LoadProfileData>>
 
     @PATCH("api/mypage/{userId}")
     suspend fun updateUserProfile(

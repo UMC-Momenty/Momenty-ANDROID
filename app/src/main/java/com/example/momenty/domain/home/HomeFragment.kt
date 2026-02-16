@@ -42,6 +42,9 @@ class HomeFragment : Fragment() {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
 //        G
 
+        binding.tvHome.setOnClickListener {
+            startActivity(Intent(requireContext(), QuestActivity::class.java))
+        }
         return binding.root
     }
 

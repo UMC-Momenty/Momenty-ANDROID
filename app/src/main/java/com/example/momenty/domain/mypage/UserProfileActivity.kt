@@ -18,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -33,6 +34,8 @@ import com.example.momenty.domain.member.ProfileViewModel
 import com.example.momenty.global.security.TokenManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import kotlin.getValue
 
@@ -41,9 +44,11 @@ class UserProfileActivity: AppCompatActivity() {
     lateinit var binding: ActivityUserProfileBinding
     lateinit var tokenManager: TokenManager
     private val tmpUserId = 1 //TODO: 테스트용. 이후 삭제 바람!!!!
+    private var bSuccessApi = false
 
     private val profileViewModel: ProfileViewModel by viewModels()
     private var isUpdating = false
+    private var loadProfileByApi: LoadProfileData ?= null
 
     private var selectedImageUri: Uri? = null
     private var uploadedImageKey: String? = null
@@ -96,7 +101,9 @@ class UserProfileActivity: AppCompatActivity() {
         )
 
         observePerformUpdateUserProfile()
+        observePerformLoadProfile()
 
+        performLoadProfile()
         initializeViews()
 
         observeProfileState()
@@ -403,57 +410,99 @@ class UserProfileActivity: AppCompatActivity() {
             binding.spinnerType.selectedItem as? String
         }
 
-        performUpdateUserProfile()
+        performUpdateUserProfile() //TODO: 백엔드 서버 열리면 다시 켜서 확인해볼것!!!
         // SharedPreferences에 저장
-        saveToPreferences(name, gender, birth, alarmTime, uploadedImageKey, selectedImageUri!!)
+        if (name == null) Log.e(TAG, "name is null")
+        if (gender == null) Log.e(TAG, "gender is null")
+        if (birth == null) Log.e(TAG, "birth is null")
+        if (alarmTime == null) Log.e(TAG, "alarmTime is null")
+        if (uploadedImageKey == null) Log.e(TAG, "uploadedImageKey is null")
+        if (selectedImageUri == null) Log.e(TAG, "selectedImageUri is null")
+        saveToPreferences(name, gender, birth, alarmTime, uploadedImageKey, selectedImageUri)
 
 
         finish()
     }
 
     private fun getUserProfile() {
-        val spf = getSharedPreferences(
-            "momenty_prefs",
-            android.content.Context.MODE_PRIVATE
-        )
-        val user_name = spf.getString("user_name", "사용자")
-        val user_gender = spf.getString("user_gender", "male")
-        val user_birth = spf.getString("user_birth", "00.01.01")
-        val alarm_time: String ?= spf.getString("alarm_time", null)
-        val user_profile_image_key = spf.getString("user_profile_image_key", null)
-        val user_profile_image_uri = spf.getString("user_profile_image_uri", null)
+        if (bSuccessApi) {
+            TODO("api 데이터 연결")
+            binding.etUserProfileName.setText(loadProfileByApi?.username)
 
-        Log.d("gender", user_gender!!)
+            val parsedDate = ZonedDateTime.parse(loadProfileByApi?.birth)
 
-        binding.etUserProfileName.setText(user_name)
-        binding.etUserProfileBirthday.setText(user_birth)
+            // 연도 2자리(yy), 월 2자리(MM), 일 2자리(dd)로 포맷터 생성
+            val formatter = DateTimeFormatter.ofPattern("yy-MM-dd")
+            val result = parsedDate.format(formatter)
+            binding.etUserProfileBirthday.setText(result)
 
-        when (user_gender) {
-            "male" -> binding.rgUserGender.check(R.id.rb_gender_male)
-            else -> binding.rgUserGender.check(R.id.rb_gender_female)
-        }
-        if (alarm_time == null) {
-            binding.cbUserProfileNoSetAlarm.isChecked = true
+            when (loadProfileByApi?.gender) {
+                "male" -> binding.rgUserGender.check(R.id.rb_gender_male)
+                else -> binding.rgUserGender.check(R.id.rb_gender_female)
+            }
+
+            if (loadProfileByApi?.questTime == null) {
+                binding.cbUserProfileNoSetAlarm.isChecked = true
+            } else {
+                val toIndex = getSpinnerIndex(binding.spinnerType, loadProfileByApi?.questTime!!)
+                binding.spinnerType.setSelection(toIndex)
+            }
+
+            if (!loadProfileByApi?.profileUrl.isNullOrEmpty()) {
+                //val baseUrl = "https://api.momenty.com/"
+                //val imageUrl = baseUrl + user_profile_image_key
+                selectedImageUri = loadProfileByApi?.profileUrl?.toUri()
+
+                Glide.with(binding.root.context)
+                    .load(loadProfileByApi?.profileUrl)
+                    .circleCrop()
+                    .into(binding.ivPetFormPetProfileEdit)
+            }
         } else {
-            val toIndex = getSpinnerIndex(binding.spinnerType, alarm_time)
-            binding.spinnerType.setSelection(toIndex)
+            val spf = getSharedPreferences(
+                "momenty_prefs",
+                android.content.Context.MODE_PRIVATE
+            )
+            val user_name = spf.getString("user_name", "사용자")
+            val user_gender = spf.getString("user_gender", "male")
+            val user_birth = spf.getString("user_birth", "00.01.01")
+            val alarm_time: String ?= spf.getString("alarm_time", null)
+            val user_profile_image_key = spf.getString("user_profile_image_key", null)
+            val user_profile_image_uri = spf.getString("user_profile_image_uri", null)
+
+            Log.d("gender", user_gender!!)
+
+            binding.etUserProfileName.setText(user_name)
+            binding.etUserProfileBirthday.setText(user_birth)
+
+            when (user_gender) {
+                "male" -> binding.rgUserGender.check(R.id.rb_gender_male)
+                else -> binding.rgUserGender.check(R.id.rb_gender_female)
+            }
+            if (alarm_time == null) {
+                binding.cbUserProfileNoSetAlarm.isChecked = true
+            } else {
+                val toIndex = getSpinnerIndex(binding.spinnerType, alarm_time)
+                binding.spinnerType.setSelection(toIndex)
+            }
+
+            if (!user_profile_image_key.isNullOrEmpty()) {
+                //val baseUrl = "https://api.momenty.com/"
+                //val imageUrl = baseUrl + user_profile_image_key
+                selectedImageUri = user_profile_image_key.toUri()
+
+                Glide.with(binding.root.context)
+                    .load(user_profile_image_key)
+                    .circleCrop()
+                    .into(binding.ivPetFormPetProfileEdit)
+            } else if (!user_profile_image_uri.isNullOrEmpty()) {
+                selectedImageUri = user_profile_image_uri.toUri()
+                Glide.with(binding.root.context)
+                    .load(Uri.parse(user_profile_image_uri))
+                    .circleCrop()
+                    .into(binding.ivPetFormPetProfileEdit)
+            }
         }
-
-        if (!user_profile_image_key.isNullOrEmpty()) {
-            //val baseUrl = "https://api.momenty.com/"
-            //val imageUrl = baseUrl + user_profile_image_key
-
-            Glide.with(binding.root.context)
-                .load(user_profile_image_key)
-                .circleCrop()
-                .into(binding.ivPetFormPetProfileEdit)
-        } else if (!user_profile_image_uri.isNullOrEmpty()) {
-            Glide.with(binding.root.context)
-                .load(Uri.parse(user_profile_image_uri))
-                .circleCrop()
-                .into(binding.ivPetFormPetProfileEdit)
-        }
-
     }
 
     private fun saveToPreferences(
@@ -462,7 +511,7 @@ class UserProfileActivity: AppCompatActivity() {
         birth: String,
         alarmTime: String?,
         profileImageKey: String?,
-        uri: Uri
+        uri: Uri?
     ) {
         val prefs = getSharedPreferences(
             "momenty_prefs",
@@ -534,10 +583,34 @@ class UserProfileActivity: AppCompatActivity() {
         myPageViewModel.updateUserProfileResult.observe(this) { result ->
             result.onSuccess { data ->
                 Toast.makeText(this, "프로필 수정 성공!", Toast.LENGTH_SHORT).show()
+                bSuccessApi = true
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
                 Toast.makeText(this, "프로필 수정 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "프로필 수정 실패: $message")
+                bSuccessApi = false
+            }
+        }
+    }
+
+    private fun performLoadProfile() {
+        val accessToken = tokenManager.getAccessToken()
+        val userId = tokenManager.getUserId()
+        myPageViewModel.loadProfile(accessToken!!, userId)
+    }
+
+    private fun observePerformLoadProfile() {
+        myPageViewModel.loadProfileResult.observe(this) { result ->
+            result.onSuccess { data ->
+                Toast.makeText(this, "프로필 로드 성공!", Toast.LENGTH_SHORT).show()
+                Log.d(TAG, "작성 데이터: $data")
+                loadProfileByApi = data
+                bSuccessApi = true
+            }.onFailure { error ->
+                val message = error.message ?: "알 수 없는 오류"
+                Toast.makeText(this, "프로필 로드 실패: $message", Toast.LENGTH_LONG).show()
+                Log.d(TAG, "프로필 로드 실패: $message")
+                bSuccessApi = false
             }
         }
     }

@@ -6,7 +6,7 @@ import retrofit2.Response
 class MyPageRepository(private val service: MyPageService) {
     val TAG = "MyPageRepository"
 
-    suspend fun loadProfile(accessToken: String, userId: Long): Result<LoadProfileData<PetProfileData>> =
+    suspend fun loadProfile(accessToken: String, userId: Long): Result<LoadProfileData> =
         safeApiCall(
             apiCall = {service.loadProfile(toBearerToken(accessToken), userId)},
             getResult = {it.result}

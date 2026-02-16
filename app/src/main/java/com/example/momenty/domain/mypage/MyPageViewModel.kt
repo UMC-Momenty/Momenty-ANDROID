@@ -11,8 +11,8 @@ import com.example.momenty.domain.home.WriteQuestRequest
 import kotlinx.coroutines.launch
 
 class MyPageViewModel(private val repository: MyPageRepository): ViewModel() {
-    private val _loadProfileResult = MutableLiveData<Result<LoadProfileData<PetProfileData>>>()
-    val loadProfileResult: LiveData<Result<LoadProfileData<PetProfileData>>> = _loadProfileResult
+    private val _loadProfileResult = MutableLiveData<Result<LoadProfileData>>()
+    val loadProfileResult: LiveData<Result<LoadProfileData>> = _loadProfileResult
 
     private val _updateUserProfileResult = MutableLiveData<Result<Unit>>()
     val updateUserProfileResult: LiveData<Result<Unit>> = _updateUserProfileResult

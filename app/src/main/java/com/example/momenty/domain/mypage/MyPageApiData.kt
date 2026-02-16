@@ -2,11 +2,18 @@ package com.example.momenty.domain.mypage
 
 import com.google.gson.annotations.SerializedName
 
-data class LoadProfileData<T>(
+data class LoadProfileData(
+    /*
     @SerializedName(value="userId") val userId: Long,
     @SerializedName(value="username") val username: String,
     @SerializedName(value="profileUrl") val profileUrl: String?,
-    @SerializedName(value="pets") val pets: ArrayList<T>
+    @SerializedName(value="pets") val pets: ArrayList<T>*/
+    @SerializedName(value="username") val username: String,
+    @SerializedName(value="gender") val gender: String,
+    @SerializedName(value="birth") val birth: String,
+    @SerializedName(value="profileUrl") val profileUrl: String,
+    @SerializedName(value="questTime") val questTime: String,
+    @SerializedName(value="resetQuestTime") val resetQuestTime: Boolean,
 )
 
 data class PetProfileData(
