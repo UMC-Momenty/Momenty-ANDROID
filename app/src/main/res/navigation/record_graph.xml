@@ -22,6 +22,11 @@
         <action
             android:id="@+id/action_record_to_recordStats"
             app:destination="@id/recordStatsFragment" />
+
+        <action
+            android:id="@+id/action_record_to_momentDetail"
+            app:destination="@id/momentDetailFragment" />
+
     </fragment>
 
     <fragment
@@ -32,6 +37,8 @@
             android:name="hideBottomNav"
             app:argType="boolean"
             android:defaultValue="true" />
+
+
     </fragment>
 
     <fragment
@@ -72,4 +79,27 @@
             android:defaultValue="true" />
     </fragment>
 
+    <fragment
+        android:id="@+id/momentDetailFragment"
+        android:name="com.example.momenty.domain.record.detail.MomentDetailFragment"
+        android:label="MomentDetailFragment"
+        tools:layout="@layout/fragment_moment_detail">
+
+        <argument
+            android:name="userId"
+            app:argType="long" />
+
+        <argument
+            android:name="petId"
+            app:argType="long" />
+
+        <argument
+            android:name="momentId"
+            app:argType="long" />
+
+        <argument
+            android:name="createdAt"
+            app:argType="string" />
+
+    </fragment>
 </navigation>

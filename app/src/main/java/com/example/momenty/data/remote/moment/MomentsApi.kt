@@ -34,4 +34,12 @@ interface MomentsApi {
     ): BaseResponse<String>
 
 
+    @GET("/api/moments/users/{userId}/pets/{petId}/{momentId}")
+    suspend fun getMomentDetail(
+        @Path("userId") userId: Long,
+        @Path("petId") petId: Long,
+        @Path("momentId") momentId: Long
+    ): BaseResponse<MomentDetailResultDto>
+
+
 }

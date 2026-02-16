@@ -58,4 +58,9 @@ data class MomentImageKeyDto(
 
 enum class ImageTypeDto { JPEG, PNG }
 
+data class MomentDetailResultDto(
+    val images: List<MomentImageKeyDto>,
+    val emotion: EmotionDto,
+    val content: String
+)
 

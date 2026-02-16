@@ -6,6 +6,7 @@ import com.example.momenty.data.remote.S3Uploader
 import com.example.momenty.data.remote.moment.CreateMomentRequestDto
 import com.example.momenty.data.remote.moment.EmotionDto
 import com.example.momenty.data.remote.moment.ImageTypeDto
+import com.example.momenty.data.remote.moment.MomentDetailResultDto
 import com.example.momenty.data.remote.moment.MomentImageKeyDto
 import com.example.momenty.data.remote.moment.MomentListResultDto
 import com.example.momenty.data.remote.moment.MomentsApi
@@ -101,6 +102,15 @@ class MomentRepository @Inject constructor(
         )
 
         return momentsApi.createMoment(userId, petId, body)
+    }
+
+
+    suspend fun getMomentDetail(
+        userId: Long,
+        petId: Long,
+        momentId: Long
+    ): BaseResponse<MomentDetailResultDto> {
+        return momentsApi.getMomentDetail(userId, petId, momentId)
     }
 
 

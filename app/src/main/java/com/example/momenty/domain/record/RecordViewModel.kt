@@ -31,12 +31,15 @@ class RecordViewModel @Inject constructor(
             }.onSuccess { res ->
                 val mapped = res.result?.moments?.map { dto ->
                     RecordItem(
+                        momentId = dto.momentId.toLong(),
                         date = dto.createdAt.toKoreanDateOrFallback(),
                         title = dto.emotion.toTitle(),
                         mood = dto.emotion.toChip(),
+                        createdAtRaw = dto.createdAt,
                         content = dto.content,
-                        imageRes = R.drawable.dummy1 //일단은 서버에서 안내오고 있어서 밴드 붙였습니다
+                        imageRes = R.drawable.dummy1 // 응급처치
                     )
+
                 }
 
                 _items.value = if (res.isSuccess && mapped != null) mapped else emptyList()

@@ -107,6 +107,12 @@ class MockApiInterceptor : Interceptor {
                 mockCreateMomentPresignedUrls()
             }
 
+            path.matches(Regex(".*/api/moments/users/\\d+/pets/\\d+/\\d+")) && method == "GET" -> {
+                Log.d("MockApi", "HIT momentDetail")
+                mockGetMomentDetail()
+            }
+
+
 
 
 
@@ -331,6 +337,30 @@ class MockApiInterceptor : Interceptor {
               "hasNext": false,
               "hasPrevious": false
             }
+          }
+        }
+        """.trimIndent()
+        )
+    }
+
+
+    private fun mockGetMomentDetail(): MockResponse {
+        val itemsJson = (1..3).joinToString(",") {
+            val key = "moments/${UUID.randomUUID()}.jpg"
+            """{ "imageKey": "$key" }"""
+        }
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+        {
+          "isSuccess": true,
+          "code": "MOMENT_DETAIL_SUCCESS",
+          "message": "모먼트 상세 조회 성공",
+          "result": {
+            "images": [ $itemsJson ],
+            "emotion": "HAPPINESS",
+            "content": "푸들이의 특별한 하루\n오늘은 정말 특별했어요. 산책도 하고 간식도 먹고..."
           }
         }
         """.trimIndent()

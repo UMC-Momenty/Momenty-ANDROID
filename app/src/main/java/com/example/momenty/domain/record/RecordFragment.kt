@@ -38,7 +38,17 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             findNavController().navigate(R.id.action_global_to_community)
         }
 
-        val adapter = RecordAdapter()
+        val adapter = RecordAdapter { item ->
+            val action = RecordFragmentDirections.actionRecordToMomentDetail(
+                userId = 1L,
+                petId = 1L,
+                momentId = item.momentId,
+                createdAt = item.createdAtRaw
+            )
+            findNavController().navigate(action)
+        }
+
+
         binding.rvRecord.layoutManager = LinearLayoutManager(requireContext())
         binding.rvRecord.adapter = adapter
 

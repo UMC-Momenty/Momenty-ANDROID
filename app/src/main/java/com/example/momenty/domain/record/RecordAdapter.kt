@@ -6,7 +6,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.momenty.databinding.ItemRecordBinding
 import com.example.momenty.domain.record.write.RecordItem
 
-class RecordAdapter : RecyclerView.Adapter<RecordAdapter.RecordViewHolder>() {
+class RecordAdapter(
+    private val onClick: (RecordItem) -> Unit
+) : RecyclerView.Adapter<RecordAdapter.RecordViewHolder>() {
 
     private val items = mutableListOf<RecordItem>()
 
@@ -26,6 +28,7 @@ class RecordAdapter : RecyclerView.Adapter<RecordAdapter.RecordViewHolder>() {
             binding.tvContent.text = item.content
             binding.tvMoodText.text = item.title
             binding.ivThumb.setImageResource(item.imageRes) // 지금은 placeholder
+            binding.root.setOnClickListener { onClick(item) }
         }
     }
 
