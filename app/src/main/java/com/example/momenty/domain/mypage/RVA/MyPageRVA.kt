@@ -1,9 +1,12 @@
 package com.example.momenty.domain.mypage.RVA
 
 import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -19,6 +22,7 @@ class MyPageRVA(private val petProfileList: ArrayList<MyPagePetProfileData>,
     : RecyclerView.Adapter<MyPageRVA.viewHolder>() {
 
 
+        private val TAG = "MyPageRVA"
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewHolder {
         val binding: ItemMyPagePetProfileBinding = ItemMyPagePetProfileBinding.inflate(
@@ -44,11 +48,15 @@ class MyPageRVA(private val petProfileList: ArrayList<MyPagePetProfileData>,
             binding.tvMyPagePetName.text = data.name
             //binding.ivMyPagePetProfile.setImageResource()
             if (!data.imageKey.isNullOrEmpty()) {
-                val baseUrl = "https://api.momenty.com/"
-                val imageUrl = baseUrl + data.imageKey
-
+                Log.e(TAG, "try imageKey")
                 Glide.with(binding.root.context)
-                    .load(imageUrl)
+                    .load(data.imageKey)
+                    .circleCrop()
+                    .into(binding.ivMyPagePetProfile)
+            } else if (!data.imageUri.isNullOrEmpty()) {
+                Log.e(TAG, "try imageUri")
+                Glide.with(binding.root.context)
+                    .load(data.imageUri.toUri())
                     .circleCrop()
                     .into(binding.ivMyPagePetProfile)
             }
@@ -57,9 +65,5 @@ class MyPageRVA(private val petProfileList: ArrayList<MyPagePetProfileData>,
                 onButtonClick(data)
             }
         }
-    }
-
-    fun notifyDataChange(pos: Int) {
-        notifyItemInserted(pos)
     }
 }
