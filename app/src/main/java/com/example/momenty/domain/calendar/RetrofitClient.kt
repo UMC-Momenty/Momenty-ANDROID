@@ -20,9 +20,15 @@ object RetrofitClient {
 
     /**
      * TokenManager 초기화 (Application에서 호출)
+     * Context도 함께 전달하여 MockApiInterceptor 초기화
      */
-    fun initialize(tokenManager: TokenManager) {
+    fun initialize(tokenManager: TokenManager, context: android.content.Context? = null) {
         this.tokenManager = tokenManager
+
+        // MockApiInterceptor에 Context 전달
+        context?.let {
+            MockApiInterceptor.initialize(it)
+        }
     }
 
     private val loggingInterceptor by lazy {

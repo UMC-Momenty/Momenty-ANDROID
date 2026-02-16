@@ -83,7 +83,13 @@ class CalendarFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        RetrofitClient.initialize(tokenManager)
+        RetrofitClient.initialize(tokenManager, requireContext())
+
+        // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
+        if (!tokenManager.isLoggedIn()) {
+            tokenManager.saveMockLoginInfo()
+            android.util.Log.d("CalendarFragment", "Mock login info saved: userId=${tokenManager.getUserId()}")
+        }
 
         setupWeekdayHeader()
         setupCalendarRecyclerView()

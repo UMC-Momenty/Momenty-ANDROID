@@ -58,6 +58,18 @@ class TokenManager @Inject constructor(
     }
 
     /**
+     * Mock 모드용 로그인 정보 저장
+     * 개발 및 테스트 시 사용
+     */
+    fun saveMockLoginInfo() {
+        saveLoginInfo(
+            accessToken = "mock_access_token_dev",
+            refreshToken = "mock_refresh_token_dev",
+            userId = 1L
+        )
+    }
+
+    /**
      * Token 저장
      */
     fun saveTokens(
@@ -87,10 +99,25 @@ class TokenManager @Inject constructor(
 
     /**
      * User ID 조회
-     * @return userId (없으면 -1L 반환)
+     * Mock 모드에서는 저장된 userId가 없을 경우 테스트용 ID(1L) 반환
+     * @return userId (없으면 -1L 반환, Mock 모드에서는 1L 반환)
      */
     fun getUserId(): Long {
-        return prefs.getLong(KEY_USER_ID, -1L)
+        val savedUserId = prefs.getLong(KEY_USER_ID, -1L)
+
+        // 저장된 userId가 있으면 그것을 반환
+        if (savedUserId != -1L) {
+            return savedUserId
+        }
+
+        // Mock 모드 체크: accessToken이 "mock_"으로 시작하면 Mock 모드로 간주
+        val accessToken = getAccessToken()
+        if (accessToken != null && accessToken.startsWith("mock_")) {
+            // Mock 모드에서는 테스트용 userId 반환
+            return 1L
+        }
+
+        return -1L
     }
 
     /**
@@ -108,9 +135,16 @@ class TokenManager @Inject constructor(
 
     /**
      * 로그인 여부 확인
+     * Mock 모드에서는 mock_ 토큰이 있으면 로그인된 것으로 간주
      */
     fun isLoggedIn(): Boolean {
         val token = getAccessToken()
+
+        // Mock 모드 체크
+        if (token != null && token.startsWith("mock_")) {
+            return true
+        }
+
         return !token.isNullOrEmpty() && prefs.getBoolean(KEY_IS_LOGGED_IN, false)
     }
 
