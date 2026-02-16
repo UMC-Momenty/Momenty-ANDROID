@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.momenty.domain.calendar.api.request.CreateScheduleRequest
+import com.example.momenty.global.security.LocalDataManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,8 +12,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
 class CalendarViewModel(
@@ -26,6 +29,8 @@ class CalendarViewModel(
     private var currentCalendar = Calendar.getInstance()
     private val eventsMap = ConcurrentHashMap<String, MutableList<CalendarEvent>>()
 
+    private var localDataManager: LocalDataManager? = null
+
     companion object {
         private const val CALENDAR_GRID_SIZE = 42
         private const val TAG = "CalendarViewModel"
@@ -35,6 +40,10 @@ class CalendarViewModel(
         // ViewModel 생성 시 자동으로 초기화
         Log.d(TAG, "ViewModel init block called")
         initialize()
+    }
+
+    fun setLocalDataManager(manager: LocalDataManager) {
+        this.localDataManager = manager
     }
 
     fun initialize() {
@@ -99,6 +108,142 @@ class CalendarViewModel(
             Log.e(TAG, "Exception while creating schedule", e)
             _uiState.update { it.copy(error = "일정 생성 실패: ${e.message}") }
             false
+        }
+    }
+
+    /**
+     * ✅ LocalDataManager에서 일정 로드 및 달력에 반영
+     */
+    fun loadSchedules() {
+        Log.d(TAG, "loadSchedules() called")
+        viewModelScope.launch {
+            try {
+                val manager = localDataManager
+                if (manager == null) {
+                    Log.w(TAG, "LocalDataManager not set, cannot load schedules")
+                    return@launch
+                }
+
+                _uiState.update { it.copy(isLoading = true) }
+
+                // ✅ getSchedules() 사용
+                val schedules = withContext(Dispatchers.IO) {
+                    manager.getSchedules()
+                }
+
+                Log.d(TAG, "Loaded ${schedules.size} schedules from LocalDataManager")
+
+                eventsMap.clear()
+
+                schedules.forEach { schedule ->
+                    val calendarEvent = convertToCalendarEvent(schedule)
+                    if (calendarEvent != null) {
+                        val dateKey =
+                            if (schedule.isOneTime && schedule.date != null) {
+                                schedule.date
+                            } else {
+                                null
+                            }
+
+                        if (dateKey != null) {
+                            eventsMap.getOrPut(dateKey) { mutableListOf() }.add(calendarEvent)
+                            Log.d(TAG, "Added event: ${calendarEvent.title} for date: $dateKey")
+                        } else if (!schedule.isOneTime && schedule.repeatDays != null) {
+                            // 반복성 일정: 현재 월의 해당 요일들에 모두 추가
+                            addRepeatEventToMonth(calendarEvent, schedule.repeatDays)
+                        }
+                    }
+                }
+
+                Log.d(TAG, "Total events in map: ${eventsMap.size} dates")
+
+                refreshCalendarDays()
+                _uiState.update { it.copy(isLoading = false) }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to load schedules", e)
+                _uiState.update {
+                    it.copy(
+                        error = "일정 로드 실패: ${e.message}",
+                        isLoading = false
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * ✅ 반복 일정을 현재 월의 해당 요일들에 추가
+     */
+    private fun addRepeatEventToMonth(event: CalendarEvent, repeatDayNames: List<String>) {
+        synchronized(calendarLock) {
+            val calendar = currentCalendar.clone() as Calendar
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+
+            // 해당 월의 첫 날로 이동
+            calendar.set(Calendar.DAY_OF_MONTH, 1)
+            val maxDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+
+            // 월의 모든 날짜를 순회
+            for (day in 1..maxDay) {
+                calendar.set(Calendar.DAY_OF_MONTH, day)
+                val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+
+                // 해당 요일이 repeatDays에 포함되는지 확인
+                val dayName = convertCalendarDayToName(dayOfWeek)
+                if (repeatDayNames.contains(dayName)) {
+                    val dateKey = String.format("%04d-%02d-%02d", year, month + 1, day)
+                    eventsMap.getOrPut(dateKey) { mutableListOf() }.add(event)
+                    Log.d(TAG, "Added repeat event: ${event.title} for date: $dateKey")
+                }
+            }
+        }
+    }
+
+    /**
+     * Calendar.DAY_OF_WEEK를 DayOfWeek enum 이름으로 변환
+     */
+    private fun convertCalendarDayToName(dayOfWeek: Int): String {
+        return when (dayOfWeek) {
+            Calendar.SUNDAY -> "SUNDAY"
+            Calendar.MONDAY -> "MONDAY"
+            Calendar.TUESDAY -> "TUESDAY"
+            Calendar.WEDNESDAY -> "WEDNESDAY"
+            Calendar.THURSDAY -> "THURSDAY"
+            Calendar.FRIDAY -> "FRIDAY"
+            Calendar.SATURDAY -> "SATURDAY"
+            else -> "MONDAY"
+        }
+    }
+
+    /**
+     * ✅ LocalSchedule을 CalendarEvent로 변환
+     */
+    private fun convertToCalendarEvent(schedule: com.example.momenty.global.mock.LocalSchedule): CalendarEvent? {
+        return try {
+            // startAt 형식: "YYYY-MM-DDTHH:mm:ss"
+            val startAt = if (schedule.isOneTime && schedule.date != null) {
+                "${schedule.date}T${schedule.time}:00"
+            } else {
+                // 반복성 일정은 오늘 날짜 기준
+                val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    .format(Date())
+                "${today}T${schedule.time}:00"
+            }
+
+            CalendarEvent(
+                scheduleId = schedule.scheduleId,
+                title = schedule.title,
+                category = schedule.category,
+                startAt = startAt,
+                memo = schedule.memo,  // ✅ memo 필드 추가
+                durationMinutes = schedule.durationMinutes,  // ✅ durationMinutes 필드 추가
+                petId = schedule.petId,
+                isAlarmEnabled = schedule.isAlarmEnabled
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error converting schedule to event", e)
+            null
         }
     }
 
@@ -367,14 +512,15 @@ class CalendarViewModel(
         generateCalendarDays()
     }
 
+    // ✅ 월 변경 시 loadSchedules() 호출 추가
     fun goToPreviousMonth() {
         synchronized(calendarLock) { currentCalendar.add(Calendar.MONTH, -1) }
-        generateCalendarDays()
+        loadSchedules()
     }
 
     fun goToNextMonth() {
         synchronized(calendarLock) { currentCalendar.add(Calendar.MONTH, 1) }
-        generateCalendarDays()
+        loadSchedules()
     }
 
     fun getYearMonthText(): String = synchronized(calendarLock) {
@@ -445,7 +591,6 @@ class CalendarViewModel(
 data class CalendarUiState(
     val calendarDays: List<CalendarDay> = emptyList(),
     val selectedDate: CalendarDay? = null,
-    val availableCalendars: List<DeviceCalendar> = emptyList(),
     val pets: List<Pet> = emptyList(),
     val selectedPet: Pet? = null,
     val error: String? = null,
@@ -484,5 +629,3 @@ object DateUtils {
                 cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH)
     }
 }
-
-data class DeviceCalendar(val id: String, val name: String, val accountName: String, val isSelected: Boolean = false)

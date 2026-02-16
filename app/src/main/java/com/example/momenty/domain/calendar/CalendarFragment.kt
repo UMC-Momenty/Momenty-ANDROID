@@ -263,7 +263,7 @@ class CalendarFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.ivCalendarBack.setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
+            findNavController().navigate(R.id.homeFragment)
         }
 
         binding.ivMonthBefore.setOnClickListener { viewModel.goToPreviousMonth() }

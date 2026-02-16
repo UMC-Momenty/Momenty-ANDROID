@@ -351,7 +351,7 @@ class AddAlarmFragment : Fragment() {
     }
 
     /**
-     * ✅ 알람 저장 - 백엔드 API 호출
+     * ✅ 알람 저장 - LocalDataManager & ViewModel
      */
     private fun saveAlarm() {
         // 유효성 검사 1: 반려동물 선택 필수
@@ -379,7 +379,10 @@ class AddAlarmFragment : Fragment() {
             return
         }
 
-        // ✅ 선택한 각 반려동물별로 알람 생성 및 백엔드 API 호출
+        // ✅ LocalDataManager 초기화
+        val localDataManager = com.example.momenty.global.security.LocalDataManager(requireContext())
+
+        // ✅ 선택한 각 반려동물별로 알람 생성 및 저장
         lifecycleScope.launch {
             try {
                 var successCount = 0
@@ -388,21 +391,46 @@ class AddAlarmFragment : Fragment() {
                     // CreateScheduleRequest 생성
                     val request = createScheduleRequest()
 
-                    // 백엔드 API 호출
-                    val success = calendarViewModel.createSchedule(pet.petId, request)
+                    // 1. 백엔드 API 호출 (Mock)
+                    val apiSuccess = calendarViewModel.createSchedule(pet.petId, request)
 
-                    if (success) {
+                    if (apiSuccess) {
+                        // 2. LocalDataManager에 저장
+                        val schedule = com.example.momenty.global.mock.LocalSchedule(
+                            scheduleId = System.currentTimeMillis() + pet.petId, // 고유 ID 생성
+                            petId = pet.petId,
+                            title = request.title,
+                            category = request.category.name,
+                            date = request.date,
+                            repeatDays = request.repeatDays?.map { it.name },
+                            time = request.time,
+                            durationMinutes = request.durationMinutes,
+                            memo = request.memo,
+                            isAlarmEnabled = request.isAlarmEnabled,
+                            isOneTime = request.type == ScheduleType.ONE_TIME
+                        )
+
+                        localDataManager.addSchedule(schedule)
+
+                        android.util.Log.d("AddAlarm", "Schedule saved: ${schedule.title} for pet ${pet.petId}")
                         successCount++
                     }
                 }
 
                 if (isAdded) {
                     if (successCount > 0) {
-                        // ✅ 이름 대신 개수 표시
                         showSnackbar(
                             "${successCount}개의 알림이 추가되었습니다",
                             Snackbar.LENGTH_SHORT
                         )
+
+                        // ✅ AlarmViewModel 새로고침
+                        alarmViewModel.loadAlarms()
+
+                        // ✅ CalendarViewModel 새로고침 (달력 업데이트)
+                        calendarViewModel.loadSchedules()
+
+                        kotlinx.coroutines.delay(300)
                         requireActivity().onBackPressedDispatcher.onBackPressed()
                     } else {
                         showSnackbar("알림 추가에 실패했습니다", Snackbar.LENGTH_SHORT)
@@ -410,6 +438,7 @@ class AddAlarmFragment : Fragment() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                android.util.Log.e("AddAlarm", "Error saving alarm", e)
                 if (isAdded) {
                     showSnackbar("알림 추가 중 오류가 발생했습니다", Snackbar.LENGTH_SHORT)
                 }
