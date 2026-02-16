@@ -18,21 +18,70 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.momenty.R
+import com.example.momenty.data.api.ImagePickerHelper
+import com.example.momenty.data.api.PermissionHelper
 import com.example.momenty.databinding.FragmentCustomerCenterInquiryWriteBinding
+import com.example.momenty.domain.home.KhgApiClient
+import com.example.momenty.global.security.TokenManager
 import java.io.File
+import java.io.FileOutputStream
+import kotlin.getValue
 
 class CustomerCenterInquiryWriteFragment: Fragment() {
     lateinit var binding: FragmentCustomerCenterInquiryWriteBinding
+    lateinit var tokenManager: TokenManager
 
+    private val TAG = "InqWriteFrag"
     var imageFiles = mutableListOf<File>()
     var bContent = false
+
+    var imgUri1: Uri ?= null
+    var imgUri2: Uri ?= null
+
+    var imgKey1: String ?= null
+    var imgKey2: String ?= null
+    val imgKey = ArrayList<String>()
+
+
+    private val myPageViewModel: MyPageViewModel by viewModels {
+        object: ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val service: MyPageService = KhgApiClient.myPageService
+                val repository = MyPageRepository(service)
+                return MyPageViewModel(repository) as T
+            }
+        }
+    }
+
+    private val pickMultipleMedia = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(2)) { uris ->
+        if (uris.isNotEmpty()) {
+            Log.d(TAG, "선택된 URI 개수: ${uris.size}")
+
+            imageFiles.clear()
+            binding.ivInquiryWriteAddedPhoto1.setImageResource(0)
+            binding.ivInquiryWriteAddedPhoto2.setImageResource(0)
+
+            // 선택된 이미지들을 순회하며 처리
+            for ((index, uri) in uris.withIndex()) {
+                processImage(uri, index)
+            }
+        } else {
+            Log.d(TAG, "사진 선택 취소됨")
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +89,10 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentCustomerCenterInquiryWriteBinding.inflate(inflater, container, false)
+        tokenManager = TokenManager(requireContext())
+
+        observePerformAddInquiry()
+        observePerformGetImageUrl()
 
         setDropdown()
         initListener()
@@ -67,7 +120,16 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
         textCountListener()
 
         binding.layoutInquiryWriteAddPhotoOff.setOnClickListener {
-            selectGallery()
+
+
+            //selectGallery()
+            pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            performGetImageUrl()
+        }
+
+        binding.btnInquiryWriteSubmit.setOnClickListener {
+            performAddInquiry()
+            findNavController().navigateUp()
         }
     }
 
@@ -164,12 +226,20 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
     }
 
     private fun processImage(uri: Uri, index: Int) {
+        val tempFile = createTempFileFromUri(uri)
+        if (tempFile != null) {
+            imageFiles.add(tempFile)
+        } else {
+            Toast.makeText(requireContext(), "이미지를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        /*
         try {
             val path = getRealPathFromURI(uri)
             imageFiles.add(File(path))
         } catch (e: Exception) {
             e.printStackTrace()
-        }
+        }*/
 
         lateinit var targetImageView: ImageView
 
@@ -178,9 +248,11 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
             binding.ivInquiryWriteAddedPhoto1.visibility = View.VISIBLE
             binding.layoutInquiryWriteAddPhotoOff.visibility = View.GONE
             binding.layoutInquiryWriteAddPhotoOn.visibility = View.VISIBLE
+            imgUri1 = uri
         } else {
             targetImageView = binding.ivInquiryWriteAddedPhoto2
             binding.ivInquiryWriteAddedPhoto2.visibility = View.VISIBLE
+            imgUri2 = uri
         }
 
         Glide.with(this)
@@ -204,6 +276,25 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
             result
         } else {
             ""
+        }
+    }
+
+    private fun createTempFileFromUri(uri: Uri): File? {
+        return try {
+            val inputStream = requireContext().contentResolver.openInputStream(uri) ?: return null
+            // 캐시 디렉토리에 임시 파일 생성
+            val tempFile = File(requireContext().cacheDir, "temp_img_${System.currentTimeMillis()}.jpg")
+            val outputStream = FileOutputStream(tempFile)
+
+            inputStream.copyTo(outputStream)
+
+            inputStream.close()
+            outputStream.close()
+
+            tempFile
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 
@@ -242,6 +333,75 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
             imageResult.launch(Intent.createChooser(intent, "사진을 선택하세요"))
         }
     }
+
+    private fun performAddInquiry() {
+        val type = binding.spInquiryWriteType.selectedItem as? String
+        val content = binding.etInquiryWriteContent.text.toString()
+        val images = ArrayList<AddInquiryRequestImg>().apply {
+            for (iter in imgKey) {
+                add(AddInquiryRequestImg(iter))
+            }
+            /*
+            if (imgUri1 != null) {
+                add(AddInquiryRequestImg(imgUri1.toString()))
+            }
+            if (imgUri2 != null) {
+                add(AddInquiryRequestImg(imgUri2.toString()))
+            }*/
+        }
+        val req = AddInquiryRequest(
+            type!!, content, images
+        )
+
+        val accessToken = tokenManager.getAccessToken()
+        val userId = tokenManager.getUserId()
+        myPageViewModel.addInquiry(accessToken!!, userId, req)
+    }
+
+    private fun performGetImageUrl() {
+        val imagesType = ArrayList<String>().apply {
+            if (imgUri1 != null) {
+                add(imgUri1.toString())
+            }
+            if (imgUri2 != null) {
+                add(imgUri2.toString())
+            }
+        }
+        val req = GetImageUrlRequest(imagesType)
+
+        val accessToken = tokenManager.getAccessToken()
+        myPageViewModel.getImageUrl(accessToken!!, req)
+    }
+
+    private fun observePerformAddInquiry() {
+        myPageViewModel.addInquiryResult.observe(this) { result ->
+            result.onSuccess { data ->
+                Toast.makeText(requireContext(), "문의하기 성공!", Toast.LENGTH_SHORT).show()
+            }.onFailure { error ->
+                val message = error.message ?: "알 수 없는 오류"
+                Toast.makeText(requireContext(), "문의하기 실패: $message", Toast.LENGTH_LONG).show()
+                Log.d(TAG, "문의하기 실패: $message")
+            }
+        }
+    }
+
+    private fun observePerformGetImageUrl() {
+        myPageViewModel.getImageUrlResult.observe(this) { result ->
+            result.onSuccess { data ->
+                Toast.makeText(requireContext(), "이미지 키 변환 성공!", Toast.LENGTH_SHORT).show()
+                for (iter in data) {
+                    if (iter != null) {
+                        imgKey.add(iter.key)
+                    }
+                }
+            }.onFailure { error ->
+                val message = error.message ?: "알 수 없는 오류"
+                Toast.makeText(requireContext(), "이미지 키 변환 실패: $message", Toast.LENGTH_LONG).show()
+                Log.d(TAG, "이미지 키 변환 실패: $message")
+            }
+        }
+    }
+
 
     companion object{
         const val REVIEW_MIN_LENGTH = 10
