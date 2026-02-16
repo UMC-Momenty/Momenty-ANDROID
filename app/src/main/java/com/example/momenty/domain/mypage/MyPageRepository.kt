@@ -66,6 +66,18 @@ class MyPageRepository(private val service: MyPageService) {
             getResult = { it.result}
         )
 
+    suspend fun loadFaq(accessToken: String): Result<ArrayList<LoadFaqData>> =
+        safeApiCall(
+            apiCall = { service.loadFaq(toBearerToken(accessToken)) },
+            getResult = { it.result}
+        )
+
+    suspend fun loadFaqDetail(accessToken: String, faqId: Int): Result<LoadFaqDetailData> =
+        safeApiCall(
+            apiCall = { service.loadFaqDetail(toBearerToken(accessToken), faqId) },
+            getResult = { it.result}
+        )
+
 
     private suspend inline fun <T, R> safeApiCall(
         crossinline apiCall: suspend () -> Response<T>,

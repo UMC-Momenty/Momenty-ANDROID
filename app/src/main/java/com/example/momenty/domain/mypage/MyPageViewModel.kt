@@ -41,6 +41,12 @@ class MyPageViewModel(private val repository: MyPageRepository): ViewModel() {
     private val _loadInquiryDetailResult = MutableLiveData<Result<LoadInquiryDetailData<LoadInquiryDetailDataImages>>>()
     val loadInquiryDetailResult: LiveData<Result<LoadInquiryDetailData<LoadInquiryDetailDataImages>>> = _loadInquiryDetailResult
 
+    private val _loadFaqResult = MutableLiveData<Result<ArrayList<LoadFaqData>>>()
+    val loadFaqResult: LiveData<Result<ArrayList<LoadFaqData>>> = _loadFaqResult
+
+    private val _loadFaqDetailResult = MutableLiveData<Result<LoadFaqDetailData>>()
+    val loadFaqDetailResult: LiveData<Result<LoadFaqDetailData>> = _loadFaqDetailResult
+
 
     fun loadProfile(accessToken:String, userId: Long) {
         viewModelScope.launch {
@@ -109,6 +115,20 @@ class MyPageViewModel(private val repository: MyPageRepository): ViewModel() {
         viewModelScope.launch {
             val result = repository.loadInquiryDetail(accessToken, inquiryId)
             _loadInquiryDetailResult.postValue(result)
+        }
+    }
+
+    fun loadFaq(accessToken: String) {
+        viewModelScope.launch {
+            val result = repository.loadFaq(accessToken)
+            _loadFaqResult.postValue(result)
+        }
+    }
+
+    fun loadFaqDetail(accessToken: String, faqId: Int) {
+        viewModelScope.launch {
+            val result = repository.loadFaqDetail(accessToken, faqId)
+            _loadFaqDetailResult.postValue(result)
         }
     }
 }

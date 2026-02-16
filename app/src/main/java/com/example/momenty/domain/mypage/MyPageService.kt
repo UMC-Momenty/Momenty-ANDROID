@@ -79,4 +79,15 @@ interface MyPageService {
         @Header("Authorization") token: String,
         @Path("inquiryId") id: Int
     ): Response<BaseResponse<LoadInquiryDetailData<LoadInquiryDetailDataImages>>>
+
+    @GET("api/faq")
+    suspend fun loadFaq(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<ArrayList<LoadFaqData>>>
+
+    @GET("api/faq/{faqId}")
+    suspend fun loadFaqDetail(
+        @Header("Authorization") token: String,
+        @Path("faqId") id: Int
+    ): Response<BaseResponse<LoadFaqDetailData>>
 }

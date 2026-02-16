@@ -114,3 +114,14 @@ data class LoadInquiryDetailData<T>(
 data class LoadInquiryDetailDataImages(
     @SerializedName(value="imageKey") var imageKey: String
 )
+
+data class LoadFaqData(
+    @SerializedName(value="faqId") var faqId: Int,
+    @SerializedName(value="question") var question: String
+)
+
+data class LoadFaqDetailData(
+    @SerializedName(value="faqId") var faqId: Int,
+    @SerializedName(value="question") var question: String,
+    @SerializedName(value="answer") var answer: String
+)
