@@ -17,16 +17,16 @@ class ScheduleBottomSheetAdapter(
 
         fun bind(schedule: CalendarEvent) {
             // 일정 타입 설정 (예: 건강, 산책 등)
-            binding.tvScheduleType.text = schedule.type
+            binding.tvScheduleType.text = schedule.title
 
             // 일정 제목
             binding.tvScheduleTitle.text = schedule.title
 
             // 일정 시간
-            binding.tvScheduleTime.text = schedule.alarmTime
+            binding.tvScheduleTime.text = schedule.startAt
 
             // 타입별 배경색
-            applyTypeColor(schedule.type)
+            applyTypeColor(schedule.title)
         }
 
         /**

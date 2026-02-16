@@ -99,13 +99,13 @@ class PetFilterAdapter(
             selectionBorder.visibility = if (isSelected) View.VISIBLE else View.GONE
 
             // 이미지 로드
-            if (pet.imageUrl.isNullOrEmpty()) {
+            if (pet.profile.isEmpty()) {
                 // 펫 이미지 없을 경우 회색 원 표시 (개발용)
                 val grayCircle = ContextCompat.getDrawable(itemView.context, R.drawable.ic_pet_placeholder)
                 petImage.setImageDrawable(grayCircle)
             } else {
                 Glide.with(itemView.context)
-                    .load(pet.imageUrl)
+                    .load(pet.profile)  // ✅ profile 사용
                     .apply(RequestOptions.circleCropTransform())
                     .placeholder(R.drawable.ic_pet_placeholder)
                     .error(R.drawable.ic_pet_placeholder)

@@ -3,6 +3,7 @@ package com.example.momenty.domain.calendar
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.momenty.domain.calendar.api.request.CreateScheduleRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -73,18 +74,45 @@ class CalendarViewModel(
         }
     }
 
+    /**
+     * ✅ 일정 생성 API 호출
+     * @param petId 반려동물 ID (Long)
+     * @param request 일정 생성 요청 데이터
+     * @return 성공 여부
+     */
+    suspend fun createSchedule(petId: Long, request: CreateScheduleRequest): Boolean {
+        return try {
+            Log.d(TAG, "Creating schedule for pet: $petId, title: ${request.title}")
+
+            withContext(Dispatchers.IO) {
+                val response = repository.createSchedule(petId, request)
+
+                if (response != null) {
+                    // 성공 시 true 반환
+                    true
+                } else {
+                    Log.e(TAG, "Failed to create schedule: response is null")
+                    false
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception while creating schedule", e)
+            _uiState.update { it.copy(error = "일정 생성 실패: ${e.message}") }
+            false
+        }
+    }
+
     fun addEvent(event: CalendarEvent) {
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.Default) {
-                    val normalizedEvent = event.copy(
-                        scheduleDate = DateUtils.normalizeDate(event.scheduleDate)
-                    )
-                    val dateKey = DateUtils.getDateKey(normalizedEvent.scheduleDate)
+                    // CalendarEvent는 startAt(String)을 사용하므로 Date로 변환 필요
+                    val date = parseStartAtToDate(event.startAt)
+                    val dateKey = DateUtils.getDateKey(date)
 
-                    Log.d(TAG, "Adding event: ${normalizedEvent.title} for date: $dateKey")
+                    Log.d(TAG, "Adding event: ${event.title} for date: $dateKey")
 
-                    eventsMap.getOrPut(dateKey) { mutableListOf() }.add(normalizedEvent)
+                    eventsMap.getOrPut(dateKey) { mutableListOf() }.add(event)
 
                     Log.d(TAG, "Total events for $dateKey: ${eventsMap[dateKey]?.size}")
                 }
@@ -102,11 +130,9 @@ class CalendarViewModel(
             try {
                 withContext(Dispatchers.Default) {
                     events.forEach { event ->
-                        val normalizedEvent = event.copy(
-                            scheduleDate = DateUtils.normalizeDate(event.scheduleDate)
-                        )
-                        val dateKey = DateUtils.getDateKey(normalizedEvent.scheduleDate)
-                        eventsMap.getOrPut(dateKey) { mutableListOf() }.add(normalizedEvent)
+                        val date = parseStartAtToDate(event.startAt)
+                        val dateKey = DateUtils.getDateKey(date)
+                        eventsMap.getOrPut(dateKey) { mutableListOf() }.add(event)
                     }
                 }
 
@@ -122,7 +148,8 @@ class CalendarViewModel(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.Default) {
-                    val dateKey = DateUtils.getDateKey(event.scheduleDate)
+                    val date = parseStartAtToDate(event.startAt)
+                    val dateKey = DateUtils.getDateKey(date)
                     eventsMap[dateKey]?.remove(event)
                     if (eventsMap[dateKey]?.isEmpty() == true) {
                         eventsMap.remove(dateKey)
@@ -133,6 +160,35 @@ class CalendarViewModel(
                 Log.e(TAG, "Failed to remove event", e)
                 _uiState.update { it.copy(error = "이벤트 삭제 실패") }
             }
+        }
+    }
+
+    /**
+     * ISO 8601 형식의 startAt을 Date로 변환
+     */
+    private fun parseStartAtToDate(startAt: String): Date {
+        return try {
+            // "YYYY-MM-DDTHH:mm:ss" 형식 파싱
+            val parts = startAt.split("T")
+            if (parts.size == 2) {
+                val dateParts = parts[0].split("-")
+                val timeParts = parts[1].split(":")
+
+                Calendar.getInstance().apply {
+                    set(Calendar.YEAR, dateParts[0].toInt())
+                    set(Calendar.MONTH, dateParts[1].toInt() - 1)
+                    set(Calendar.DAY_OF_MONTH, dateParts[2].toInt())
+                    set(Calendar.HOUR_OF_DAY, timeParts[0].toInt())
+                    set(Calendar.MINUTE, timeParts[1].toInt())
+                    set(Calendar.SECOND, if (timeParts.size > 2) timeParts[2].toInt() else 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.time
+            } else {
+                Date()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error parsing startAt: $startAt", e)
+            Date()
         }
     }
 
@@ -321,14 +377,6 @@ class CalendarViewModel(
         generateCalendarDays()
     }
 
-    fun goToMonth(year: Int, month: Int) {
-        synchronized(calendarLock) {
-            currentCalendar.set(Calendar.YEAR, year)
-            currentCalendar.set(Calendar.MONTH, month)
-        }
-        generateCalendarDays()
-    }
-
     fun getYearMonthText(): String = synchronized(calendarLock) {
         val year = currentCalendar.get(Calendar.YEAR)
         val month = currentCalendar.get(Calendar.MONTH) + 1
@@ -346,20 +394,8 @@ class CalendarViewModel(
         }
         val dateKey = DateUtils.getDateKey(calendar.time)
         val allEvents = eventsMap[dateKey]?.toList() ?: emptyList()
-        val selectedPetId = _uiState.value.selectedPet?.id
+        val selectedPetId = _uiState.value.selectedPet?.petId
         return if (selectedPetId != null) allEvents.filter { it.petId == selectedPetId } else allEvents
-    }
-
-    fun loadAvailableCalendars() {
-        viewModelScope.launch {
-            try {
-                val calendars = withContext(Dispatchers.IO) { repository.getDeviceCalendars() }
-                _uiState.update { it.copy(availableCalendars = calendars) }
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to load calendars", e)
-                _uiState.update { it.copy(error = "캘린더 로드 실패") }
-            }
-        }
     }
 
     fun loadPets() {

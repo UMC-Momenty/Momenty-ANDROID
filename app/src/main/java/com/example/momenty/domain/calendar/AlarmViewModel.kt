@@ -49,7 +49,7 @@ class AlarmViewModel : ViewModel() {
      */
     private fun applyPetFilter() {
         val currentAlarms = _alarms.value ?: emptyList()
-        val selectedPetId = _selectedPet.value?.id
+        val selectedPetId = _selectedPet.value?.petId
 
         _filteredAlarms.value = if (selectedPetId == null) {
             // 전체 알람 표시
@@ -66,8 +66,8 @@ class AlarmViewModel : ViewModel() {
     fun toggleAlarm(alarm: Alarm, isEnabled: Boolean) {
         val currentList = _alarms.value ?: emptyList()
         val updatedList = currentList.map {
-            if (it.id == alarm.id) {
-                it.copy(isEnabled = isEnabled)
+            if (it.petId == alarm.petId) {
+                it.copy(isAlarmEnabled = isEnabled)
             } else {
                 it
             }

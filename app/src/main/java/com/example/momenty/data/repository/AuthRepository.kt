@@ -94,9 +94,10 @@ class AuthRepository @Inject constructor(
                 }
 
                 // 4. 백엔드 JWT 토큰 저장
-                tokenManager.saveTokens(
+                tokenManager.saveLoginInfo(
                     accessToken = response.result.accessToken,
-                    refreshToken = response.result.refreshToken
+                    refreshToken = response.result.refreshToken,
+                    userId = response.result.userId ?: -1L
                 )
 
                 Log.d(TAG, "Google 로그인 성공: ${account.displayName}")
@@ -151,9 +152,10 @@ class AuthRepository @Inject constructor(
                 }
 
                 // 5. 백엔드 JWT 토큰 저장
-                tokenManager.saveTokens(
+                tokenManager.saveLoginInfo(
                     accessToken = response.result.accessToken,
-                    refreshToken = response.result.refreshToken
+                    refreshToken = response.result.refreshToken,
+                    userId = response.result.userId ?: -1L
                 )
 
                 Log.d(TAG, "Kakao 로그인 성공: ${userInfo.nickname}")
@@ -209,9 +211,10 @@ class AuthRepository @Inject constructor(
                 }
 
                 // 5. 백엔드 JWT 토큰 저장
-                tokenManager.saveTokens(
+                tokenManager.saveLoginInfo(
                     accessToken = response.result.accessToken,
-                    refreshToken = response.result.refreshToken
+                    refreshToken = response.result.refreshToken,
+                    userId = response.result.userId ?: -1L
                 )
 
                 Log.d(TAG, "Naver 로그인 성공: ${userInfo.name}")

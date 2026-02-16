@@ -50,17 +50,16 @@ class CalendarFragment : Fragment() {
     lateinit var tokenManager: TokenManager
 
     private val viewModel: CalendarViewModel by activityViewModels {
-        val helper = DeviceCalendarHelper(requireContext())
         val repo = CalendarRepository(
-            apiService = RetrofitClient.calendarApiService,
+            calendarApiService = RetrofitClient.calendarApiService,
             petApiService = RetrofitClient.petApiService,
-            deviceCalendarHelper = helper,
+            // deviceCalendarHelper = helper,
             tokenManager = tokenManager
         )
         CalendarViewModelFactory(repo)
     }
 
-    private val requestPermissionLauncher =
+    /*private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             val readGranted = permissions[Manifest.permission.READ_CALENDAR] ?: false
             val writeGranted = permissions[Manifest.permission.WRITE_CALENDAR] ?: false
@@ -70,7 +69,7 @@ class CalendarFragment : Fragment() {
             } else {
                 showSnackbar("캘린더 권한이 필요합니다.")
             }
-        }
+        }*/
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -96,7 +95,7 @@ class CalendarFragment : Fragment() {
 
         // 반려동물 데이터 로드 (달력은 init에서 자동 초기화됨)
         viewModel.loadPets()
-        checkCalendarPermission()
+        // checkCalendarPermission()
     }
 
     /**
@@ -209,42 +208,6 @@ class CalendarFragment : Fragment() {
                 }
             }
         }
-    }
-
-    /**
-     * 데이터 로드
-     */
-    private fun loadDataSequentially() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.loadAvailableCalendars()
-        }
-    }
-
-    /**
-     * 권한 체크
-     */
-    private fun checkCalendarPermission() {
-        if (hasCalendarPermissions()) {
-            loadDataSequentially()
-        } else {
-            requestPermissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.READ_CALENDAR,
-                    Manifest.permission.WRITE_CALENDAR
-                )
-            )
-        }
-    }
-
-    private fun hasCalendarPermissions(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            requireContext(),
-            Manifest.permission.READ_CALENDAR
-        ) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.WRITE_CALENDAR
-                ) == PackageManager.PERMISSION_GRANTED
     }
 
     /**

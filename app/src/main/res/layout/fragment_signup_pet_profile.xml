@@ -110,11 +110,26 @@
                 android:textColor="@color/body_1"
                 android:inputType="textPersonName"
                 android:maxLines="1"
-                android:background="@drawable/bg_edittext_normal"
+                android:background="@drawable/bg_edittext_selector"
                 android:drawableEnd="@drawable/img_profile_cancel"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_pet_name_label"/>
+
+            <TextView
+                android:id="@+id/tv_name_error_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="-10dp"
+                android:text="@string/name_error_message"
+                android:textColor="@color/status_error"
+                android:fontFamily="@font/pretendard_regular"
+                android:textSize="12sp"
+                android:background="@color/white"
+                app:layout_constraintStart_toStartOf="@id/et_pet_name"
+                app:layout_constraintTop_toBottomOf="@id/et_pet_name"
+                android:visibility="gone"/>
 
             <!-- 성별 -->
             <TextView
@@ -211,7 +226,7 @@
                 android:textColorHint="@color/caption_2"
                 android:textColor="@color/body_1"
                 android:textSize="16sp"
-                android:background="@drawable/bg_edittext_normal"
+                android:background="@drawable/bg_edittext_selector"
                 app:layout_constraintStart_toStartOf="@id/tv_type_label"
                 app:layout_constraintEnd_toEndOf="@id/rg_pet_gender"
                 app:layout_constraintTop_toBottomOf="@id/tv_type_label"/>
@@ -226,7 +241,7 @@
                 android:textColorHint="@color/caption_2"
                 android:textColor="@color/body_1"
                 android:textSize="16sp"
-                android:background="@drawable/bg_edittext_normal"
+                android:background="@drawable/bg_edittext_selector"
                 app:layout_constraintStart_toStartOf="@id/et_pet_birth"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_type_label"/>
@@ -254,7 +269,7 @@
                 android:textColorHint="@color/caption_2"
                 android:textColor="@color/body_1"
                 android:textSize="16sp"
-                android:background="@drawable/bg_edittext_normal"
+                android:background="@drawable/bg_edittext_selector"
                 app:layout_constraintStart_toStartOf="@id/tv_type_label"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_intro_label"/>

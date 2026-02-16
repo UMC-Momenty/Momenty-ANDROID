@@ -1,46 +1,68 @@
 package com.example.momenty.domain.calendar
 
+import com.example.momenty.domain.calendar.api.request.AlarmStatusRequest
+import com.example.momenty.domain.calendar.api.request.CreateScheduleRequest
+import com.example.momenty.domain.calendar.api.response.AlarmListResponse
+import com.example.momenty.domain.calendar.api.response.DailyScheduleResponse
+import com.example.momenty.domain.calendar.api.response.MonthlyScheduleResponse
+import com.example.momenty.domain.calendar.api.response.PetMonthlyScheduleResponse
 import retrofit2.Response
 import retrofit2.http.*
 interface CalendarApiService {
-    /**
-     * 반려동물 목록 조회
-     */
-    @GET("api/pets")
-    suspend fun getPets(): Response<List<Pet>>
 
     /**
-     * 일정 조회
+     * 2. 모든 반려동물 달별 일정 조회
      */
-    @GET("api/calendar/events")
-    suspend fun getEvents(
-        @Query("startDate") startDate: Long,
-        @Query("endDate") endDate: Long,
-        @Query("petId") petId: String? = null
-    ): Response<List<CalendarEvent>>
+    @GET("api/users/{userId}/schedules/calendar")
+    suspend fun getAllPetsMonthlySchedules(
+        @Path("userId") userId: Long,
+        @Query("year") year: Int,
+        @Query("month") month: Int
+    ): Response<MonthlyScheduleResponse>
 
     /**
-     * 일정 생성
+     * 3. 반려동물별 달별 일정 조회
      */
-    @POST("api/calendar/events")
-    suspend fun createEvent(
-        @Body request: CalendarEventRequest
-    ): Response<CalendarEvent>
+    @GET("api/users/{userId}/schedules/pets/{petId}/calendar")
+    suspend fun getPetMonthlySchedules(
+        @Path("userId") userId: Long,
+        @Path("petId") petId: Long,
+        @Query("year") year: Int,
+        @Query("month") month: Int
+    ): Response<PetMonthlyScheduleResponse>
 
     /**
-     * 일정 수정
+     * 4. 반려동물별 일별 일정 조회
      */
-    @PUT("api/calendar/events/{eventId}")
-    suspend fun updateEvent(
-        @Path("eventId") eventId: String,
-        @Body request: CalendarEventRequest
-    ): Response<CalendarEvent>
+    @GET("api/pets/{petId}/schedules")
+    suspend fun getPetDailySchedules(
+        @Path("petId") petId: Long,
+        @Query("date") date: String  // "YYYY-MM-DD" 형식
+    ): Response<DailyScheduleResponse>
 
     /**
-     * 일정 삭제
+     * 5. 반려동물별 일정 및 알림 생성
      */
-    @DELETE("api/calendar/events/{eventId}")
-    suspend fun deleteEvent(
-        @Path("eventId") eventId: String
+    @POST("api/pets/{petId}/schedules")
+    suspend fun createSchedule(
+        @Path("petId") petId: Long,
+        @Body request: CreateScheduleRequest
+    ): Response<Unit>  // 또는 생성된 일정 반환
+
+    /**
+     * 6. 알림 목록 조회
+     */
+    @GET("api/pets/{petId}/alarms")
+    suspend fun getAlarms(
+        @Path("petId") petId: Long
+    ): Response<AlarmListResponse>
+
+    /**
+     * 7. 알림 ON/OFF 토글
+     */
+    @PATCH("api/schedules/{scheduleId}/alarm-status")
+    suspend fun toggleAlarmStatus(
+        @Path("scheduleId") scheduleId: Long,
+        @Body request: AlarmStatusRequest
     ): Response<Unit>
 }

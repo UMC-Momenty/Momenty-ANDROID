@@ -108,16 +108,18 @@ class PetProfileFragment : Fragment() {
             imagePickerHelper?.showImagePickerDialog()
         }
 
-        // 이름 입력 감지
+        // ✅ 이름 입력 감지 (2~10자 유효성 검증) - 수정
         binding.etPetName.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
+                validateNameAndUpdateIcon(s.toString())  // ✅ 메서드 호출 변경
                 updateSaveButton()
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        setupClearButton(binding.etPetName)
+        // ✅ 이름 입력 필드의 아이콘 클릭 처리 - 메서드 변경
+        setupNameFieldIconClick()
 
         // 성별 선택
         binding.rgPetGender.setOnCheckedChangeListener { _, _ ->
@@ -166,24 +168,83 @@ class PetProfileFragment : Fragment() {
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private fun setupClearButton(editText: android.widget.EditText) {
-        editText.setOnTouchListener { v, event ->
-            if (event.action == MotionEvent.ACTION_UP) {
-                val drawableEnd = editText.compoundDrawables[2]
+    /**
+     * ✅ 이름 유효성 검증 + 아이콘 동적 변경
+     * - 입력 없음: 아이콘 숨김
+     * - 2~10자: X 버튼 (삭제 가능)
+     * - 조건 미달: 경고 아이콘 (클릭 불가)
+     */
+    private fun validateNameAndUpdateIcon(name: String) {
+        val isValid = name.length in 2..10
 
-                if (drawableEnd != null) {
+        binding.etPetName.apply {
+            when {
+                name.isEmpty() -> {
+                    // 입력 없음 - 아이콘 숨김
+                    setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, 0)
+                    tag = null
+                    isActivated = false
+                }
+                isValid -> {
+                    // ✅ 정상 상태 - X 버튼 표시
+                    setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        0, 0, R.drawable.img_profile_cancel, 0
+                    )
+                    tag = "clear"
+                    isActivated = false
+                    binding.tvNameErrorMessage.visibility = View.GONE
+                }
+                else -> {
+                    // ❌ 에러 상태 - 경고 아이콘 표시
+                    setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        0, 0, R.drawable.img_profile_warning, 0
+                    )
+                    tag = "error"
+                    isActivated = true  // 빨간 테두리 표시
+                    binding.tvNameErrorMessage.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    /**
+     * ✅ 이름 입력 필드의 아이콘 클릭 처리
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupNameFieldIconClick() {
+        binding.etPetName.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                val editText = v as android.widget.EditText
+                val drawable = editText.compoundDrawablesRelative[2]
+
+                if (drawable != null) {
                     val touchX = event.x.toInt()
-                    val drawableWidth = drawableEnd.intrinsicWidth
+                    val drawableWidth = drawable.bounds.width()
                     val drawableStart = editText.width - editText.paddingEnd - drawableWidth
 
                     if (touchX >= drawableStart) {
-                        editText.text?.clear()
+                        handleNameIconClick()
                         return@setOnTouchListener true
                     }
                 }
             }
             false
+        }
+    }
+
+    /**
+     * ✅ 이름 필드 아이콘 클릭 처리
+     */
+    private fun handleNameIconClick() {
+        when (binding.etPetName.tag) {
+            "clear" -> {
+                // ✅ X 버튼 클릭 - 텍스트 삭제
+                binding.etPetName.text?.clear()
+                binding.etPetName.requestFocus()
+            }
+            "error" -> {
+                // ❌ 경고 아이콘 클릭 - 아무 동작 안 함
+            }
         }
     }
 
@@ -384,7 +445,7 @@ class PetProfileFragment : Fragment() {
      * 모든 필수 입력 필드가 채워졌는지 확인하여 저장 버튼 활성화/비활성화
      */
     private fun updateSaveButton() {
-        val hasName = binding.etPetName.text?.isNotBlank() == true
+        val hasName = binding.etPetName.text?.toString()?.length in 2..10
         val hasGender = binding.rgPetGender.checkedRadioButtonId != -1
         val hasBirth = binding.etPetBirth.text?.isNotBlank() == true
         val hasType = binding.etPetType.text?.isNotBlank() == true

@@ -12,15 +12,21 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.databinding.FragmentAddAlarmBinding
+import com.example.momenty.domain.calendar.api.request.CreateScheduleRequest
+import com.example.momenty.domain.calendar.api.request.DayOfWeek
+import com.example.momenty.domain.calendar.api.request.ScheduleCategory
+import com.example.momenty.domain.calendar.api.request.ScheduleType
 import com.example.momenty.global.security.TokenManager
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
-@AndroidEntryPoint  // ← Hilt 어노테이션 추가
+@AndroidEntryPoint
 class AddAlarmFragment : Fragment() {
 
     private var _binding: FragmentAddAlarmBinding? = null
@@ -34,12 +40,10 @@ class AddAlarmFragment : Fragment() {
 
     // ViewModel Factory 제거하고 직접 주입받기
     private val calendarViewModel: CalendarViewModel by activityViewModels {
-        val helper = DeviceCalendarHelper(requireContext())
         val repo = CalendarRepository(
-            apiService = RetrofitClient.calendarApiService,
-            petApiService = RetrofitClient.petApiService,  // ← 추가
-            deviceCalendarHelper = helper,
-            tokenManager = tokenManager  // ← 추가
+            calendarApiService = RetrofitClient.calendarApiService,
+            petApiService = RetrofitClient.petApiService,
+            tokenManager = tokenManager
         )
         CalendarViewModelFactory(repo)
     }
@@ -66,7 +70,7 @@ class AddAlarmFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // RetrofitClient 초기화
+        // ✅ RetrofitClient 초기화
         RetrofitClient.initialize(tokenManager)
 
         // Calendar Fragment에서 선택한 날짜 사용
@@ -88,7 +92,7 @@ class AddAlarmFragment : Fragment() {
         setupClickListeners()
         observeViewModel()
 
-        // 초기 상태 설정 - onViewCreated에서 명시적으로 설정
+        // 초기 상태 설정
         initializeButtonStates()
     }
 
@@ -101,14 +105,13 @@ class AddAlarmFragment : Fragment() {
             multiSelect = true, // 다중 선택 모드 활성화
             onPetClick = { pet ->
                 // Adapter 내부에서 선택/해제 처리됨
-                // getSelectedPets()로 현재 선택된 펫 목록 가져오기
                 val currentSelected = petFilterAdapter.getSelectedPets()
 
                 if (currentSelected.isEmpty()) {
                     showSnackbar("반려동물을 선택해주세요", Snackbar.LENGTH_SHORT)
                 } else {
-                    val names = currentSelected.joinToString(", ") { it.name }
-                    showSnackbar("$names 선택됨", Snackbar.LENGTH_SHORT)
+                    // ✅ 이름 대신 개수 표시
+                    showSnackbar("${currentSelected.size}마리 선택됨", Snackbar.LENGTH_SHORT)
                 }
             }
         )
@@ -348,79 +351,62 @@ class AddAlarmFragment : Fragment() {
     }
 
     /**
-     * 알람 저장
+     * ✅ 알람 저장 - 백엔드 API 호출
      */
     private fun saveAlarm() {
         // 유효성 검사 1: 반려동물 선택 필수
         val selectedPets = petFilterAdapter.getSelectedPets()
         if (selectedPets.isEmpty()) {
-            Snackbar.make(binding.root, "반려동물을 최소 1개 선택해주세요", Snackbar.LENGTH_SHORT).show()
+            showSnackbar("반려동물을 최소 1개 선택해주세요", Snackbar.LENGTH_SHORT)
             return
         }
 
         // 유효성 검사 2: 활동 유형 선택 필수
         if (selectedActivityType == null) {
-            Snackbar.make(binding.root, "활동 유형을 선택해주세요", Snackbar.LENGTH_SHORT).show()
+            showSnackbar("활동 유형을 선택해주세요", Snackbar.LENGTH_SHORT)
             return
         }
 
         // 유효성 검사 3: 알림 시간 선택 필수
         if (selectedTime == null) {
-            Snackbar.make(binding.root, "알림 시간을 선택해주세요", Snackbar.LENGTH_SHORT).show()
+            showSnackbar("알림 시간을 선택해주세요", Snackbar.LENGTH_SHORT)
             return
         }
 
         // 유효성 검사 4: 반복성일 경우 요일 선택 필수
         if (isRepeatMode && selectedRepeatDays.isEmpty()) {
-            Snackbar.make(binding.root, "알림 요일을 선택해주세요", Snackbar.LENGTH_SHORT).show()
+            showSnackbar("알림 요일을 선택해주세요", Snackbar.LENGTH_SHORT)
             return
         }
 
-        // 선택한 각 반려동물별로 알람 생성
+        // ✅ 선택한 각 반려동물별로 알람 생성 및 백엔드 API 호출
         lifecycleScope.launch {
             try {
+                var successCount = 0
+
                 selectedPets.forEach { pet ->
-                    val alarm = Alarm(
-                        activityType = selectedActivityType!!,
-                        petId = pet.id,
-                        title = selectedActivityType!!,
-                        isRepeat = isRepeatMode,
-                        repeatDays = if (isRepeatMode) selectedRepeatDays.toList() else null,
-                        alarmDate = selectedDate,
-                        alarmTime = selectedTime!!,
-                        duration = binding.etAlarmContinue.text.toString().trim().takeIf { it.isNotEmpty() },
-                        note = binding.etAlarmNote.text.toString().trim().takeIf { it.isNotEmpty() }
-                    )
+                    // CreateScheduleRequest 생성
+                    val request = createScheduleRequest()
 
-                    alarmViewModel.addAlarm(alarm)
+                    // 백엔드 API 호출
+                    val success = calendarViewModel.createSchedule(pet.petId, request)
 
-                    val eventCalendar = Calendar.getInstance().apply {
-                        time = selectedDate
-                        set(Calendar.HOUR_OF_DAY, 0)
-                        set(Calendar.MINUTE, 0)
-                        set(Calendar.SECOND, 0)
-                        set(Calendar.MILLISECOND, 0)
+                    if (success) {
+                        successCount++
                     }
-
-                    // Alarm을 CalendarEvent로 변환
-                    val calendarEvent = CalendarEvent(
-                        id = System.currentTimeMillis().toString() + "_" + pet.id,
-                        petId = pet.id,
-                        calendarId = "default_calendar",
-                        title = alarm.title,
-                        scheduleDate = eventCalendar.time,
-                        alarmTime = alarm.alarmTime,
-                        petName = pet.name,
-                        type = alarm.activityType
-                    )
-
-                    calendarViewModel.addEvent(calendarEvent)
                 }
 
                 if (isAdded) {
-                    val petNames = selectedPets.joinToString(", ") { it.name }
-                    showSnackbar("$petNames 의 알림이 추가되었습니다", Snackbar.LENGTH_SHORT)
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                    if (successCount > 0) {
+                        // ✅ 이름 대신 개수 표시
+                        showSnackbar(
+                            "${successCount}개의 알림이 추가되었습니다",
+                            Snackbar.LENGTH_SHORT
+                        )
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                    } else {
+                        showSnackbar("알림 추가에 실패했습니다", Snackbar.LENGTH_SHORT)
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -428,6 +414,119 @@ class AddAlarmFragment : Fragment() {
                     showSnackbar("알림 추가 중 오류가 발생했습니다", Snackbar.LENGTH_SHORT)
                 }
             }
+        }
+    }
+
+    /**
+     * ✅ CreateScheduleRequest 생성
+     */
+    private fun createScheduleRequest(): CreateScheduleRequest {
+        // 카테고리 매핑
+        val category = mapActivityTypeToCategory(selectedActivityType!!)
+
+        // 날짜 형식 변환 ("YYYY-MM-DD")
+        val dateString = if (!isRepeatMode) {
+            formatDateToString(selectedDate)
+        } else {
+            null
+        }
+
+        // 요일 변환 (Int → DayOfWeek enum)
+        val repeatDaysEnum = if (isRepeatMode) {
+            selectedRepeatDays.map { dayNum ->
+                mapIntToDayOfWeek(dayNum)
+            }
+        } else {
+            null
+        }
+
+        // 지속시간 파싱 (String → Int)
+        val durationText = binding.etAlarmContinue.text.toString().trim()
+        val durationMinutes = parseDurationToMinutes(durationText)
+
+        // 메모
+        val memo = binding.etAlarmNote.text.toString().trim().takeIf { it.isNotEmpty() }
+
+        return CreateScheduleRequest(
+            title = selectedActivityType!!,
+            category = category,
+            memo = memo,
+            time = selectedTime!!,  // "HH:mm"
+            type = if (isRepeatMode) ScheduleType.REPEAT else ScheduleType.ONE_TIME,
+            date = dateString,
+            repeatDays = repeatDaysEnum,
+            durationMinutes = durationMinutes,
+            isAlarmEnabled = true
+        )
+    }
+
+    /**
+     * 활동 유형을 ScheduleCategory로 매핑
+     */
+    private fun mapActivityTypeToCategory(activityType: String): ScheduleCategory {
+        return when (activityType) {
+            "산책" -> ScheduleCategory.WALK
+            "식사" -> ScheduleCategory.MEAL
+            "건강" -> ScheduleCategory.HEALTH
+            "미용" -> ScheduleCategory.BEAUTY
+            "투약" -> ScheduleCategory.MEDICINE
+            "간식" -> ScheduleCategory.SNACK
+            else -> ScheduleCategory.ETC
+        }
+    }
+
+    /**
+     * Int 요일을 DayOfWeek enum으로 변환
+     * 1=월요일, 2=화요일, ..., 7=일요일
+     */
+    private fun mapIntToDayOfWeek(dayNum: Int): DayOfWeek {
+        return when (dayNum) {
+            1 -> DayOfWeek.MONDAY
+            2 -> DayOfWeek.TUESDAY
+            3 -> DayOfWeek.WEDNESDAY
+            4 -> DayOfWeek.THURSDAY
+            5 -> DayOfWeek.FRIDAY
+            6 -> DayOfWeek.SATURDAY
+            7 -> DayOfWeek.SUNDAY
+            else -> DayOfWeek.MONDAY
+        }
+    }
+
+    /**
+     * Date를 "YYYY-MM-DD" 형식으로 변환
+     */
+    private fun formatDateToString(date: Date): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        return sdf.format(date)
+    }
+
+    /**
+     * 지속시간 텍스트를 분(Int)으로 변환
+     * 예: "1시간" → 60, "30분" → 30, "1시간 30분" → 90
+     */
+    private fun parseDurationToMinutes(durationText: String): Int? {
+        if (durationText.isEmpty()) return null
+
+        return try {
+            var totalMinutes = 0
+
+            // "1시간" 파싱
+            val hourRegex = """(\d+)시간""".toRegex()
+            hourRegex.find(durationText)?.let { match ->
+                val hours = match.groupValues[1].toInt()
+                totalMinutes += hours * 60
+            }
+
+            // "30분" 파싱
+            val minuteRegex = """(\d+)분""".toRegex()
+            minuteRegex.find(durationText)?.let { match ->
+                val minutes = match.groupValues[1].toInt()
+                totalMinutes += minutes
+            }
+
+            if (totalMinutes > 0) totalMinutes else null
+        } catch (e: Exception) {
+            null
         }
     }
 

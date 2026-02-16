@@ -43,17 +43,9 @@ class SplashActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Splash Screen API 설치
-        val splashScreen = installSplashScreen()
-
         super.onCreate(savedInstanceState)
 
-        // Splash screen을 더 오래 유지 (초기화 완료까지)
-        var isReady = false
-        splashScreen.setKeepOnScreenCondition { !isReady }
-
         setContentView(R.layout.activity_splash)
-
         // 비동기로 초기화 및 네비게이션 처리
         lifecycleScope.launch {
             try {
@@ -63,8 +55,6 @@ class SplashActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Log.e(TAG, "초기화 실패 - 기본 화면으로 이동", e)
                 navigateToTerms() // 실패 시 안전하게 약관 화면으로
-            } finally {
-                isReady = true
             }
         }
     }
@@ -79,13 +69,6 @@ class SplashActivity : AppCompatActivity() {
             try {
                 // 스플래시 최소 표시 시간
                 delay(SPLASH_DELAY_MS)
-
-                // ⚠️ 개발 중: 임시 강제 로그아웃
-                // TODO: 프로덕션 배포 전 제거
-                if (com.example.momenty.BuildConfig.DEBUG) {
-                    Log.d(TAG, "개발 모드: 강제 로그아웃")
-                    tokenManager.clearTokens()
-                }
 
                 // JWT 토큰 확인 (IO 작업)
                 val hasToken = tokenManager.isLoggedIn()
