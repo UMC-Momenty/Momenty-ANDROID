@@ -10,10 +10,6 @@
         android:name="com.example.momenty.domain.record.RecordFragment"
         tools:layout="@layout/fragment_record">
 
-        <argument
-            android:name="hideBottomNav"
-            app:argType="boolean"
-            android:defaultValue="true" />
 
         <action
             android:id="@+id/action_record_to_write"
