@@ -1,11 +1,13 @@
 package com.example.momenty.global.mock
 
+import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import java.util.UUID
+
 
 /**
  * Mock API Interceptor
@@ -37,6 +39,9 @@ class MockApiInterceptor : Interceptor {
         val request = chain.request()
         val path = request.url.encodedPath
         val method = request.method
+
+        android.util.Log.d("MockApi", "REQ: $method $path (mock=$isMockEnabled)")
+
 
         // API 경로별 Mock 응답 생성
         val mockResponse = when {
@@ -81,15 +86,35 @@ class MockApiInterceptor : Interceptor {
             }
 
             // ==================== 모먼트 API ====================
-            path.endsWith("/api/moments") && method == "GET" -> {
-                mockGetMoments()
+
+
+            // /api/moments/users/{userId}/pets/{petId}
+            path.matches(Regex(".*/api/moments/users/\\d+/pets/\\d+")) && method == "GET" -> {
+                Log.d("MockApi", "HIT momentsByPet")
+                mockGetMomentsByPet()
             }
-            path.endsWith("/api/moments") && method == "POST" -> {
-                mockCreateMoment()
+
+
+            path.matches(Regex("/api/moments/users/\\d+/pets/\\d+")) && method == "POST" -> {
+                Log.d("MockApi", "HIT createMomentByPet")
+                mockCreateMomentByPet()
             }
-            path.matches(Regex(".*/api/moments/\\d+")) && method == "GET" -> {
+
+
+
+            path.endsWith("/api/moments/image") && method == "POST" -> {
+                android.util.Log.d("MockApi", "HIT momentsPresigned")
+                mockCreateMomentPresignedUrls()
+            }
+
+            path.matches(Regex(".*/api/moments/users/\\d+/pets/\\d+/\\d+")) && method == "GET" -> {
+                Log.d("MockApi", "HIT momentDetail")
                 mockGetMomentDetail()
             }
+
+
+
+
 
             // ==================== 챗봇 API ====================
             path.endsWith("/api/chatbot/messages") && method == "POST" -> {
@@ -227,6 +252,122 @@ class MockApiInterceptor : Interceptor {
             """.trimIndent()
         )
     }
+
+
+    private fun mockCreateMomentPresignedUrls(): MockResponse {
+        val itemsJson = (1..5).joinToString(",") {
+            val key = "moments/${UUID.randomUUID()}.jpg"
+            val url = "https://mock-s3-bucket.s3.amazonaws.com/$key?signature=mock"
+            """{ "key": "$key", "url": "$url" }"""
+        }
+
+        return MockResponse(
+            code = 201,
+            message = "Created",
+            body = """
+        {
+          "isSuccess": true,
+          "code": "PRESIGNED_URL_CREATED",
+          "message": "Presigned URL 발급 성공",
+          "result": [
+            $itemsJson
+          ]
+        }
+        """.trimIndent()
+        )
+    }
+
+
+
+    private fun mockCreateMomentByPet(): MockResponse {
+        return MockResponse(
+
+            code = 201,
+            message = "Created",
+            body = """
+            {
+              "isSuccess": true,
+              "code": "MOMENT_CREATED",
+              "message": "모먼트 생성 성공",
+              "result": "moment_${UUID.randomUUID()}"
+            }
+        """.trimIndent()
+        )
+    }
+
+
+    private fun mockGetMomentsByPet(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+        {
+          "isSuccess": true,
+          "code": "MOMENTS_SUCCESS",
+          "message": "모먼트 조회 성공",
+          "result": {
+            "moments": [
+              {
+                "momentId": 1,
+                "emotion": "HAPPINESS",
+                "createdAt": "2026-02-10T14:30:00",
+                "content": "오늘 산책하다가 친구 강아지를 만났어요!",
+                "imageUrl": "https://picsum.photos/300/300"
+              },
+              {
+                "momentId": 2,
+                "emotion": "NEUTRAL",
+                "createdAt": "2026-02-09T18:20:00",
+                "content": "집에서 푹 쉬는 하루.",
+                "imageUrl": "https://picsum.photos/300/300"
+              },
+              {
+                "momentId": 3,
+                "emotion": "SADNESS",
+                "createdAt": "2026-02-08T09:15:00",
+                "content": "병원 다녀오느라 조금 힘들었어요.",
+                "imageUrl": "https://picsum.photos/300/300"
+              }
+            ],
+            "pageInfo": {
+              "page": 0,
+              "size": 10,
+              "totalPages": 1,
+              "totalElements": 3,
+              "hasNext": false,
+              "hasPrevious": false
+            }
+          }
+        }
+        """.trimIndent()
+        )
+    }
+
+
+    private fun mockGetMomentDetail(): MockResponse {
+        val itemsJson = (1..3).joinToString(",") {
+            val key = "moments/${UUID.randomUUID()}.jpg"
+            """{ "imageKey": "$key" }"""
+        }
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+        {
+          "isSuccess": true,
+          "code": "MOMENT_DETAIL_SUCCESS",
+          "message": "모먼트 상세 조회 성공",
+          "result": {
+            "images": [ $itemsJson ],
+            "emotion": "HAPPINESS",
+            "content": "푸들이의 특별한 하루\n오늘은 정말 특별했어요. 산책도 하고 간식도 먹고..."
+          }
+        }
+        """.trimIndent()
+        )
+    }
+
+
 
     /**
      * Presigned URL 발급 Mock
@@ -375,88 +516,7 @@ class MockApiInterceptor : Interceptor {
         )
     }
 
-    /**
-     * 모먼트 리스트 조회 Mock
-     */
-    private fun mockGetMoments(): MockResponse {
-        return MockResponse(
-            code = 200,
-            message = "OK",
-            body = """
-                {
-                    "isSuccess": true,
-                    "code": "MOMENTS_SUCCESS",
-                    "message": "모먼트 조회 성공",
-                    "result": {
-                        "moments": [
-                            {
-                                "momentId": "m_1",
-                                "title": "행복한 산책",
-                                "emotion": "HAPPY",
-                                "imageUrl": "https://example.com/moment1.jpg",
-                                "date": "2026-02-10"
-                            },
-                            {
-                                "momentId": "m_2",
-                                "title": "병원 다녀옴",
-                                "emotion": "WORRIED",
-                                "imageUrl": "https://example.com/moment2.jpg",
-                                "date": "2026-02-09"
-                            }
-                        ]
-                    }
-                }
-            """.trimIndent()
-        )
-    }
 
-    /**
-     * 모먼트 생성 Mock
-     */
-    private fun mockCreateMoment(): MockResponse {
-        return MockResponse(
-            code = 201,
-            message = "Created",
-            body = """
-                {
-                    "isSuccess": true,
-                    "code": "MOMENT_CREATED",
-                    "message": "모먼트 생성 성공",
-                    "result": {
-                        "momentId": "m_${UUID.randomUUID()}",
-                        "title": "새로운 모먼트",
-                        "emotion": "HAPPY"
-                    }
-                }
-            """.trimIndent()
-        )
-    }
-
-    /**
-     * 모먼트 상세 조회 Mock
-     */
-    private fun mockGetMomentDetail(): MockResponse {
-        return MockResponse(
-            code = 200,
-            message = "OK",
-            body = """
-                {
-                    "isSuccess": true,
-                    "code": "MOMENT_DETAIL_SUCCESS",
-                    "message": "모먼트 상세 조회 성공",
-                    "result": {
-                        "momentId": "m_1",
-                        "title": "행복한 산책",
-                        "content": "오늘 공원에서 다른 강아지 친구들을 많이 만났어요!",
-                        "emotion": "HAPPY",
-                        "imageUrl": "https://example.com/moment1.jpg",
-                        "date": "2026-02-10",
-                        "createdAt": "2026-02-10T14:30:00"
-                    }
-                }
-            """.trimIndent()
-        )
-    }
 
     /**
      * 챗봇 메시지 전송 Mock

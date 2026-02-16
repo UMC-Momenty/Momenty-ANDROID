@@ -7,8 +7,16 @@ import com.example.momenty.databinding.ItemRecordBinding
 import com.example.momenty.domain.record.write.RecordItem
 
 class RecordAdapter(
-    private val items: List<RecordItem>
+    private val onClick: (RecordItem) -> Unit
 ) : RecyclerView.Adapter<RecordAdapter.RecordViewHolder>() {
+
+    private val items = mutableListOf<RecordItem>()
+
+    fun submitList(newItems: List<RecordItem>) {
+        items.clear()
+        items.addAll(newItems)
+        notifyDataSetChanged()
+    }
 
     inner class RecordViewHolder(
         private val binding: ItemRecordBinding
@@ -19,11 +27,10 @@ class RecordAdapter(
             binding.tvMoodChip.text = item.mood
             binding.tvContent.text = item.content
             binding.tvMoodText.text = item.title
-            binding.ivThumb.setImageResource(item.imageRes)
+            binding.ivThumb.setImageResource(item.imageRes) // 지금은 placeholder
+            binding.root.setOnClickListener { onClick(item) }
         }
-
     }
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecordViewHolder {
         val binding = ItemRecordBinding.inflate(
