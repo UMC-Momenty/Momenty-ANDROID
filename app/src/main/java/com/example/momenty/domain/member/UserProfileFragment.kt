@@ -213,6 +213,7 @@ class UserProfileFragment : Fragment() {
                     )
                     tag = "clear"
                     isActivated = false
+                    binding.tvNameErrorMessage.visibility = View.GONE
                 }
                 else -> {
                     // ❌ 에러 상태 - 경고 아이콘 표시

@@ -44,7 +44,6 @@ data class AlarmDto(
             date = date,
             alarmTime = alarmTime,
             durationMinutes = durationMinutes,
-            memo = null,  // API 응답에 memo 없음
             isAlarmEnabled = isAlarmEnabled
         )
     }

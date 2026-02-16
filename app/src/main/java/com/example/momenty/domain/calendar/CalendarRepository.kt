@@ -3,6 +3,7 @@ package com.example.momenty.domain.calendar
 import android.util.Log
 import com.example.momenty.domain.calendar.api.request.AlarmStatusRequest
 import com.example.momenty.domain.calendar.api.request.CreateScheduleRequest
+import com.example.momenty.domain.calendar.api.response.CreateScheduleResponse
 import com.example.momenty.domain.calendar.api.response.MonthlyScheduleResponse
 import com.example.momenty.domain.calendar.api.response.PetMonthlyScheduleResponse
 import com.example.momenty.global.security.TokenManager
@@ -26,9 +27,9 @@ class CalendarRepository(
     /**
      * 1. 사용자의 반려동물 목록 가져오기
      */
-    suspend fun getUserPets(): List<Pet> = withContext(Dispatchers.IO) {
+    suspend fun getPets(): List<Pet> = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "getUserPets() called")
+            Log.d(TAG, "getPets() called")
 
             // 로그인 확인
             if (!tokenManager.isLoggedIn()) {
@@ -153,7 +154,16 @@ class CalendarRepository(
 
             if (response?.isSuccessful == true && response.body() != null) {
                 val schedules = response.body()!!.schedules.map { dto ->
-                    dto.toDomain(petId)
+                    CalendarEvent(
+                        scheduleId = dto.scheduleId,
+                        petId = petId,
+                        title = dto.title,
+                        startAt = dto.startAt,
+                        memo = dto.memo,
+                        category = dto.category,
+                        durationMinutes = dto.durationMinutes,
+                        isAlarmEnabled = dto.isAlarmEnabled
+                    )
                 }
                 Log.d(TAG, "Loaded ${schedules.size} schedules for date=$date")
                 schedules
@@ -173,7 +183,7 @@ class CalendarRepository(
     suspend fun createSchedule(
         petId: Long,
         request: CreateScheduleRequest
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): CreateScheduleResponse? = withContext(Dispatchers.IO) {
         try {
             Log.d(TAG, "Creating schedule for petId=$petId: ${request.title}")
 
@@ -181,16 +191,20 @@ class CalendarRepository(
                 calendarApiService.createSchedule(petId, request)
             }
 
-            val success = response?.isSuccessful == true
-            if (success) {
+            if (response?.isSuccessful == true) {
                 Log.d(TAG, "Schedule created successfully")
+                // Mock API는 Unit을 반환하므로, 성공 시 임시 응답 생성
+                CreateScheduleResponse(
+                    scheduleId = System.currentTimeMillis().toString(),
+                    title = request.title
+                )
             } else {
                 Log.w(TAG, "Failed to create schedule: code=${response?.code()}")
+                null
             }
-            success
         } catch (e: Exception) {
             Log.e(TAG, "Error creating schedule", e)
-            false
+            null
         }
     }
 
@@ -210,7 +224,18 @@ class CalendarRepository(
                 response.body()?.result != null) {
 
                 val alarms = response.body()!!.result.alarms.map { dto ->
-                    dto.toDomain(petId)
+                    Alarm(
+                        scheduleId = dto.scheduleId,
+                        title = dto.title,
+                        category = dto.category,
+                        petId = petId,
+                        isOneTime = dto.isOneTime == true,
+                        repeatDays = dto.repeatDays,
+                        date = dto.date,
+                        alarmTime = dto.alarmTime,
+                        durationMinutes = dto.durationMinutes ?: 0,
+                        isAlarmEnabled = dto.isAlarmEnabled
+                    )
                 }
                 Log.d(TAG, "Loaded ${alarms.size} alarms")
                 alarms

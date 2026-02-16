@@ -50,7 +50,6 @@ class CalendarFragment : Fragment() {
     lateinit var tokenManager: TokenManager
 
     private val viewModel: CalendarViewModel by activityViewModels {
-        val helper = DeviceCalendarHelper(requireContext())
         val repo = CalendarRepository(
             calendarApiService = RetrofitClient.calendarApiService,
             petApiService = RetrofitClient.petApiService,
@@ -210,43 +209,6 @@ class CalendarFragment : Fragment() {
             }
         }
     }
-
-    /**
-     * 데이터 로드
-     */
-    private fun loadDataSequentially() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.loadAvailableCalendars()
-        }
-    }
-
-    /**
-     * 권한 체크
-     * private fun checkCalendarPermission() {
-     *         if (hasCalendarPermissions()) {
-     *             loadDataSequentially()
-     *         } else {
-     *             requestPermissionLauncher.launch(
-     *                 arrayOf(
-     *                     Manifest.permission.READ_CALENDAR,
-     *                     Manifest.permission.WRITE_CALENDAR
-     *                 )
-     *             )
-     *         }
-     *     }
-     *
-     *     private fun hasCalendarPermissions(): Boolean {
-     *         return ContextCompat.checkSelfPermission(
-     *             requireContext(),
-     *             Manifest.permission.READ_CALENDAR
-     *         ) == PackageManager.PERMISSION_GRANTED &&
-     *                 ContextCompat.checkSelfPermission(
-     *                     requireContext(),
-     *                     Manifest.permission.WRITE_CALENDAR
-     *                 ) == PackageManager.PERMISSION_GRANTED
-     *     }
-     */
-
 
     /**
      * 바텀시트

@@ -9,6 +9,6 @@ data class CalendarEvent(
     val startAt: String,           // ISO 8601 형식 "YYYY-MM-DDTHH:mm:ss"
     val memo: String? = null,
     val category: String,          // "병원", "건강" 등
-    val durationMinutes: Int? = null,
-    val isAlarmEnabled: Boolean = true
+    val durationMinutes: Int?,
+    val isAlarmEnabled: Boolean
 )

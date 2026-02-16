@@ -40,7 +40,9 @@ data class ScheduleDto(
     val title: String,
     val startAt: String,      // ISO 8601
     val memo: String?,
-    val category: String
+    val category: String,
+    val durationMinutes: Int?,
+    val isAlarmEnabled: Boolean
 ) {
     /**
      * DTO -> CalendarEvent 도메인 모델 변환
@@ -53,8 +55,8 @@ data class ScheduleDto(
             startAt = startAt,
             memo = memo,
             category = category,
-            durationMinutes = null,
-            isAlarmEnabled = true
+            durationMinutes = durationMinutes,
+            isAlarmEnabled = isAlarmEnabled
         )
     }
 }

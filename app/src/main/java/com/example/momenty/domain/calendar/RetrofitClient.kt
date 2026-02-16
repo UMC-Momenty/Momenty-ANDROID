@@ -36,7 +36,6 @@ object RetrofitClient {
      */
     private val mockApiInterceptor by lazy {
         MockApiInterceptor().apply {
-            // Mock 모드 활성화 (개발 중에는 true, 배포 시에는 false)
             MockApiInterceptor.isMockEnabled = true
         }
     }
