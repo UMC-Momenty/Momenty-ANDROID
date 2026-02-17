@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.momenty.databinding.ActivityQuestBinding
-import com.example.momenty.domain.calendar.RetrofitClient
 import com.example.momenty.global.security.TokenManager
 
 class QuestActivity/* @Inject constructor(
@@ -27,7 +26,7 @@ class QuestActivity/* @Inject constructor(
     private val questViewModel: QuestViewModel by viewModels {
         object: ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val service: QuestService = QuestApiClient.questService
+                val service: QuestService = KhgApiClient.questService
                 val repository = QuestRepository(service)
                 return QuestViewModel(repository) as T
             }
