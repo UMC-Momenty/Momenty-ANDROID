@@ -80,11 +80,36 @@ class PetFilterAdapter(
     }
 
     /**
-     * 다중 선택 모드에서 모든 선택 해제
+     * ✅ 전체 펫 목록 반환 (All 버튼용)
+     */
+    fun getAllPets(): List<Pet> {
+        return pets.toList()
+    }
+
+    /**
+     * ✅ 전체 펫 선택 (All 버튼 클릭 시)
+     */
+    fun selectAllPets() {
+        if (!multiSelect) return
+        selectedPositions.clear()
+        selectedPositions.addAll(pets.indices)
+        notifyDataSetChanged()
+    }
+
+    /**
+     * ✅ 전체 선택 해제 (All 버튼 토글 시)
+     */
+    fun clearAllSelections() {
+        if (!multiSelect) return
+        selectedPositions.clear()
+        notifyDataSetChanged()
+    }
+
+    /**
+     * 다중 선택 모드에서 모든 선택 해제 (기존 메서드 유지)
      */
     fun clearSelection() {
         if (!multiSelect) return
-
         val previousPositions = selectedPositions.toSet()
         selectedPositions.clear()
         previousPositions.forEach { notifyItemChanged(it) }
@@ -98,19 +123,13 @@ class PetFilterAdapter(
             // 선택 상태 표시
             selectionBorder.visibility = if (isSelected) View.VISIBLE else View.GONE
 
-            // 이미지 로드
-            if (pet.profile.isEmpty()) {
-                // 펫 이미지 없을 경우 회색 원 표시 (개발용)
-                val grayCircle = ContextCompat.getDrawable(itemView.context, R.drawable.ic_pet_placeholder)
-                petImage.setImageDrawable(grayCircle)
-            } else {
-                Glide.with(itemView.context)
-                    .load(pet.profile)  // ✅ profile 사용
-                    .apply(RequestOptions.circleCropTransform())
-                    .placeholder(R.drawable.ic_pet_placeholder)
-                    .error(R.drawable.ic_pet_placeholder)
-                    .into(petImage)
-            }
+            // ✅ 프로필 이미지 로드 - 있으면 Glide로 로드, 없으면 플레이스홀더 표시
+            Glide.with(itemView.context)
+                .load(pet.profile.ifEmpty { null })
+                .apply(RequestOptions.circleCropTransform())
+                .placeholder(R.drawable.ic_pet_placeholder)
+                .error(R.drawable.ic_pet_placeholder)
+                .into(petImage)
 
             // 클릭 리스너
             itemView.setOnClickListener {
@@ -124,28 +143,25 @@ class PetFilterAdapter(
             if (multiSelect) {
                 // 다중 선택 모드
                 if (selectedPositions.contains(position)) {
-                    // 이미 선택된 경우 선택 해제
                     selectedPositions.remove(position)
                     notifyItemChanged(position)
-                    onPetClick(pet) // 선택 해제 알림
+                    onPetClick(pet)
                 } else {
-                    // 선택되지 않은 경우 선택 추가
                     selectedPositions.add(position)
                     notifyItemChanged(position)
-                    onPetClick(pet) // 선택 알림
+                    onPetClick(pet)
                 }
             } else {
                 // 단일 선택 모드
                 val previousPosition = selectedPosition
 
-                // 같은 항목을 다시 클릭하면 선택 해제 (전체로 전환)
                 if (selectedPosition == position) {
+                    // 같은 항목 재클릭 → 선택 해제 (전체 일정)
                     selectedPosition = null
                     notifyItemChanged(position)
-                    onPetClick(null) // 전체 일정
-                }
-                // 다른 항목 선택
-                else {
+                    onPetClick(null)
+                } else {
+                    // 다른 항목 선택
                     selectedPosition = position
                     previousPosition?.let { notifyItemChanged(it) }
                     notifyItemChanged(position)

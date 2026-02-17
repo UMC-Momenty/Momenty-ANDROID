@@ -53,13 +53,38 @@
                 android:textColor="@color/caption_1"
                 android:layout_marginBottom="5dp"/>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_alarm_pet_list"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingHorizontal="10dp"
-                android:layout_marginBottom="10dp"/>
+                android:layout_marginBottom="10dp"
+                android:gravity="center_vertical">
+
+                <!-- ✅ All 버튼 -->
+                <androidx.constraintlayout.utils.widget.MotionButton
+                    android:id="@+id/btn_pet_filter_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="52dp"
+                    android:minHeight="52dp"
+                    android:paddingHorizontal="10dp"
+                    android:layout_marginEnd="4dp"
+                    android:text="All"
+                    android:background="@drawable/bg_alarm_date_selected"
+                    android:fontFamily="@font/pretendard_semibold"
+                    android:textSize="14sp"
+                    android:textColor="@color/btn_text_color_selector"
+                    android:stateListAnimator="@null"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_alarm_pet_list"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="4dp"/>
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tv_alram_name_label"

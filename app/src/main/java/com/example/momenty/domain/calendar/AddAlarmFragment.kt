@@ -103,15 +103,15 @@ class AddAlarmFragment : Fragment() {
         petFilterAdapter = PetFilterAdapter(
             pets = emptyList(),
             multiSelect = true, // 다중 선택 모드 활성화
-            onPetClick = { pet ->
-                // Adapter 내부에서 선택/해제 처리됨
+            onPetClick = { _ ->
+                // 개별 반려동물 선택/해제 시 All 버튼 상태 동기화
                 val currentSelected = petFilterAdapter.getSelectedPets()
+                val allPets = petFilterAdapter.getAllPets()
+                val isAllSelected = allPets.isNotEmpty() && currentSelected.size == allPets.size
+                binding.btnPetFilterAll.isSelected = isAllSelected
 
                 if (currentSelected.isEmpty()) {
                     showSnackbar("반려동물을 선택해주세요", Snackbar.LENGTH_SHORT)
-                } else {
-                    // ✅ 이름 대신 개수 표시
-                    showSnackbar("${currentSelected.size}마리 선택됨", Snackbar.LENGTH_SHORT)
                 }
             }
         )
@@ -125,6 +125,28 @@ class AddAlarmFragment : Fragment() {
             adapter = petFilterAdapter
             setHasFixedSize(true)
             isNestedScrollingEnabled = false
+        }
+
+        // ✅ All 버튼 초기 상태 - 선택 해제
+        binding.btnPetFilterAll.isSelected = false
+
+        // ✅ All 버튼 클릭 리스너
+        binding.btnPetFilterAll.setOnClickListener {
+            val allPets = petFilterAdapter.getAllPets()
+            if (allPets.isEmpty()) return@setOnClickListener
+
+            val isCurrentlyAll = binding.btnPetFilterAll.isSelected
+
+            if (isCurrentlyAll) {
+                // All이 선택된 상태 → 전체 해제
+                petFilterAdapter.clearAllSelections()
+                binding.btnPetFilterAll.isSelected = false
+            } else {
+                // All이 선택 안 된 상태 → 전체 선택
+                petFilterAdapter.selectAllPets()
+                binding.btnPetFilterAll.isSelected = true
+                showSnackbar("${allPets.size}마리 선택됨", Snackbar.LENGTH_SHORT)
+            }
         }
     }
 
@@ -230,79 +252,42 @@ class AddAlarmFragment : Fragment() {
         // 알림 시간
         binding.etAlarmTime.setOnClickListener {
             if (isAdded && !isDetached) {
-                showCustomTimePicker()
+                showTimePickerDialog()
             }
         }
 
-        // 지속 시간
-        binding.etAlarmContinue.setOnClickListener {
-            if (isAdded && !isDetached) {
-                showCustomDurationPicker()
-            }
-        }
-
-        // 요일 버튼
+        // 요일 선택 버튼
         dayButtons.forEach { (button, dayNum) ->
             button.setOnClickListener {
                 toggleDaySelection(button, dayNum)
             }
         }
 
-        // 저장
+        // 저장 버튼
         binding.btnAlarmSave.setOnClickListener {
             saveAlarm()
         }
     }
 
     /**
-     * 활동 유형 선택 다이얼로그
-     */
-    private fun showActivityTypeDialog() {
-        if (!isAdded || isDetached || context == null) return
-
-        try {
-            ActivityTypeDialog(requireContext()) { activityType ->
-                if (isAdded) {
-                    selectedActivityType = activityType
-                    binding.etAlarmName.setText(activityType)
-                }
-            }.show()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    /**
-     * 반복 모드 설정 (일회성/반복성)
+     * 일회성/반복성 모드 전환
      */
     private fun setRepeatMode(isRepeat: Boolean) {
-        // 상태가 실제로 변경될 때만 처리
-        if (isRepeatMode == isRepeat) return
-
         isRepeatMode = isRepeat
 
-        // 버튼 스타일 업데이트
+        // 버튼 상태 업데이트
         binding.btnTermOnce.isSelected = !isRepeat
         binding.btnTermRepeat.isSelected = isRepeat
 
-        updateRepeatDayVisibility()
-    }
-
-    /**
-     * 반복 요일 섹션 가시성 업데이트
-     */
-    private fun updateRepeatDayVisibility() {
-        if (isRepeatMode) {
-            // 반복성: 알림 요일 섹션 전체 표시
+        // 요일 섹션 표시 여부
+        if (isRepeat) {
             binding.tvAlramDateLabel.visibility = View.VISIBLE
-            binding.tvAlramDateLabel.text = "알림 요일"
             binding.llDateBtns.visibility = View.VISIBLE
         } else {
-            // 일회성: 알림 요일 섹션 전체 숨김
             binding.tvAlramDateLabel.visibility = View.GONE
             binding.llDateBtns.visibility = View.GONE
+            // 선택된 요일 초기화
             selectedRepeatDays.clear()
-            // 모든 요일 버튼 선택 해제
             dayButtons.forEach { (button, _) ->
                 button.isSelected = false
             }
@@ -310,35 +295,7 @@ class AddAlarmFragment : Fragment() {
     }
 
     /**
-     * 시간 선택 다이얼로그
-     */
-    private fun showCustomTimePicker() {
-        if (!isAdded || context == null) return
-
-        try {
-            AlarmTimePickerDialog(requireContext()) { timeString ->
-                selectedTime = timeString
-                binding.etAlarmTime.setText(timeString)
-            }.show()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun showCustomDurationPicker() {
-        if (!isAdded || context == null) return
-
-        try {
-            AlarmDurationPickerDialog(requireContext()) { durationString ->
-                binding.etAlarmContinue.setText(durationString)
-            }.show()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    /**
-     * 요일 선택 토글
+     * 요일 선택/해제 토글
      */
     private fun toggleDaySelection(button: Button, dayNum: Int) {
         if (selectedRepeatDays.contains(dayNum)) {
@@ -351,7 +308,43 @@ class AddAlarmFragment : Fragment() {
     }
 
     /**
-     * ✅ 알람 저장 - LocalDataManager & ViewModel
+     * 활동 유형 선택 다이얼로그
+     */
+    private fun showActivityTypeDialog() {
+        val activityTypes = arrayOf("산책", "식사", "건강", "미용", "투약", "간식", "기타")
+
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("활동 유형 선택")
+        builder.setItems(activityTypes) { _, which ->
+            selectedActivityType = activityTypes[which]
+            binding.etAlarmName.setText(selectedActivityType)
+        }
+        builder.show()
+    }
+
+    /**
+     * 시간 선택 다이얼로그
+     */
+    private fun showTimePickerDialog() {
+        val calendar = Calendar.getInstance()
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(Calendar.MINUTE)
+
+        val timePickerDialog = android.app.TimePickerDialog(
+            requireContext(),
+            { _, hourOfDay, minute ->
+                selectedTime = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)
+                binding.etAlarmTime.setText(selectedTime)
+            },
+            currentHour,
+            currentMinute,
+            true // 24시간 형식
+        )
+        timePickerDialog.show()
+    }
+
+    /**
+     * ✅ 알람 저장 - LocalDataManager와 ViewModel 모두 업데이트
      */
     private fun saveAlarm() {
         // 유효성 검사 1: 반려동물 선택 필수
@@ -424,12 +417,13 @@ class AddAlarmFragment : Fragment() {
                             Snackbar.LENGTH_SHORT
                         )
 
-                        // ✅ AlarmViewModel 새로고침
+                        // ✅ AlarmViewModel 새로고침 (알람 목록 화면용)
                         alarmViewModel.loadAlarms()
 
-                        // ✅ CalendarViewModel 새로고침 (달력 업데이트)
+                        // ✅ CalendarViewModel 새로고침 (달력 화면에 반영)
                         calendarViewModel.loadSchedules()
 
+                        // 약간의 지연 후 뒤로 가기 (데이터 로드 완료 대기)
                         kotlinx.coroutines.delay(300)
                         requireActivity().onBackPressedDispatcher.onBackPressed()
                     } else {
