@@ -6,6 +6,7 @@ import com.example.momenty.data.remote.profile.ProfileApi
 import com.example.momenty.global.mock.MockApiInterceptor
 import com.example.momenty.global.security.AuthInterceptor
 import com.example.momenty.BuildConfig
+import com.example.momenty.data.remote.chat.ChatApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -90,5 +91,10 @@ object NetworkModule {
     @Singleton
     fun provideMomentsApi(retrofit: Retrofit): MomentsApi =
         retrofit.create(MomentsApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideChatApi(retrofit: Retrofit): ChatApi =
+        retrofit.create(ChatApi::class.java)
 
 }
