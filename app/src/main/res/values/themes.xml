@@ -6,6 +6,8 @@
         <item name="colorPrimaryVariant">@color/primary_sub</item>
         <item name="colorOnPrimary">@android:color/white</item>
 
+
+
         <!-- Secondary Colors -->
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorOnSecondary">@android:color/white</item>
@@ -43,9 +45,12 @@
         <item name="android:windowLightNavigationBar">false</item>
         <item name="android:windowFullscreen">true</item>
 
+
         <item name="android:windowDisablePreview">true</item>
     </style>
 
     <style name="Theme.Momenty" parent="Base.Theme.Momenty" />
+
+
 
 </resources>
