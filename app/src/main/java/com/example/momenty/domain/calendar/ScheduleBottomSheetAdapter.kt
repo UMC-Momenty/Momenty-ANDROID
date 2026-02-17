@@ -22,11 +22,37 @@ class ScheduleBottomSheetAdapter(
             // 일정 제목
             binding.tvScheduleTitle.text = schedule.title
 
-            // 일정 시간
-            binding.tvScheduleTime.text = schedule.startAt
+            // ✅ 일정 시간 - "오전/오후 h:mm" 형식으로 변환
+            binding.tvScheduleTime.text = formatTime(schedule.startAt)
 
             // 타입별 배경색
             applyTypeColor(schedule.title)
+        }
+
+        /**
+         * ✅ "YYYY-MM-DDTHH:mm:ss" → "오전/오후 h:mm" 형식으로 변환
+         * 예) "2026-02-17T15:00:00" → "오후 3:00"
+         *     "2026-02-17T09:30:00" → "오전 9:30"
+         */
+        private fun formatTime(startAt: String): String {
+            return try {
+                val timePart = startAt.split("T")[1]
+                val parts = timePart.split(":")
+                val hour = parts[0].toInt()
+                val minute = parts[1].toInt()
+
+                val amPm = if (hour < 12) "오전" else "오후"
+                val displayHour = when {
+                    hour == 0 -> 12       // 자정 00시 → 12
+                    hour > 12 -> hour - 12
+                    else -> hour
+                }
+                val displayMinute = String.format("%02d", minute)
+
+                "$amPm $displayHour:$displayMinute"
+            } catch (e: Exception) {
+                startAt
+            }
         }
 
         /**
