@@ -28,7 +28,7 @@
             android:layout_marginStart="6dp"/>
 
         <TextView
-            android:id="@+id/tvTitle"
+            android:id="@+id/tvRoomTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="챗봇"
@@ -40,7 +40,27 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
+        <ImageView
+            android:id="@+id/ivSearch"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_chat_search"
+            app:layout_constraintEnd_toStartOf="@id/ivMore"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="2dp"/>
 
+        <ImageView
+            android:id="@+id/ivMore"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_more_vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="6dp"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
@@ -62,11 +82,10 @@
         android:paddingEnd="12dp"
         android:paddingTop="10dp"
         android:paddingBottom="20dp"
-        android:background="@color/white"
+        android:background="@color/chat_bg"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/inputCard"
@@ -78,8 +97,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
-
-        <androidx.constraintlayout.widget.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -106,7 +124,7 @@
                     android:layout_marginEnd="4dp"/>
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etSearch"
+                    android:id="@+id/etMessage"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:hint="새로운 질문을 남겨보세요."
@@ -119,7 +137,6 @@
                     app:layout_constraintEnd_toStartOf="@id/ivSend"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
-
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </com.google.android.material.card.MaterialCardView>
@@ -127,17 +144,20 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvRooms"
+        android:id="@+id/rvMessages"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/chat_bg"
         android:clipToPadding="false"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         app:layout_constraintTop_toBottomOf="@id/topDivider"
         app:layout_constraintBottom_toTopOf="@id/bottomInput"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

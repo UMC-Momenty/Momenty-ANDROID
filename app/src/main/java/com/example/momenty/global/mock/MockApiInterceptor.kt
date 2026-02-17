@@ -143,12 +143,15 @@ class MockApiInterceptor : Interceptor {
 
 
             // ==================== 챗봇 API ====================
-            path.endsWith("/api/chatbot/messages") && method == "POST" -> {
-                mockSendChatMessage()
+
+            path.matches(Regex(".*/api/chat/users/\\d+")) && method == "POST" -> {
+                mockChatFirst()
             }
-            path.endsWith("/api/chatbot/conversations") && method == "GET" -> {
-                mockGetConversations()
+            path.matches(Regex(".*/api/chat/conversations/\\d+")) && method == "POST" -> {
+                mockChatConversation()
             }
+
+
 
             // ==================== 공지사항 API ====================
             path.endsWith("/api/notice") && method == "GET" -> {
@@ -428,6 +431,48 @@ class MockApiInterceptor : Interceptor {
         """.trimIndent()
         )
     }
+
+
+    private fun mockChatFirst(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+        {
+          "isSuccess": true,
+          "code": "CHAT200",
+          "message": "성공",
+          "result": {
+            "chatId": 1,
+            "role": "BOT",
+            "answer": "안녕하세요! 무엇을 도와드릴까요?",
+            "questionType": "SERVICE_INFO"
+          }
+        }
+        """.trimIndent()
+        )
+    }
+
+    private fun mockChatConversation(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+        {
+          "isSuccess": true,
+          "code": "CHAT200",
+          "message": "성공",
+          "result": {
+            "chatId": 1,
+            "role": "BOT",
+            "answer": "좋아요! 이어서 답변해드릴게요 😊",
+            "questionType": "SERVICE_INFO"
+          }
+        }
+        """.trimIndent()
+        )
+    }
+
 
 
 

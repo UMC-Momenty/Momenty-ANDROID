@@ -2,9 +2,12 @@ package com.example.momenty.global.di
 
 import android.content.Context
 import com.example.momenty.data.remote.auth.AuthApi
+import com.example.momenty.data.remote.chat.ChatApi
 import com.example.momenty.data.remote.profile.ProfileApi
 import com.example.momenty.data.remote.profile.ProfileImageApi
 import com.example.momenty.data.repository.AuthRepository
+import com.example.momenty.data.repository.ChatRepository
+import com.example.momenty.data.repository.ChatRepositoryImpl
 import com.example.momenty.data.repository.PresignedImageRepository
 import com.example.momenty.data.repository.ProfileRepository
 import com.example.momenty.global.security.TokenManager
@@ -92,4 +95,13 @@ object RepositoryModule {
     // ): ScheduleRepository {
     //     return ScheduleRepositoryImpl(scheduleApi, tokenManager)
     // }
+
+    @Provides
+    @Singleton
+    fun provideChatRepository(chatApi: ChatApi): ChatRepository =
+        ChatRepositoryImpl(chatApi)
+
+
+
+
 }
