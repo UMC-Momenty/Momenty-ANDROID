@@ -48,18 +48,19 @@
                 android:layout_marginBottom="30dp">
 
                 <ImageView
-                    android:id="@+id/img_pet_form_pet_profile_edit"
+                    android:id="@+id/iv_pet_form_pet_profile_edit"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/dot_record_unselected" />
                 <ImageView
-                    android:id="@+id/img_pet_form_pet_profile_edit1"
+                    android:id="@+id/iv_pet_form_pet_profile_edit1"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="bottom|end"
-                    android:tint="@color/white"
+                    app:tint="@color/white"
                     android:src="@drawable/dot_record_unselected" />
                 <ImageView
+                    android:id="@+id/iv_pet_form_pet_profile_edit2"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="bottom|end"

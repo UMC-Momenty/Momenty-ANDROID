@@ -44,6 +44,9 @@ class HomeFragment : Fragment() {
             startActivity(intent)
         }
 
+        binding.tvHome.setOnClickListener {
+            startActivity(Intent(requireContext(), QuestActivity::class.java))
+        }
         return binding.root
     }
 

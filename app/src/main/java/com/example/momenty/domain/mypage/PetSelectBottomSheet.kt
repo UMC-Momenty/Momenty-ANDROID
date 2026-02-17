@@ -45,10 +45,12 @@ class PetSelectBottomSheet: BottomSheetDialogFragment() {
             android.content.Context.MODE_PRIVATE
         )
 
+        petDatas.clear()
         // 첫 번째 반려동물 데이터
         petDatas.add(MyPagePetProfileData(
             name = spf.getString("pet_name", "반려동물이름")!!,
-            imageKey = spf.getString("pet_profile_image_key", "")!!
+            imageKey = spf.getString("pet_profile_image_key", null),
+            imageUri = spf.getString("pet_profile_image_uri", null)
         ))
 
         // 두 번째 이상 반려동물 데이터
@@ -60,6 +62,8 @@ class PetSelectBottomSheet: BottomSheetDialogFragment() {
                 petDatas.add(petData)
             }
         }
+
+        binding.rvPetSelect.adapter?.notifyDataSetChanged()
     }
 
     private fun setRVA() {
