@@ -52,4 +52,7 @@
     <color name="alarm_medician">#B0D2F1</color>
     <color name="alarm_treat">#B3AEAA</color>
     <color name="alarm_etc">#AFEBCD</color>
+
+    <color name="chat_bg">#FFF2E4</color>
+    <color name="chat_user_bg">#FFE2C7</color>
 </resources>
