@@ -21,7 +21,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
             <TextView
-                android:id="@+id/tv_date"
+                android:id="@+id/tv_home_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="2026.02.11"
@@ -72,8 +72,9 @@
         app:layout_constraintTop_toBottomOf="@id/header"/>
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/iv_question_pencil"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
         android:src="@drawable/ic_home_pencil"
@@ -143,4 +144,13 @@
         app:layout_constraintBottom_toTopOf="@id/iv_home_floor"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
+    <ImageView
+        android:id="@+id/iv_home_to_question"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="30dp"
+        android:src="@drawable/btn_home_to_question"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
