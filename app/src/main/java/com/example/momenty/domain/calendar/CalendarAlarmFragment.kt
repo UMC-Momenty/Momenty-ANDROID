@@ -6,11 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentCalendarAlarmBinding
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 
 class CalendarAlarmFragment: Fragment() {
     private var _binding: FragmentCalendarAlarmBinding? = null
@@ -78,18 +82,21 @@ class CalendarAlarmFragment: Fragment() {
      * ViewModel 관찰
      */
     private fun observeViewModel() {
-        viewModel.alarms.observe(viewLifecycleOwner) { alarms ->
-            alarmAdapter.submitList(alarms)
+        viewLifecycleOwner.lifecycleScope.launch{
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.alarms.observe(viewLifecycleOwner) { alarms ->
+                    alarmAdapter.submitList(alarms.toList())
 
-            // 알람이 없을 때 안내 메시지 표시 (선택사항)
-            if (alarms.isEmpty()) {
-                Snackbar.make(binding.root, "등록된 알람이 없습니다", Snackbar.LENGTH_SHORT).show()
-            }
-        }
-
-        viewModel.error.observe(viewLifecycleOwner) { error ->
-            error?.let {
-                Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
+                    // 알람이 없을 때 안내 메시지 표시 (선택사항)
+                    if (alarms.isEmpty()) {
+                        Snackbar.make(binding.root, "등록된 알람이 없습니다", Snackbar.LENGTH_SHORT).show()
+                    }
+                }
+                viewModel.error.observe(viewLifecycleOwner) { error ->
+                    error?.let {
+                        Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
+                    }
+                }
             }
         }
     }

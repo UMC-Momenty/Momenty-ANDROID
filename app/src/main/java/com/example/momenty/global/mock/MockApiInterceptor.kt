@@ -1,6 +1,10 @@
 package com.example.momenty.global.mock
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Protocol
@@ -12,10 +16,12 @@ import java.util.UUID
 /**
  * Mock API Interceptor
  * 백엔드 없이 테스트하기 위한 가짜 API 응답 생성
+ * SharedPreferences에 저장된 실제 데이터를 사용
  *
  * 사용법:
  * 1. NetworkModule에서 이 Interceptor를 OkHttpClient에 추가
  * 2. BuildConfig.USE_MOCK_API = true로 설정
+ * 3. initialize(context)를 호출하여 Context 설정
  */
 class MockApiInterceptor : Interceptor {
 
@@ -24,7 +30,27 @@ class MockApiInterceptor : Interceptor {
         var isMockEnabled = false
 
         // Mock 지연 시간 (ms)
-        private const val MOCK_DELAY = 1000L
+        private const val MOCK_DELAY = 500L
+
+        // Context 참조 (SharedPreferences 접근용)
+        private var appContext: Context? = null
+
+        // Gson 인스턴스
+        private val gson = Gson()
+
+        /**
+         * Context 초기화 (Application에서 호출)
+         */
+        fun initialize(context: Context) {
+            appContext = context.applicationContext
+        }
+
+        /**
+         * SharedPreferences 가져오기
+         */
+        private fun getPrefs(): SharedPreferences? {
+            return appContext?.getSharedPreferences("momenty_prefs", Context.MODE_PRIVATE)
+        }
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -132,6 +158,42 @@ class MockApiInterceptor : Interceptor {
             // ==================== 반려동물 API ====================
             path.endsWith("/api/pets") && method == "GET" -> {
                 mockGetPets()
+            }
+
+            // ==================== 캘린더 API ====================
+            // 사용자의 반려동물 목록 조회 (일정 관리용)
+            path.matches(Regex(".*/api/users/\\d+/schedules/pets")) && method == "GET" -> {
+                mockGetUserPets()
+            }
+
+            // 모든 반려동물 월별 일정 조회
+            path.matches(Regex(".*/api/users/\\d+/schedules/calendar.*")) && method == "GET" -> {
+                mockGetAllPetsMonthlySchedules()
+            }
+
+            // 반려동물별 월별 일정 조회
+            path.matches(Regex(".*/api/users/\\d+/schedules/pets/\\d+/calendar.*")) && method == "GET" -> {
+                mockGetPetMonthlySchedules()
+            }
+
+            // 반려동물별 일별 일정 조회
+            path.matches(Regex(".*/api/pets/\\d+/schedules.*")) && method == "GET" -> {
+                mockGetPetDailySchedules()
+            }
+
+            // 반려동물별 일정 생성
+            path.matches(Regex(".*/api/pets/\\d+/schedules")) && method == "POST" -> {
+                mockCreatePetSchedule()
+            }
+
+            // 알림 목록 조회
+            path.matches(Regex(".*/api/pets/\\d+/alarms")) && method == "GET" -> {
+                mockGetAlarms()
+            }
+
+            // 알림 ON/OFF 토글
+            path.matches(Regex(".*/api/schedules/\\d+/alarm-status")) && method == "PATCH" -> {
+                mockToggleAlarmStatus()
             }
 
             else -> {
@@ -657,6 +719,524 @@ class MockApiInterceptor : Interceptor {
     }
 
     /**
+     * 사용자의 반려동물 목록 조회 (일정 관리용) Mock
+     * SharedPreferences에서 실제 저장된 반려동물 정보 반환
+     */
+    private fun mockGetUserPets(): MockResponse {
+        val prefs = getPrefs()
+
+        if (prefs == null) {
+            Log.w("MockApi", "SharedPreferences not available")
+            return createEmptyPetsResponse()
+        }
+
+        try {
+            val petsList = mutableListOf<Map<String, Any>>()
+
+            // 첫 번째 반려동물 (기본)
+            val petName = prefs.getString("pet_name", null)
+            val petImageKey = prefs.getString("pet_profile_image_key", null)
+
+            if (!petName.isNullOrEmpty()) {
+                petsList.add(mapOf(
+                    "petId" to 1L,
+                    "profile" to (petImageKey ?: "")
+                ))
+                Log.d("MockApi", "Found pet: $petName")
+            }
+
+            // 추가 반려동물 (pet_info_1, pet_info_2, ...)
+            val petIndex = prefs.getInt("pet_index", 0)
+            if (petIndex > 0) {
+                for (i in 1..petIndex) {
+                    val petInfoJson = prefs.getString("pet_info_$i", null)
+                    if (!petInfoJson.isNullOrEmpty()) {
+                        try {
+                            val petInfo = gson.fromJson(petInfoJson, Map::class.java)
+                            val imageKey = petInfo["imageKey"] as? String ?: ""
+                            petsList.add(mapOf(
+                                "petId" to (i + 1L),
+                                "profile" to imageKey
+                            ))
+                            Log.d("MockApi", "Found additional pet $i")
+                        } catch (e: Exception) {
+                            Log.e("MockApi", "Error parsing pet_info_$i", e)
+                        }
+                    }
+                }
+            }
+
+            if (petsList.isEmpty()) {
+                Log.d("MockApi", "No pets found in SharedPreferences")
+                return createEmptyPetsResponse()
+            }
+
+            // API 응답 형식으로 변환
+            val petsArray = petsList.joinToString(",\n") { pet ->
+                """
+                        {
+                            "petId": ${pet["petId"]},
+                            "profile": "${pet["profile"]}"
+                        }
+                """.trimIndent()
+            }
+
+            Log.d("MockApi", "Returning ${petsList.size} pets from local storage")
+
+            return MockResponse(
+                code = 200,
+                message = "OK",
+                body = """
+                    {
+                        "pets": [
+                            $petsArray
+                        ]
+                    }
+                """.trimIndent()
+            )
+        } catch (e: Exception) {
+            Log.e("MockApi", "Error reading pets from SharedPreferences", e)
+            return createEmptyPetsResponse()
+        }
+    }
+
+    /**
+     * 반려동물이 없을 때 빈 응답 반환
+     */
+    private fun createEmptyPetsResponse(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "pets": []
+                }
+            """.trimIndent()
+        )
+    }
+
+    /**
+     * 모든 반려동물 월별 일정 조회 Mock
+     * SharedPreferences에서 실제 저장된 일정 반환
+     */
+    private fun mockGetAllPetsMonthlySchedules(): MockResponse {
+        val prefs = getPrefs()
+
+        if (prefs == null) {
+            return createEmptyMonthlySchedulesResponse()
+        }
+
+        try {
+            val schedulesJson = prefs.getString("schedules_list", null)
+
+            if (schedulesJson.isNullOrEmpty()) {
+                return createEmptyMonthlySchedulesResponse()
+            }
+
+            val type = object : TypeToken<List<LocalSchedule>>() {}.type
+            val schedules: List<LocalSchedule> = gson.fromJson(schedulesJson, type)
+
+            // 날짜별로 일정 개수 집계
+            val dateCountMap = mutableMapOf<String, Int>()
+
+            schedules.forEach { schedule ->
+                if (schedule.isOneTime && schedule.date != null) {
+                    // 일회성 일정
+                    dateCountMap[schedule.date] = (dateCountMap[schedule.date] ?: 0) + 1
+                } else if (!schedule.isOneTime && schedule.repeatDays != null) {
+                    // 반복 일정 - 현재 월의 해당 요일들에 추가
+                    // 간단하게 처리: 반복 일정이 있으면 해당 요일마다 카운트
+                    // 실제로는 현재 월의 모든 해당 요일을 계산해야 함
+                }
+            }
+
+            val daysArray = dateCountMap.entries.joinToString(",\n") { (date, count) ->
+                """
+                        {
+                            "date": "$date",
+                            "count": $count
+                        }
+                """.trimIndent()
+            }
+
+            return MockResponse(
+                code = 200,
+                message = "OK",
+                body = """
+                    {
+                        "year": 2026,
+                        "month": 2,
+                        "days": [
+                            $daysArray
+                        ]
+                    }
+                """.trimIndent()
+            )
+        } catch (e: Exception) {
+            Log.e("MockApi", "Error getting monthly schedules", e)
+            return createEmptyMonthlySchedulesResponse()
+        }
+    }
+
+    private fun createEmptyMonthlySchedulesResponse(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "year": 2026,
+                    "month": 2,
+                    "days": []
+                }
+            """.trimIndent()
+        )
+    }
+
+    /**
+     * 반려동물별 월별 일정 조회 Mock
+     */
+    private fun mockGetPetMonthlySchedules(): MockResponse {
+        val prefs = getPrefs()
+
+        if (prefs == null) {
+            return createEmptyPetMonthlySchedulesResponse()
+        }
+
+        try {
+            // URL에서 petId 추출
+            // 실제로는 request.url에서 추출해야 하지만 간단하게 처리
+
+            val schedulesJson = prefs.getString("schedules_list", null)
+
+            if (schedulesJson.isNullOrEmpty()) {
+                return createEmptyPetMonthlySchedulesResponse()
+            }
+
+            val type = object : TypeToken<List<LocalSchedule>>() {}.type
+            val schedules: List<LocalSchedule> = gson.fromJson(schedulesJson, type)
+
+            // 특정 반려동물의 일정만 필터링 (간단하게 모든 일정 반환)
+            val dateCountMap = mutableMapOf<String, Int>()
+
+            schedules.forEach { schedule ->
+                if (schedule.isOneTime && schedule.date != null) {
+                    dateCountMap[schedule.date] = (dateCountMap[schedule.date] ?: 0) + 1
+                }
+            }
+
+            val daysArray = dateCountMap.entries.joinToString(",\n") { (date, count) ->
+                """
+                        {
+                            "date": "$date",
+                            "count": $count
+                        }
+                """.trimIndent()
+            }
+
+            return MockResponse(
+                code = 200,
+                message = "OK",
+                body = """
+                    {
+                        "petId": 1,
+                        "year": 2026,
+                        "month": 2,
+                        "days": [
+                            $daysArray
+                        ]
+                    }
+                """.trimIndent()
+            )
+        } catch (e: Exception) {
+            Log.e("MockApi", "Error getting pet monthly schedules", e)
+            return createEmptyPetMonthlySchedulesResponse()
+        }
+    }
+
+    private fun createEmptyPetMonthlySchedulesResponse(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "petId": 1,
+                    "year": 2026,
+                    "month": 2,
+                    "days": []
+                }
+            """.trimIndent()
+        )
+    }
+
+    /**
+     * 반려동물별 일별 일정 조회 Mock
+     */
+    private fun mockGetPetDailySchedules(): MockResponse {
+        val prefs = getPrefs()
+
+        if (prefs == null) {
+            return createEmptyDailySchedulesResponse()
+        }
+
+        try {
+            val schedulesJson = prefs.getString("schedules_list", null)
+
+            if (schedulesJson.isNullOrEmpty()) {
+                return createEmptyDailySchedulesResponse()
+            }
+
+            val type = object : TypeToken<List<LocalSchedule>>() {}.type
+            val schedules: List<LocalSchedule> = gson.fromJson(schedulesJson, type)
+
+            // 오늘 날짜의 일정만 필터링
+            val todaySchedules = schedules.filter { schedule ->
+                // 일회성 일정이거나, 반복 일정인 경우
+                schedule.isOneTime || !schedule.repeatDays.isNullOrEmpty()
+            }
+
+            val schedulesArray = todaySchedules.joinToString(",\n") { schedule ->
+                val startAt = if (schedule.date != null) {
+                    "${schedule.date}T${schedule.time}:00"
+                } else {
+                    "2026-02-17T${schedule.time}:00"
+                }
+
+                """
+                        {
+                            "scheduleId": ${schedule.scheduleId},
+                            "title": "${schedule.title}",
+                            "startAt": "$startAt",
+                            "memo": ${if (schedule.memo != null) "\"${schedule.memo}\"" else "null"},
+                            "category": "${schedule.category}",
+                            "durationMinutes": ${schedule.durationMinutes ?: 0},
+                            "isAlarmEnabled": ${schedule.isAlarmEnabled}
+                        }
+                """.trimIndent()
+            }
+
+            return MockResponse(
+                code = 200,
+                message = "OK",
+                body = """
+                    {
+                        "petId": 1,
+                        "date": "2026-02-17",
+                        "schedules": [
+                            $schedulesArray
+                        ]
+                    }
+                """.trimIndent()
+            )
+        } catch (e: Exception) {
+            Log.e("MockApi", "Error getting daily schedules", e)
+            return createEmptyDailySchedulesResponse()
+        }
+    }
+
+    private fun createEmptyDailySchedulesResponse(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "petId": 1,
+                    "date": "2026-02-17",
+                    "schedules": []
+                }
+            """.trimIndent()
+        )
+    }
+
+    /**
+     * 반려동물별 일정 생성 Mock
+     * SharedPreferences에 실제로 저장
+     */
+    private fun mockCreatePetSchedule(): MockResponse {
+        val prefs = getPrefs()
+
+        try {
+            // 새로운 scheduleId 생성
+            val newScheduleId = System.currentTimeMillis()
+
+            // 기존 일정 목록 가져오기
+            if (prefs != null) {
+                val schedulesJson = prefs.getString("schedules_list", null)
+                val schedules = if (schedulesJson.isNullOrEmpty()) {
+                    mutableListOf<LocalSchedule>()
+                } else {
+                    val type = object : TypeToken<MutableList<LocalSchedule>>() {}.type
+                    gson.fromJson(schedulesJson, type)
+                }
+
+                // TODO: 실제 요청 바디에서 일정 정보 파싱하여 추가
+                // 지금은 기본 일정만 추가
+
+                // 변경된 목록 저장
+                val updatedJson = gson.toJson(schedules)
+                prefs.edit().putString("schedules_list", updatedJson).apply()
+
+                Log.d("MockApi", "Schedule created with id: $newScheduleId")
+            }
+
+            return MockResponse(
+                code = 200,
+                message = "OK",
+                body = """
+                    {
+                        "scheduleId": "$newScheduleId",
+                        "title": "새로운 일정"
+                    }
+                """.trimIndent()
+            )
+        } catch (e: Exception) {
+            Log.e("MockApi", "Error creating schedule", e)
+            return MockResponse(
+                code = 500,
+                message = "Internal Server Error",
+                body = """
+                    {
+                        "isSuccess": false,
+                        "message": "일정 생성 실패"
+                    }
+                """.trimIndent()
+            )
+        }
+    }
+
+    /**
+     * 알림 목록 조회 Mock
+     * SharedPreferences에서 저장된 일정을 알림 형태로 반환
+     */
+    private fun mockGetAlarms(): MockResponse {
+        val prefs = getPrefs()
+
+        if (prefs == null) {
+            return createEmptyAlarmsResponse()
+        }
+
+        try {
+            val schedulesJson = prefs.getString("schedules_list", null)
+
+            if (schedulesJson.isNullOrEmpty()) {
+                return createEmptyAlarmsResponse()
+            }
+
+            val type = object : TypeToken<List<LocalSchedule>>() {}.type
+            val schedules: List<LocalSchedule> = gson.fromJson(schedulesJson, type)
+
+            // 알림이 활성화된 일정만 반환
+            val alarms = schedules.filter { it.isAlarmEnabled }
+
+            val alarmsArray = alarms.joinToString(",\n") { schedule ->
+                val repeatDaysJson = if (schedule.repeatDays != null) {
+                    schedule.repeatDays.joinToString("\", \"", prefix = "[\"", postfix = "\"]")
+                } else {
+                    "null"
+                }
+
+                val dateJson = if (schedule.date != null) "\"${schedule.date}\"" else "null"
+
+                """
+                        {
+                            "scheduleId": ${schedule.scheduleId},
+                            "title": "${schedule.title}",
+                            "category": "${schedule.category}",
+                            "repeatDays": $repeatDaysJson,
+                            "date": $dateJson,
+                            "alarmTime": "${schedule.time}:00",
+                            "durationMinutes": ${schedule.durationMinutes ?: 0},
+                            "isOneTime": ${schedule.isOneTime},
+                            "isAlarmEnabled": ${schedule.isAlarmEnabled}
+                        }
+                """.trimIndent()
+            }
+
+            Log.d("MockApi", "Returning ${alarms.size} alarms from local storage")
+
+            return MockResponse(
+                code = 200,
+                message = "OK",
+                body = """
+                    {
+                        "isSuccess": true,
+                        "code": "ALARM_SUCCESS",
+                        "message": "알림 목록 조회 성공",
+                        "result": {
+                            "petId": 1,
+                            "alarms": [
+                                $alarmsArray
+                            ]
+                        }
+                    }
+                """.trimIndent()
+            )
+        } catch (e: Exception) {
+            Log.e("MockApi", "Error getting alarms", e)
+            return createEmptyAlarmsResponse()
+        }
+    }
+
+    private fun createEmptyAlarmsResponse(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "isSuccess": true,
+                    "code": "ALARM_SUCCESS",
+                    "message": "알림 목록 조회 성공",
+                    "result": {
+                        "petId": 1,
+                        "alarms": []
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+    /**
+     * 알림 ON/OFF 토글 Mock
+     * SharedPreferences에 실제로 반영
+     */
+    private fun mockToggleAlarmStatus(): MockResponse {
+        val prefs = getPrefs()
+
+        if (prefs != null) {
+            try {
+                // TODO: 실제 요청에서 scheduleId와 isEnabled 값 파싱
+                // 해당 일정의 isAlarmEnabled 값 업데이트
+
+                val schedulesJson = prefs.getString("schedules_list", null)
+
+                if (!schedulesJson.isNullOrEmpty()) {
+                    val type = object : TypeToken<MutableList<LocalSchedule>>() {}.type
+                    val schedules: MutableList<LocalSchedule> = gson.fromJson(schedulesJson, type)
+
+                    // 변경된 목록 저장
+                    val updatedJson = gson.toJson(schedules)
+                    prefs.edit().putString("schedules_list", updatedJson).apply()
+
+                    Log.d("MockApi", "Alarm status toggled")
+                }
+            } catch (e: Exception) {
+                Log.e("MockApi", "Error toggling alarm status", e)
+            }
+        }
+
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "isSuccess": true,
+                    "code": "ALARM_TOGGLED",
+                    "message": "알림 상태 변경 성공"
+                }
+            """.trimIndent()
+        )
+    }
+
+    /**
      * 구현되지 않은 API Mock
      */
     private fun mockNotImplemented(path: String): MockResponse {
@@ -682,3 +1262,43 @@ class MockApiInterceptor : Interceptor {
         val body: String
     )
 }
+
+/**
+ * SharedPreferences에 저장된 반려동물 데이터 모델
+ */
+data class LocalPet(
+    val petId: Long,
+    val petName: String? = null,
+    val petImageUrl: String? = null,
+    val petType: String? = null,
+    val petBreed: String? = null,
+    val petGender: String? = null,
+    val petBirthDate: String? = null,
+    val petIntroduction: String? = null
+)
+
+/**
+ * SharedPreferences에 저장된 일정 데이터 모델
+ */
+data class LocalSchedule(
+    val scheduleId: Long,
+    val petId: Long,
+    val title: String,
+    val category: String,
+    val date: String? = null,         // "YYYY-MM-DD" 일회성 일정
+    val repeatDays: List<String>? = null,  // ["MONDAY", "WEDNESDAY"] 반복 일정
+    val time: String,                 // "HH:mm"
+    val durationMinutes: Int? = null,
+    val memo: String? = null,
+    val isAlarmEnabled: Boolean = true,
+    val isOneTime: Boolean = true
+)
+
+/**
+ * SharedPreferences에 저장된 사용자 데이터 모델
+ */
+data class LocalUser(
+    val userId: Long,
+    val userName: String? = null,
+    val userEmail: String? = null
+)

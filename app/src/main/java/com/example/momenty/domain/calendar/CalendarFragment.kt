@@ -59,18 +59,6 @@ class CalendarFragment : Fragment() {
         CalendarViewModelFactory(repo)
     }
 
-    /*private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            val readGranted = permissions[Manifest.permission.READ_CALENDAR] ?: false
-            val writeGranted = permissions[Manifest.permission.WRITE_CALENDAR] ?: false
-
-            if (readGranted && writeGranted) {
-                loadDataSequentially()
-            } else {
-                showSnackbar("캘린더 권한이 필요합니다.")
-            }
-        }*/
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -83,7 +71,17 @@ class CalendarFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        RetrofitClient.initialize(tokenManager)
+        RetrofitClient.initialize(tokenManager, requireContext())
+
+        // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
+        if (!tokenManager.isLoggedIn()) {
+            tokenManager.saveMockLoginInfo()
+            android.util.Log.d("CalendarFragment", "Mock login info saved: userId=${tokenManager.getUserId()}")
+        }
+
+        // ✅ ViewModel에 LocalDataManager 설정
+        val localDataManager = com.example.momenty.global.security.LocalDataManager(requireContext())
+        viewModel.setLocalDataManager(localDataManager)
 
         setupWeekdayHeader()
         setupCalendarRecyclerView()
@@ -93,9 +91,20 @@ class CalendarFragment : Fragment() {
         // ViewModel 관찰 시작
         observeViewModel()
 
-        // 반려동물 데이터 로드 (달력은 init에서 자동 초기화됨)
+        // ✅ 반려동물 데이터와 일정 데이터 모두 로드
         viewModel.loadPets()
-        // checkCalendarPermission()
+        viewModel.loadSchedules()
+    }
+
+    /**
+     * ✅ 화면 재진입 시 데이터 새로고침
+     */
+    override fun onResume() {
+        super.onResume()
+
+        // 다른 화면에서 돌아왔을 때 일정 데이터 새로고침
+        android.util.Log.d("CalendarFragment", "onResume: reloading schedules")
+        viewModel.loadSchedules()
     }
 
     /**
@@ -257,7 +266,7 @@ class CalendarFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.ivCalendarBack.setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
+            findNavController().navigate(R.id.homeFragment)
         }
 
         binding.ivMonthBefore.setOnClickListener { viewModel.goToPreviousMonth() }
