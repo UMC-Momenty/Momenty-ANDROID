@@ -336,7 +336,6 @@ class PetProfileFragment : Fragment() {
     }
 
     private fun handleProfileSuccess(state: ProfileUiState.Success) {
-        Log.d(TAG, "프로필 저장 성공: userId=${state.userId}, petId=${state.petId}")
 
         Toast.makeText(
             requireContext(),
@@ -497,7 +496,7 @@ class PetProfileFragment : Fragment() {
         val petBirthFormatted = formatDateForApi(petBirth)
 
         // ViewModel을 통해 API 호출 (imageKey 전달)
-        profileViewModel.updateProfile(
+        profileViewModel.updatePetProfile(
             userName = userName,
             userGender = userGender,
             userBirthDate = userBirthFormatted,

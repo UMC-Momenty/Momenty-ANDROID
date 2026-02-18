@@ -40,18 +40,15 @@ class TokenManager @Inject constructor(
         private const val PREF_NAME = "momenty_secure_prefs"
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_REFRESH_TOKEN = "refresh_token"
-        private const val KEY_USER_ID = "user_id"
         private const val KEY_IS_LOGGED_IN = "is_logged_in"
     }
 
-    fun saveLoginInfo(
+    fun saveTokens(
         accessToken: String,
-        refreshToken: String,
-        userId: Long) {
+        refreshToken: String) {
         prefs.edit().apply {
             putString(KEY_ACCESS_TOKEN, accessToken)
             putString(KEY_REFRESH_TOKEN, refreshToken)
-            putLong(KEY_USER_ID, userId)
             putBoolean(KEY_IS_LOGGED_IN, true)
             apply()
         }
@@ -62,25 +59,10 @@ class TokenManager @Inject constructor(
      * 개발 및 테스트 시 사용
      */
     fun saveMockLoginInfo() {
-        saveLoginInfo(
+        saveTokens(
             accessToken = "mock_access_token_dev",
-            refreshToken = "mock_refresh_token_dev",
-            userId = 1L
+            refreshToken = "mock_refresh_token_dev"
         )
-    }
-
-    /**
-     * Token 저장
-     */
-    fun saveTokens(
-        accessToken: String,
-        refreshToken: String) {
-        prefs.edit().apply{
-            putString(KEY_ACCESS_TOKEN, accessToken)
-            putString(KEY_REFRESH_TOKEN, refreshToken)
-            putBoolean(KEY_IS_LOGGED_IN, true)
-            apply()
-        }
     }
 
     /**
@@ -98,36 +80,12 @@ class TokenManager @Inject constructor(
     }
 
     /**
-     * User ID 조회
-     * Mock 모드에서는 저장된 userId가 없을 경우 테스트용 ID(1L) 반환
-     * @return userId (없으면 -1L 반환, Mock 모드에서는 1L 반환)
-     */
-    fun getUserId(): Long {
-        val savedUserId = prefs.getLong(KEY_USER_ID, -1L)
-
-        // 저장된 userId가 있으면 그것을 반환
-        if (savedUserId != -1L) {
-            return savedUserId
-        }
-
-        // Mock 모드 체크: accessToken이 "mock_"으로 시작하면 Mock 모드로 간주
-        val accessToken = getAccessToken()
-        if (accessToken != null && accessToken.startsWith("mock_")) {
-            // Mock 모드에서는 테스트용 userId 반환
-            return 1L
-        }
-
-        return -1L
-    }
-
-    /**
      * 모든 토큰 삭제 (로그아웃 시)
      */
     fun clearTokens() {
         prefs.edit().apply {
             remove(KEY_ACCESS_TOKEN)
             remove(KEY_REFRESH_TOKEN)
-            remove(KEY_USER_ID)
             putBoolean(KEY_IS_LOGGED_IN, false)
             apply()
         }

@@ -7,8 +7,11 @@ import retrofit2.http.PATCH
 interface ProfileApi {
 
     /**
-     * 사용자 및 반려동물 프로필 업데이트
+     * 사용자 프로필 업데이트
      * Authorization: Bearer {accessToken}
+     * - 전달되지 않은 필드는 기존 값 유지
+     * - profileUrl이 빈 문자열("")이면 null로 초기화
+     * - resetQuestTime: true이면 questTime을 null로 초기화
      */
     @PATCH("api/mypage")
     suspend fun updateProfile(
@@ -20,26 +23,18 @@ interface ProfileApi {
  * 프로필 업데이트 요청
  */
 data class UpdateProfileRequest(
-    val userName: String,
-    val userGender: String,
-    val userBirthDate: String,
-    val userImageKey: String?,      // Presigned URL로 업로드 후 받은 key
-    val alarmTime: String?,
-    val petName: String,
-    val petGender: String,
-    val petBirthDate: String,
-    val petImageKey: String?,       // 반려동물 이미지 key
-    val petType: String,
-    val petBreed: String?,
-    val petIntroduction: String?
+    val username: String? = null,
+    val gender: String? = null,
+    val birth: String? = null,
+    val profileUrl: String? = null,
+    val questTime: String? = null,
+    val resetQuestTime: Boolean? = null
 )
 
 /**
  * 프로필 업데이트 응답
  */
 data class UpdateProfileResponse(
-    val userId: String,
-    val userName: String,
-    val petId: String,
-    val petName: String
+    val accessToken: String,
+    val refreshToken: String
 )
