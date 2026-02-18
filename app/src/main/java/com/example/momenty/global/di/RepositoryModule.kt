@@ -3,6 +3,7 @@ package com.example.momenty.global.di
 import android.content.Context
 import com.example.momenty.data.remote.auth.AuthApi
 import com.example.momenty.data.remote.chat.ChatApi
+import com.example.momenty.data.remote.profile.PetApi
 import com.example.momenty.data.remote.profile.ProfileApi
 import com.example.momenty.data.remote.profile.ProfileImageApi
 import com.example.momenty.data.repository.AuthRepository
@@ -73,35 +74,15 @@ object RepositoryModule {
     @Singleton
     fun provideProfileRepository(
         profileApi: ProfileApi,
+        petApi: PetApi,
         tokenManager: TokenManager
     ): ProfileRepository {
-        return ProfileRepository(profileApi, tokenManager)
+        return ProfileRepository(profileApi, petApi, tokenManager)
     }
-
-    // ========================================
-    // 📝 기타 Repository (추후 추가)
-    // ========================================
-
-    // TODO: 나머지 Repository들 추가
-    // HomeRepository, ScheduleRepository, QuestionRepository,
-    // ChatbotRepository, MomentRepository, CommunityRepository
-
-    // 예시:
-    // @Provides
-    // @Singleton
-    // fun provideScheduleRepository(
-    //     scheduleApi: ScheduleApi,
-    //     tokenManager: TokenManager
-    // ): ScheduleRepository {
-    //     return ScheduleRepositoryImpl(scheduleApi, tokenManager)
-    // }
 
     @Provides
     @Singleton
     fun provideChatRepository(chatApi: ChatApi): ChatRepository =
         ChatRepositoryImpl(chatApi)
-
-
-
 
 }

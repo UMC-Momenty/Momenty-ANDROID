@@ -33,13 +33,16 @@ android {
         val kakaoKey = properties.getProperty("KAKAO_NATIVE_APP_KEY") ?: ""
         val naverClientId = properties.getProperty("NAVER_CLIENT_ID") ?: ""
         val naverClientSecret = properties.getProperty("NAVER_CLIENT_SECRET") ?: ""
+        val googleWebClientId = properties.getProperty("GOOGLE_WEB_CLIENT_KEY") ?: ""
 
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"$kakaoKey\"")
         buildConfigField("String", "NAVER_CLIENT_ID", "\"$naverClientId\"")
         buildConfigField("String", "NAVER_CLIENT_SECRET", "\"$naverClientSecret\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
         manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = kakaoKey
         manifestPlaceholders["NAVER_CLIENT_ID"] = naverClientId
         manifestPlaceholders["NAVER_CLIENT_SECRET"] = naverClientSecret
+        manifestPlaceholders["GOOGLE_WEB_CLIENT_ID"] = googleWebClientId
     }
 
     buildTypes {

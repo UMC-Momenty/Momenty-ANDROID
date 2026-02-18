@@ -7,6 +7,8 @@ import com.example.momenty.global.mock.MockApiInterceptor
 import com.example.momenty.global.security.AuthInterceptor
 import com.example.momenty.BuildConfig
 import com.example.momenty.data.remote.chat.ChatApi
+import com.example.momenty.data.remote.profile.PetApi
+import com.example.momenty.data.remote.profile.ProfileImageApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,7 +27,7 @@ object NetworkModule {
     private const val BASE_URL = "https://api.momenty.com/"
 
     private val useMockApi: Boolean
-        get() = true
+        get() = false
 
     @Provides
     @Singleton
@@ -80,6 +82,16 @@ object NetworkModule {
     @Singleton
     fun provideProfileApi(retrofit: Retrofit): ProfileApi =
         retrofit.create(ProfileApi::class.java)
+
+    @Provides
+    @Singleton
+    fun providePetApi(retrofit: Retrofit): PetApi =
+        retrofit.create(PetApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideProfileImageApi(retrofit: Retrofit): ProfileImageApi =
+        retrofit.create(ProfileImageApi::class.java)
 
     fun getRetrofit(): Retrofit {
         val retrofit = Retrofit.Builder().baseUrl(BASE_URL)

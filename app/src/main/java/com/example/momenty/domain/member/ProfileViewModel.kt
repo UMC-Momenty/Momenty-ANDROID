@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.momenty.data.repository.PresignedImageRepository
 import com.example.momenty.data.repository.ProfileRepository
+import com.example.momenty.global.security.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,11 +20,10 @@ import javax.inject.Inject
 sealed class ProfileUiState {
     object Idle : ProfileUiState()
     object Loading : ProfileUiState()
+
     data class Success(
-        val userId: String,
-        val userName: String,
-        val petId: String,
-        val petName: String
+        val accessToken: String?,
+        val refreshToken: String?
     ) : ProfileUiState()
     data class Error(val message: String) : ProfileUiState()
 }
@@ -41,7 +41,8 @@ sealed class ImageUploadState {
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
-    private val presignedImageRepository: PresignedImageRepository  // ✅ 변경
+    private val presignedImageRepository: PresignedImageRepository,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Idle)
@@ -70,45 +71,82 @@ class ProfileViewModel @Inject constructor(
     }
 
     /**
-     * 프로필 업데이트
+     * 사용자 프로필 수정 - PATCH /api/mypage
+     * 전달하지 않은 필드는 기존 값 유지
      */
-    fun updateProfile(
-        userName: String,
-        userGender: String,
-        userBirthDate: String,
-        userImageKey: String?,      // ✅ userProfileUrl → userImageKey
-        alarmTime: String?,
-        petName: String,
-        petGender: String,
-        petBirthDate: String,
-        petImageKey: String?,       // ✅ petProfileUrl → petImageKey
-        petType: String,
-        petBreed: String?,
-        petIntroduction: String?
+    fun updateUserProfile(
+        username: String? = null,
+        gender: String? = null,
+        birth: String? = null,
+        profileUrl: String? = null,
+        questTime: String? = null,
+        resetQuestTime: Boolean? = null
     ) {
         viewModelScope.launch {
             _uiState.value = ProfileUiState.Loading
 
-            when (val result = profileRepository.updateProfile(
-                userName = userName,
-                userGender = userGender,
-                userBirthDate = userBirthDate,
-                userImageKey = userImageKey,      // ✅ 변경
-                alarmTime = alarmTime,
-                petName = petName,
-                petGender = petGender,
-                petBirthDate = petBirthDate,
-                petImageKey = petImageKey,        // ✅ 변경
-                petType = petType,
-                petBreed = petBreed,
-                petIntroduction = petIntroduction
+            when (val result = profileRepository.updateUserProfile(
+                username = username,
+                gender = gender,
+                birth = birth,
+                profileUrl = profileUrl,
+                questTime = questTime,
+                resetQuestTime = resetQuestTime
             )) {
                 is ProfileRepository.ProfileResult.Success -> {
+
+                    if (result.accessToken != null && result.refreshToken != null) {
+                        tokenManager.saveTokens(
+                            accessToken = result.accessToken,
+                            refreshToken = result.refreshToken
+                        )
+                    }
                     _uiState.value = ProfileUiState.Success(
-                        userId = result.userId,
-                        userName = result.userName,
-                        petId = result.petId,
-                        petName = result.petName
+                        accessToken = result.accessToken,
+                        refreshToken = result.refreshToken
+                    )
+                }
+                is ProfileRepository.ProfileResult.Error -> {
+                    _uiState.value = ProfileUiState.Error(getErrorMessage(result))
+                }
+            }
+        }
+    }
+
+    /**
+     * 반려동물 프로필 수정 - PATCH /api/users/{userId}/pets/{petId}
+     * 전달하지 않은 필드는 기존 값 유지
+     */
+    fun updatePetProfile(
+        userId: Long,
+        petId: Long,
+        profileImageUrl: String? = null,  // 빈 배열이면 미설정
+        petName: String? = null,
+        gender: String? = null,           // "MALE", "FEMALE"
+        birth: String? = null,            // "2000-01-01" 형식
+        species: String? = null,          // "CAT" or "DOG"
+        breedId: Long? = null,
+        intro: String? = null             // 빈 배열이면 미설정
+    ) {
+        viewModelScope.launch {
+            _uiState.value = ProfileUiState.Loading
+
+            when (val result = profileRepository.updatePetProfile(
+                userId = userId,
+                petId = petId,
+                profileImageUrl = profileImageUrl,
+                petName = petName,
+                gender = gender,
+                birth = birth,
+                species = species,
+                breedId = breedId,
+                intro = intro
+            )) {
+                is ProfileRepository.ProfileResult.Success -> {
+                    // 반려동물 수정은 토큰 반환 없음, 단순 성공 처리
+                    _uiState.value = ProfileUiState.Success(
+                        accessToken = null,
+                        refreshToken = null
                     )
                 }
                 is ProfileRepository.ProfileResult.Error -> {

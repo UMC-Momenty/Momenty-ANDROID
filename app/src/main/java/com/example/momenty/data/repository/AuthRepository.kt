@@ -2,7 +2,6 @@ package com.example.momenty.data.repository
 
 import android.content.Context
 import android.util.Log
-import com.example.momenty.BuildConfig
 import com.example.momenty.data.remote.auth.AuthApi
 import com.example.momenty.data.remote.auth.SocialLoginRequest
 import com.example.momenty.global.api.ApiException
@@ -11,6 +10,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.example.momenty.BuildConfig
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
@@ -51,7 +51,7 @@ class AuthRepository @Inject constructor(
      */
     val googleSignInClient: GoogleSignInClient by lazy {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(com.example.momenty.R.string.default_web_client_id))  // JWT idToken 획득용
+            .requestIdToken(BuildConfig.GOOGLE_WEB_CLIENT_ID)
             .requestEmail()
             .build()
         GoogleSignIn.getClient(context, gso)
@@ -94,10 +94,9 @@ class AuthRepository @Inject constructor(
                 }
 
                 // 4. 백엔드 JWT 토큰 저장
-                tokenManager.saveLoginInfo(
+                tokenManager.saveTokens(
                     accessToken = response.result.accessToken,
-                    refreshToken = response.result.refreshToken,
-                    userId = response.result.userId ?: -1L
+                    refreshToken = response.result.refreshToken
                 )
 
                 Log.d(TAG, "Google 로그인 성공: ${account.displayName}")
@@ -152,10 +151,9 @@ class AuthRepository @Inject constructor(
                 }
 
                 // 5. 백엔드 JWT 토큰 저장
-                tokenManager.saveLoginInfo(
+                tokenManager.saveTokens(
                     accessToken = response.result.accessToken,
-                    refreshToken = response.result.refreshToken,
-                    userId = response.result.userId ?: -1L
+                    refreshToken = response.result.refreshToken
                 )
 
                 Log.d(TAG, "Kakao 로그인 성공: ${userInfo.nickname}")
@@ -211,10 +209,9 @@ class AuthRepository @Inject constructor(
                 }
 
                 // 5. 백엔드 JWT 토큰 저장
-                tokenManager.saveLoginInfo(
+                tokenManager.saveTokens(
                     accessToken = response.result.accessToken,
-                    refreshToken = response.result.refreshToken,
-                    userId = response.result.userId ?: -1L
+                    refreshToken = response.result.refreshToken
                 )
 
                 Log.d(TAG, "Naver 로그인 성공: ${userInfo.name}")
