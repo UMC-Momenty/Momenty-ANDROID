@@ -12,7 +12,7 @@ class QuestRepository(
 
     suspend fun writeQuest(req: WriteQuestRequest): Result<String> =
         safeApiCall(
-            apiCall = { service.writeQuest(tokenManager.getUserId(), req) },
+            apiCall = { service.writeQuest(req) },
             getResult = { it.result }
         )
 

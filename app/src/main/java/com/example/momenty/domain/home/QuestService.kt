@@ -14,10 +14,9 @@ interface QuestService {
     //fun loadQuest(@Header("Authorization") token: String): Call<LoadQuestResponse>
     suspend fun loadQuest(): Response<BaseResponse<LoadQuestData>>
 
-    @POST("api/users/{userId}/answers")
+    @POST("api/answers")
     suspend fun writeQuest(
-        @Path("userId") id: Long,
         @Body req: WriteQuestRequest
-    ): Response<BaseResponse<String>>
+    ): Response<BaseResponse<String?>>
     //fun writeQuest(@Body writeQuestRequest: WriteQuestRequest): Call<WriteQuestResponse>
 }
