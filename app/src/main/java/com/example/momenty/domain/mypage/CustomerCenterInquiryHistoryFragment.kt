@@ -120,23 +120,20 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
     }
 
     private fun getInquiryDetailData() {
-        if (bSuccessApi) {
-            historyDatas.apply {
-                clear()
-                Log.e(TAG, "getInquiryDetailData 진입")
-                for (iter in loadInquiryDataByApi!!.inquiries){
-                    loadInquiryDataInquiriesByApi = iter
-                    Log.e(TAG, "for문 진입")
-                    performLoadInquiryDetail(iter.inquiryId)
-                }
+        historyDatas.apply {
+            clear()
+            Log.e(TAG, "getInquiryDetailData 진입")
+            for (iter in loadInquiryDataByApi!!.inquiries){
+                loadInquiryDataInquiriesByApi = iter
+                Log.e(TAG, "for문 진입")
+                performLoadInquiryDetail(iter.inquiryId)
             }
-
         }
-
+        binding.rvInquiryHistory.adapter?.notifyDataSetChanged()
     }
 
     private fun setInquiryDetailData(inquiries: LoadInquiryDataInquiries?) {
-        if (bSuccessApi && loadInquiryDetailDataByApi != null && inquiries != null) {
+        if (loadInquiryDetailDataByApi != null && inquiries != null) {
             Log.e(TAG, "세부 문의내역 데이터 작성")
             historyDatas.add(CustomerCenterInquiryHistoryData(
                 content2Title(loadInquiryDetailDataByApi!!.content),
@@ -189,8 +186,24 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
                 //Toast.makeText(requireContext(), "세부 문의내역 로드 성공!", Toast.LENGTH_SHORT).show()
 
                 loadInquiryDetailDataByApi = data
-                setInquiryDetailData(loadInquiryDataInquiriesByApi)
+                //setInquiryDetailData(loadInquiryDataInquiriesByApi)
+
+                Log.e(TAG, "세부 문의내역 데이터 작성")
+                historyDatas.add(CustomerCenterInquiryHistoryData(
+                    content2Title(data!!.content),
+                    data.createdAt!!,
+                    data.type,
+                    data!!.content,
+                    data!!.images,
+                    if (data.answer != null) data.answer!! else ""
+                ))
+                binding.rvInquiryHistory.adapter?.notifyDataSetChanged()
+
+
+
+                Log.d(TAG, "$historyDatas")
                 checkHistoryEmpty()
+                binding.rvInquiryHistory.adapter?.notifyDataSetChanged()
 
                 Log.d(TAG, "세부 문의내역 로드 성공: $data")
                 bSuccessApi = false

@@ -80,12 +80,13 @@ class MockApiInterceptor : Interceptor {
             }
 
             // ==================== 프로필 API ====================
+            /*
             path.endsWith("/api/mypage") && method == "GET" -> {
                 mockGetProfile()
             }
             path.endsWith("/api/mypage") && method == "PATCH" -> {
                 mockUpdateProfile()
-            }
+            }*/
 
             // ==================== 이미지 업로드 API ====================
             path.endsWith("/api/profile/image") && method == "POST" -> {
@@ -101,15 +102,19 @@ class MockApiInterceptor : Interceptor {
             }
 
             // ==================== 오늘의 질문 API ====================
-            path.endsWith("/api/quest/today") && method == "GET" -> {
-                mockGetTodayQuestion()
-            }
+            // 질문 답변 작성
             path.matches(Regex("/api/users/\\d+/answers")) && method == "POST" -> {
                 mockSubmitAnswer()
             }
-            path.endsWith("/api/quest") && method == "POST" -> {
+            // 질문 답변 작성
+            path.endsWith("/api/quest/today") && method == "POST" -> {
                 mockSubmitAnswer()
             }
+            // 오늘의 질문 조회
+            path.endsWith("/api/quest/today") && method == "GET" -> {
+                mockGetTodayQuestion()
+            }
+
             path.endsWith("/api/quest/today/status") && method == "GET" -> {
                 mockGetQuestionStatus()
             }
@@ -157,9 +162,10 @@ class MockApiInterceptor : Interceptor {
 
 
             // ==================== 공지사항 API ====================
+            /*
             path.endsWith("/api/notice") && method == "GET" -> {
                 mockGetNotices()
-            }
+            }*/
 
             // ==================== 반려동물 API ====================
             path.endsWith("/api/pets") && method == "GET" -> {
@@ -203,14 +209,9 @@ class MockApiInterceptor : Interceptor {
             }
 
             // ==================== 마이페이지 API ====================
-            // 사용자 프로필 수정
-            path.endsWith("khg/api/mypage") && method == "PATCH" -> {
-                mockUpdateUserProfile()
-            }
-
-            // 사용자 프로필 조회
-            path.matches(Regex(".*khg/api/mypage/\\d+")) && method == "GET" -> {
-                mockGetUserProfile()
+            // 반려동물 프로필 추가
+            path.endsWith("api/pets") && method == "POST" -> {
+                mockAddPetProfile()
             }
 
             // 특정 반려동물 프로필 조회
@@ -218,19 +219,19 @@ class MockApiInterceptor : Interceptor {
                 mockGetPetProfile()
             }
 
-            // 특정 반려동물 프로필 추가
-            path.matches(Regex(".*api/users/\\d+/pets")) && method == "POST" -> {
-                mockAddPetProfile()
+            // 반려동물 프로필 수정
+            path.matches(Regex(".*api/pets/\\d+")) && method == "PATCH" -> {
+                mockUpdatePetProfile()
             }
 
-            // 특정 반려동물 프로필 수정
-            path.matches(Regex(".*api/users/\\d+/pets/\\d+")) && method == "PATCH" -> {
-                mockUpdatePetProfile()
+            // 내 반려동물 리스트 조회
+            path.endsWith("api/pets/my") && method == "GET" -> {
+                mockLoadPetList()
             }
 
 
             // 문의하기
-            path.matches(Regex(".*api/inquiry")) && method == "POST" -> {
+            path.endsWith("api/inquiry") && method == "POST" -> {
                 mockAddInquiry()
             }
 
@@ -239,15 +240,47 @@ class MockApiInterceptor : Interceptor {
                 mockCreateInquiryPresignedUrls()
             }
 
+            // 문의내역 상세 조회
+            path.matches(Regex(".*api/inquiry/\\d+")) && method == "GET" -> {
+                mockLoadInquiryDetail()
+            }
+
             // 문의내역 리스트 조회
             path.endsWith("api/inquiry/user") && method == "GET" -> {
                 mockLoadInquiry()
             }
 
-            // 문의내역 상세 조회
-            path.matches(Regex(".*api/inquiry/\\d+")) && method == "GET" -> {
-                mockLoadInquiryDetail()
+
+
+
+            // 사용자 프로필 조회
+            path.endsWith("api/mypage") && method == "GET" -> {
+                mockGetUserProfile()
             }
+
+            // 사용자 프로필 수정
+            path.endsWith("api/mypage") && method == "PATCH" -> {
+                mockUpdateUserProfile()
+            }
+
+            // 사용자 상세 조회
+            path.endsWith("api/mypage/user") && method == "GET" -> {
+                mockGetUserProfileDetail()
+            }
+
+
+
+
+            // 공지사항 리스트 조회
+            path.endsWith("api/notice") && method == "GET" -> {
+                mockLoadNotice()
+            }
+
+            // 공지사항 상세 조회
+            path.matches(Regex(".*api/notice/\\d+")) && method == "GET" -> {
+                mockLoadNoticeDetail()
+            }
+
 
             // FAQ 조회
             path.endsWith("api/faq") && method == "GET" -> {
@@ -258,6 +291,8 @@ class MockApiInterceptor : Interceptor {
             path.matches(Regex(".*api/faq/\\d+")) && method == "GET" -> {
                 mockLoadFaqDetail()
             }
+
+
 
             // 로그아웃
             path.endsWith("api/oauth/logout") && method == "POST" -> {
@@ -1376,47 +1411,22 @@ class MockApiInterceptor : Interceptor {
         )
     }
 
-    /**
-     * 사용자 프로필 수정 Mock
-     */
-    private fun mockUpdateUserProfile(): MockResponse {
-        return MockResponse(
-            code = 200,
-            message = "OK",
-            body = """
-                {
-                    "isSuccess": true,
-                    "code": "PROFILE_UPDATE",
-                    "message": "사용자 프로필 수정 성공",
-                    "result": {
-                        "accessToken": "mock_new_access_token_${UUID.randomUUID()}",
-                        "refreshToken": "mock_new_refresh_token_${UUID.randomUUID()}"
-                    }
-                }
-            """.trimIndent()
-        )
-    }
+
+
 
     /**
-     * 사용자 프로필 조회 Mock
+     * 반려동물 프로필 추가 Mock
      */
-    private fun mockGetUserProfile(): MockResponse {
+    private fun mockAddPetProfile(): MockResponse {
         return MockResponse(
             code = 200,
             message = "OK",
             body = """
                 {
                     "isSuccess": true,
-                    "code": "PROFILE_UPDATE",
-                    "message": "사용자 프로필 수정 성공",
-                    "result": {
-                        "username": "테스트유저",
-                        "gender": "FEMALE",
-                        "birth": "1995-05-15",
-                        "profileUrl": "https://example.com/profile.jpg",
-                        "questTime": "AM 09:00",
-                        "resetQuestTime": true
-                    }
+                    "code": "PROFILE_ADD",
+                    "message": "반려동물 프로필 추가 성공",
+                    "result": "string"
                 }
             """.trimIndent()
         )
@@ -1448,23 +1458,6 @@ class MockApiInterceptor : Interceptor {
         )
     }
 
-    /**
-     * 특정 반려동물 프로필 추가 Mock
-     */
-    private fun mockAddPetProfile(): MockResponse {
-        return MockResponse(
-            code = 200,
-            message = "OK",
-            body = """
-                {
-                    "isSuccess": true,
-                    "code": "PROFILE_ADD",
-                    "message": "반려동물 프로필 추가 성공",
-                    "result": "string"
-                }
-            """.trimIndent()
-        )
-    }
 
     /**
      * 특정 반려동물 프로필 수정 Mock
@@ -1484,6 +1477,34 @@ class MockApiInterceptor : Interceptor {
         )
     }
 
+
+    /**
+     * 내 반려동물 리스트 조회 Mock
+     */
+    private fun mockLoadPetList(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+{
+  "isSuccess": true,
+  "code": "string",
+  "message": "string",
+  "result": [
+    {
+      "petId": 0,
+      "petName": "string",
+      "species": "CAT",
+      "breedName": "string",
+      "profileImageUrl": "string"
+    }
+  ]
+}
+            """.trimIndent()
+        )
+    }
+
+
     /**
      * 문의하기 Mock
      */
@@ -1496,12 +1517,7 @@ class MockApiInterceptor : Interceptor {
                     "isSuccess": true,
                     "code": "PROFILE_UPDATE",
                     "message": "반려동물 프로필 최신화 성공",
-                    "result": [
-                        {
-                            "key": "string",
-                            "url": "string"
-                        }
-                    ]
+                    "result": "string"
                 }
             """.trimIndent()
         )
@@ -1532,6 +1548,38 @@ class MockApiInterceptor : Interceptor {
         """.trimIndent()
         )
     }
+
+    /**
+     * 문의내역 상세 조회 Mock
+     */
+    private fun mockLoadInquiryDetail(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "isSuccess": true,
+                    "code": "PROFILE_UPDATE",
+                    "message": "문의내역 상세 조회 성공",
+                    "result": {
+  "inquiryId": 0,
+  "type": "ACCOUNT",
+  "content": "string",
+  "images": [
+    {
+      "inquiryImageId": 0,
+      "imageUrl": "string"
+    }
+  ],
+  "isAnswered": true,
+  "answer": "string",
+  "createdAt": "2026-02-19T21:20:59.928Z"
+}
+                }
+            """.trimIndent()
+        )
+    }
+
     /**
      * 문의내역 리스트 조회 Mock
      */
@@ -1567,10 +1615,13 @@ class MockApiInterceptor : Interceptor {
         )
     }
 
+
+
+
     /**
-     * 문의내역 상세 조회 Mock
+     * 사용자 프로필 조회 Mock
      */
-    private fun mockLoadInquiryDetail(): MockResponse {
+    private fun mockGetUserProfile(): MockResponse {
         return MockResponse(
             code = 200,
             message = "OK",
@@ -1578,20 +1629,125 @@ class MockApiInterceptor : Interceptor {
                 {
                     "isSuccess": true,
                     "code": "PROFILE_UPDATE",
-                    "message": "문의내역 상세 조회 성공",
+                    "message": "사용자 프로필 수정 성공",
                     "result": {
-                        "type": "ACCOUNT",
-                        "content": "string",
-                        "images": [
-                            {
-                            "imageKey": "string"
-                            }
-                        ]
+                        "username": "테스트유저",
+                        "gender": "FEMALE",
+                        "birth": "1995-05-15",
+                        "profileUrl": "https://example.com/profile.jpg",
+                        "questTime": "AM 09:00",
+                        "resetQuestTime": true
                     }
                 }
             """.trimIndent()
         )
     }
+
+    /**
+     * 사용자 프로필 수정 Mock
+     */
+    private fun mockUpdateUserProfile(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "isSuccess": true,
+                    "code": "PROFILE_UPDATE",
+                    "message": "사용자 프로필 수정 성공",
+                    "result": {
+                        "accessToken": "mock_new_access_token_${UUID.randomUUID()}",
+                        "refreshToken": "mock_new_refresh_token_${UUID.randomUUID()}"
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+    /**
+     * 사용자 상세 조회 Mock
+     */
+    private fun mockGetUserProfileDetail(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "isSuccess": true,
+                    "code": "PROFILE_UPDATE",
+                    "message": "사용자 프로필 수정 성공",
+                    "result": {
+    "userId": 0,
+    "profileUrl": "string",
+    "username": "string",
+    "gender": "MALE",
+    "birth": "2026-02-19",
+    "questTime": "string"
+  }
+                }
+            """.trimIndent()
+        )
+    }
+
+
+    /**
+     * 공지사항 리스트 조회 Mock
+     */
+    private fun mockLoadNotice(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "isSuccess": true,
+                    "code": "string",
+                    "message": "string",
+                    "result": {
+    "notices": [
+      {
+        "noticeId": 0,
+        "title": "string",
+        "createdAt": "2026-02-19T21:30:31.317Z"
+      }
+    ],
+    "pageInfo": {
+      "page": 0,
+      "size": 0,
+      "totalPages": 0,
+      "totalElements": 0,
+      "hasNext": true,
+      "hasPrevious": true
+    }
+  }
+                }
+            """.trimIndent()
+        )
+    }
+
+    /**
+     * 공지사항 상세 조회 Mock
+     */
+    private fun mockLoadNoticeDetail(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "isSuccess": true,
+                    "code": "string",
+                    "message": "string",
+                    "result": {
+    "noticeId": 0,
+    "title": "string",
+    "content": "string",
+    "createdAt": "2026-02-19T21:32:34.350Z"
+  }
+                }
+            """.trimIndent()
+        )
+    }
+
+
 
     /**
      * FAQ 리스트 조회 Mock

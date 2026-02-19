@@ -18,12 +18,17 @@ import com.example.momenty.domain.calendar.RetrofitClient
 import com.example.momenty.domain.mypage.RVA.NoticeRVA
 import com.example.momenty.domain.mypage.data.NoticeData
 import com.example.momenty.global.security.TokenManager
+import dagger.hilt.android.AndroidEntryPoint
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
 import kotlin.getValue
 
+@AndroidEntryPoint
 class NoticeFragment: Fragment() {
     lateinit var binding: FragmentNoticeBinding
+
+    @Inject
     lateinit var tokenManager: TokenManager
     private var bSuccessApi = false
 
@@ -58,13 +63,14 @@ class NoticeFragment: Fragment() {
         binding = FragmentNoticeBinding.inflate(inflater, container, false)
 
 
+        setRVA()
+
         observePerformLoadNotice()
         observePerformLoadNoticeDetail()
 
         initListener()
         performLoadNotice()
 
-        setRVA()
 
         return binding.root
     }
@@ -162,6 +168,7 @@ class NoticeFragment: Fragment() {
                 Log.d(TAG, "작성 데이터: $data")
 
                 noticeDetailDataListByApi.add(data)
+                binding.rvNotice.adapter?.notifyDataSetChanged()
 
                 bSuccessApi = true
             }.onFailure { error ->
