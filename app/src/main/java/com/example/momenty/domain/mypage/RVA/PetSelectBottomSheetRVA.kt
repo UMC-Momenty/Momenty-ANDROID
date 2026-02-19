@@ -12,11 +12,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.momenty.R
 import com.example.momenty.databinding.ItemMyPagePetSelectBinding
+import com.example.momenty.domain.mypage.LoadPetListData
 import com.example.momenty.domain.mypage.PetFormManageActivity
 import com.example.momenty.domain.mypage.data.MyPagePetProfileData
 
 class PetSelectBottomSheetRVA(
-    private var petData: ArrayList<MyPagePetProfileData>,
+    private var petData: ArrayList<LoadPetListData>,
     private val onDismiss: () -> Unit
 ) : RecyclerView.Adapter<PetSelectBottomSheetRVA.PetSelectViewHolder>() {
 
@@ -25,24 +26,24 @@ class PetSelectBottomSheetRVA(
     inner class PetSelectViewHolder(val binding: ItemMyPagePetSelectBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(data: MyPagePetProfileData) {
-            binding.tvMyPagePetSelectName.text = data.name
+        fun bind(data: LoadPetListData) {
+            binding.tvMyPagePetSelectName.text = data.petName
 
-            if (!data.imageKey.isNullOrEmpty()) {
+            if (!data.profileImageUrl.isNullOrEmpty()) {
                 Log.e(TAG, "imageKey 시도")
                 Glide.with(binding.root.context)
-                    .load(data.imageKey)
+                    .load(data.profileImageUrl)
                     .circleCrop()
                     .error(R.drawable.bg_calendar_selected)
                     .into(binding.ivMyPagePetSelect)
-            } else if (!data.imageUri.isNullOrEmpty()) {
+            } /*else if (!data.imageUri.isNullOrEmpty()) {
                 Log.e(TAG, "imageUri 시도: ${data.imageUri}")
                 Glide.with(binding.root.context)
                     .load(Uri.parse(data.imageUri))
                     .circleCrop()
                     .error(R.drawable.bg_calendar_selected)
                     .into(binding.ivMyPagePetSelect)
-            }
+            }*/
         }
     }
 
@@ -59,8 +60,10 @@ class PetSelectBottomSheetRVA(
         holder.bind(petData[position])
         holder.binding.rbMyPagePetSelect.setOnClickListener {
             val intent = Intent(holder.itemView.context, PetFormManageActivity::class.java)
+            intent.putExtra("petId", petData[position].petId)
+            /*
             intent.putExtra("petIndex", position.toLong())
-            Log.e("PetSelectRVA", "position: $position")
+            Log.e("PetSelectRVA", "position: $position")*/
             holder.itemView.context.startActivity(intent)
             holder.binding.rbMyPagePetSelect.setChecked(false)
             onDismiss.invoke()

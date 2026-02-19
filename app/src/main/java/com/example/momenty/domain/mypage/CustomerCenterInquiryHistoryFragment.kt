@@ -163,11 +163,15 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
                 loadInquiryDataByApi = data
                 Log.d(TAG, "문의내역 로드 성공: $data")
                 getInquiryDetailData()
+                checkHistoryEmpty()
+
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
                 Toast.makeText(requireContext(), "문의내역 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "문의내역 로드 실패: $message")
+                checkHistoryEmpty()
+
                 bSuccessApi = false
             }
         }
@@ -183,15 +187,21 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
             result.onSuccess { data ->
                 bSuccessApi = true
                 Toast.makeText(requireContext(), "세부 문의내역 로드 성공!", Toast.LENGTH_SHORT).show()
+
                 loadInquiryDetailDataByApi = data
                 setInquiryDetailData(loadInquiryDataInquiriesByApi)
+                checkHistoryEmpty()
+
                 Log.d(TAG, "세부 문의내역 로드 성공: $data")
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
+
                 Toast.makeText(requireContext(), "세부 문의내역 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "문의내역 로드 실패: $message")
+                checkHistoryEmpty()
                 inputDummyData()
+
                 bSuccessApi = false
             }
         }
@@ -202,6 +212,16 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
             input.take(7) + "..."
         } else {
             input
+        }
+    }
+
+    private fun checkHistoryEmpty() {
+        if (!historyDatas.isEmpty()) {
+            binding.layoutInquiryHistoryNoData.visibility = View.VISIBLE
+            binding.rvInquiryHistory.visibility = View.GONE
+        } else {
+            binding.layoutInquiryHistoryNoData.visibility = View.GONE
+            binding.rvInquiryHistory.visibility = View.VISIBLE
         }
     }
 }

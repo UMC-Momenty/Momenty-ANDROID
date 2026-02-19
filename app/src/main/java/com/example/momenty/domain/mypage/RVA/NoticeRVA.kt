@@ -4,18 +4,13 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.momenty.databinding.ItemNoticeBinding
-import com.example.momenty.domain.mypage.LoadNoticeData
 import com.example.momenty.domain.mypage.LoadNoticeDetailData
-import com.example.momenty.domain.mypage._NoticeData
-import com.example.momenty.domain.mypage._PageInfoData
-import com.example.momenty.domain.mypage.data.NoticeData
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-class NoticeRVA(private val noticeList: ArrayList<_NoticeData>)
+class NoticeRVA(private val noticeDetailList: ArrayList<LoadNoticeDetailData>)
     : RecyclerView.Adapter<NoticeRVA.viewHolder>() {
 
         interface MyItemClickListener {
@@ -28,13 +23,14 @@ class NoticeRVA(private val noticeList: ArrayList<_NoticeData>)
         mItemClickListener = itemClickListener
     }
 
+    /*
     fun getNoticeData(position: Int): LoadNoticeDetailData {
         return myNoticeData[position]
     }
 
     fun addNoticeData(datas: ArrayList<LoadNoticeDetailData>) {
         myNoticeData = datas
-    }
+    }*/
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewHolder {
         val binding: ItemNoticeBinding = ItemNoticeBinding.inflate(
@@ -45,18 +41,18 @@ class NoticeRVA(private val noticeList: ArrayList<_NoticeData>)
     }
 
     override fun onBindViewHolder(holder: viewHolder, position: Int) {
-        holder.bind(noticeList[position])
+        holder.bind(noticeDetailList[position])
         holder.itemView.setOnClickListener {
             mItemClickListener.onItemClick(position)
         }
     }
 
     override fun getItemCount(): Int {
-        return noticeList.size
+        return noticeDetailList.size
     }
 
     inner class viewHolder(val binding: ItemNoticeBinding): RecyclerView.ViewHolder(binding.root) {
-        fun bind(data: _NoticeData) {
+        fun bind(data: LoadNoticeDetailData) {
             binding.tvNoticeTitle.text = data.title
             binding.tvNoticeDate.text = calculateDaysAgo(data.createdAt)
         }

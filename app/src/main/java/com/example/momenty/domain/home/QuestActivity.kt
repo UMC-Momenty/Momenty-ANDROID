@@ -196,7 +196,7 @@ class QuestActivity/* @Inject constructor(
 
     private fun performWriteQuest() {
 
-        var questId = 0L
+        var questId = loadQuestByApi?.questId!!
         var petId = 0L
         val answer = binding.etWriteQuestionAnswer.toString()
 

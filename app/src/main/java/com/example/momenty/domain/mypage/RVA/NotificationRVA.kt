@@ -11,6 +11,7 @@ import com.example.momenty.domain.mypage.data.NotificationData
 
 class NotificationRVA(
     private val notificationList: ArrayList<NotificationData>,
+    private val onNotificationOff: (NotificationData) -> Unit
 ) : RecyclerView.Adapter<NotificationRVA.viewHolder>(), MyNotifyInterface {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewHolder {
@@ -44,6 +45,8 @@ class NotificationRVA(
         val currentData = notificationList[id]
         currentData.enabled = "OFF"
         notifyItemChanged(id)
+
+        onNotificationOff(currentData)
     }
 
     inner class viewHolder(val binding: ItemNotificationBinding): RecyclerView.ViewHolder(binding.root) {

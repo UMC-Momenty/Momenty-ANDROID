@@ -249,6 +249,15 @@ class MockApiInterceptor : Interceptor {
                 mockLoadInquiryDetail()
             }
 
+            // FAQ 조회
+            path.endsWith("api/faq") && method == "GET" -> {
+                mockLoadFaq()
+            }
+
+            // FAQ 상세 조회
+            path.matches(Regex(".*api/faq/\\d+")) && method == "GET" -> {
+                mockLoadFaqDetail()
+            }
 
             // 로그아웃
             path.endsWith("api/oauth/logout") && method == "POST" -> {
@@ -1430,7 +1439,7 @@ class MockApiInterceptor : Interceptor {
                         "petName": "강아지1",
                         "gender": "FEMALE",
                         "birth": "1995-05-15",
-                        "species": "강아지",
+                        "species": "DOG",
                         "breedId": 1,
                         "intro": "우리 강아지"
                     }
@@ -1578,6 +1587,51 @@ class MockApiInterceptor : Interceptor {
                             "imageKey": "string"
                             }
                         ]
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+    /**
+     * FAQ 리스트 조회 Mock
+     */
+    private fun mockLoadFaq(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "isSuccess": true,
+                    "code": "string",
+                    "message": "string",
+                    "result": [
+                        {
+                            "faqId": 0,
+                            "question": "무슨 앱인가요"
+                        }
+                    ]
+                }
+            """.trimIndent()
+        )
+    }
+
+    /**
+     * FAQ 상세 조회 Mock
+     */
+    private fun mockLoadFaqDetail(): MockResponse {
+        return MockResponse(
+            code = 200,
+            message = "OK",
+            body = """
+                {
+                    "isSuccess": true,
+                    "code": "string",
+                    "message": "string",
+                    "result": {
+                        "faqId": 0,
+                        "question": "무슨 앱인가요",
+                        "answer": "반려동물 기록 앱입니다"
                     }
                 }
             """.trimIndent()
