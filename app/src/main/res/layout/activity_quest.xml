@@ -85,7 +85,7 @@
 
     <RadioGroup
         android:id="@+id/rg_write_question"
-        android:layout_width="200dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/tv_write_question_content"
         app:layout_constraintStart_toStartOf="parent"
@@ -100,7 +100,7 @@
             android:layout_height="wrap_content"
             android:button="@null"
             android:drawableStart="@drawable/rb_feel_good_quest"
-            android:layout_weight="1"/>
+            android:layout_marginHorizontal="10dp"/>
 
         <RadioButton
             android:id="@+id/rb_write_soso"
@@ -108,14 +108,15 @@
             android:layout_height="wrap_content"
             android:button="@null"
             android:drawableStart="@drawable/rb_feel_soso_quest"
-            android:layout_weight="1"/>
+            android:layout_marginHorizontal="10dp"/>
 
         <RadioButton
             android:id="@+id/rb_write_bad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:button="@null"
-            android:drawableStart="@drawable/rb_feel_bad_quest"/>
+            android:drawableStart="@drawable/rb_feel_bad_quest"
+            android:layout_marginHorizontal="10dp"/>
 
     </RadioGroup>
 

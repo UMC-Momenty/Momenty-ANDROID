@@ -5,6 +5,8 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +28,8 @@ class QuestActivity/* @Inject constructor(
 
     lateinit var binding: ActivityQuestBinding
     lateinit var tokenManager: TokenManager
+
+    private var loadQuestByApi: LoadQuestData ?= null
 
     private var bSuccessApi = false
     private val TAG = "QuestActivity"
@@ -162,49 +166,31 @@ class QuestActivity/* @Inject constructor(
 
         binding.tvWriteQuestionDate.visibility = View.VISIBLE
 
+        val btnGood = binding.rbWriteGood
+        val btnSoso= binding.rbWriteSoso
+        val btnBad = binding.rbWriteBad
+
         when(binding.rgWriteQuestion.checkedRadioButtonId) {
             R.id.rb_write_good -> {
-                binding.rbWriteBad.visibility = View.GONE
-                binding.rbWriteSoso.visibility = View.GONE
+                btnBad.visibility = View.GONE
+                btnSoso.visibility = View.GONE
             }
             R.id.rb_write_soso -> {
-                binding.rbWriteBad.visibility = View.GONE
-                binding.rbWriteGood.visibility = View.GONE
+                btnBad.visibility = View.GONE
+                btnGood.visibility = View.GONE
             }
             R.id.rb_write_bad -> {
-                binding.rbWriteGood.visibility = View.GONE
-                binding.rbWriteSoso.visibility = View.GONE
+                btnGood.visibility = View.GONE
+                btnSoso.visibility = View.GONE
+            }
+            else -> {
+                binding.rgWriteQuestion.visibility = View.GONE
             }
         }
 
-        //Toast.makeText(this, "저장 기능 구현 필요", Toast.LENGTH_SHORT).show()
         performWriteQuest()
     }
 
-    /*
-    override fun onLoadQuestSuccess(loadQuestData: LoadQuestData) {
-        Log.d("LoadQuest/QuestAct", "load success")
-        myLoadQuestResp = loadQuestData
-        binding.tvWriteQuestionNumber.text = "#" + loadQuestData.questId + "번째 질문"
-        binding.tvWriteQuestionContent.text = loadQuestData.quest
-        binding.tvWriteQuestionDate.text = loadQuestData.date
-    }
-
-    override fun onLoadQuestFailure() {
-        Log.d("LoadQuest/QuestAct", "load failure")
-        //TODO("Not yet implemented")
-    }
-
-    override fun onWriteQuestSuccess() {
-        Log.d("WriteQuest/QuestAct", "write success")
-        //TODO("Not yet implemented")
-    }
-
-    override fun onWriteQuestFailure() {
-        Log.d("WriteQuest/QuestAct", "write failure")
-        //TODO("Not yet implemented")
-    }
-    */
 
 
     private fun performLoadQuest() {
@@ -212,9 +198,15 @@ class QuestActivity/* @Inject constructor(
     }
 
     private fun performWriteQuest() {
-        val questId = 0L
-        val petId = 0L
+
+        var questId = 0L
+        var petId = 0L
         val answer = binding.etWriteQuestionAnswer.toString()
+
+        if (loadQuestByApi != null) {
+            questId = loadQuestByApi!!.questId
+
+        }
 
         questViewModel.writeQuest(questId, petId, answer)
     }
@@ -239,6 +231,7 @@ class QuestActivity/* @Inject constructor(
                 bSuccessApi = true
                 Toast.makeText(this, "질문 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "로드 데이터: $data")
+                loadQuestByApi = data
                 binding.tvWriteQuestionNumber.text = "#${data.questId.toString()}번째 질문"
                 binding.tvWriteQuestionContent.text = data.quest
                 binding.tvWriteQuestionDate.text = data.date
