@@ -468,50 +468,31 @@ class PetProfileFragment : Fragment() {
      * 프로필 정보 저장 (백엔드 API 호출)
      */
     private fun saveProfile() {
-        // 사용자 프로필 정보 가져오기 (UserProfileFragment에서 저장한 것)
-        val prefs = requireActivity().getSharedPreferences(
-            "momenty_prefs",
-            Context.MODE_PRIVATE
-        )
-
-        val userName = prefs.getString("user_name", "") ?: ""
-        val userGender = prefs.getString("user_gender", "") ?: ""
-        val userBirth = prefs.getString("user_birth", "") ?: ""
-        val alarmTime = prefs.getString("alarm_time", null)
-        val userProfileImageKey = prefs.getString("user_profile_image_key", null)  // 변경
-
         val petName = binding.etPetName.text.toString()
         val petGender = when (binding.rgPetGender.checkedRadioButtonId) {
-            R.id.rb_gender_male -> "male"
-            R.id.rb_gender_female -> "female"
+            R.id.rb_gender_male -> "MALE"   // 백엔드 스펙에 맞게 대문자
+            R.id.rb_gender_female -> "FEMALE"
             else -> ""
         }
-        val petBirth = binding.etPetBirth.text.toString()
-        val petType = binding.etPetType.text.toString()
-        val petTypeDetail = binding.etPetTypeDetail.text.toString()
-        val petIntro = binding.etPetIntro.text.toString()
+        val petBirth = formatDateForApi(binding.etPetBirth.text.toString())
+        val petSpecies = when (selectedPetType) {
+            "강아지" -> "DOG"
+            "고양이" -> "CAT"
+            else -> ""
+        }
+        val petIntro = binding.etPetIntro.text?.toString()?.ifBlank { null }
 
-        // 날짜 형식 변환 (YY.MM.DD -> YYYY-MM-DD)
-        val userBirthFormatted = formatDateForApi(userBirth)
-        val petBirthFormatted = formatDateForApi(petBirth)
-
-        // ViewModel을 통해 API 호출 (imageKey 전달)
-        profileViewModel.updatePetProfile(
-            userName = userName,
-            userGender = userGender,
-            userBirthDate = userBirthFormatted,
-            userImageKey = userProfileImageKey,      // 변경: URL → Key
-            alarmTime = alarmTime,
+        // POST /api/pets - 반려동물 추가
+        profileViewModel.addPet(
+            profileImageUrl = uploadedImageKey,
             petName = petName,
-            petGender = petGender,
-            petBirthDate = petBirthFormatted,
-            petImageKey = uploadedImageKey,          // 변경: URL → Key
-            petType = petType,
-            petBreed = petTypeDetail,
-            petIntroduction = petIntro
+            gender = petGender,
+            birth = petBirth,
+            species = petSpecies,
+            breedId = null,   // TODO: 품종 선택 시 breedId로 변환 필요
+            intro = petIntro
         )
     }
-
     /**
      * 날짜 형식 변환 (YY.MM.DD -> YYYY-MM-DD)
      */

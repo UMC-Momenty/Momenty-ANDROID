@@ -29,7 +29,6 @@ class CalendarRepository(
      */
     suspend fun getPets(): List<Pet> = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "getPets() called")
 
             // 로그인 확인
             if (!tokenManager.isLoggedIn()) {
@@ -37,30 +36,18 @@ class CalendarRepository(
                 return@withContext emptyList()
             }
 
-            val userId = tokenManager.getUserId()
-            if (userId == -1L) {
-                Log.w(TAG, "User ID not found")
-                return@withContext emptyList()
-            }
-
-            Log.d(TAG, "Fetching pets for userId: $userId")
-
             // 네트워크 요청
             val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
-                petApiService.getUserPets(userId)
+                petApiService.getUserPets()
             }
 
-            Log.d(TAG, "API response: isSuccessful=${response?.isSuccessful}, code=${response?.code()}")
-
             if (response?.isSuccessful == true && response.body() != null) {
-                val pets = response.body()!!.pets.map { dto ->
+                response.body()!!.pets.map { dto ->
                     Pet(
                         petId = dto.petId,
                         profile = dto.profile
                     )
                 }
-                Log.d(TAG, "Loaded ${pets.size} pets successfully")
-                pets
             } else {
                 Log.w(TAG, "Failed to fetch pets: code=${response?.code()}")
                 emptyList()
@@ -79,16 +66,15 @@ class CalendarRepository(
         month: Int
     ): MonthlyScheduleResponse? = withContext(Dispatchers.IO) {
         try {
-            val userId = tokenManager.getUserId()
-            if (userId == -1L) {
-                Log.w(TAG, "User ID not found")
+            if(!tokenManager.isLoggedIn()){
+                Log.w(TAG, "USer not logged in")
                 return@withContext null
             }
 
             Log.d(TAG, "Fetching all pets monthly schedules: year=$year, month=$month")
 
             val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
-                calendarApiService.getAllPetsMonthlySchedules(userId, year, month)
+                calendarApiService.getAllPetsMonthlySchedules(year, month)
             }
 
             if (response?.isSuccessful == true) {
@@ -113,16 +99,15 @@ class CalendarRepository(
         month: Int
     ): PetMonthlyScheduleResponse? = withContext(Dispatchers.IO) {
         try {
-            val userId = tokenManager.getUserId()
-            if (userId == -1L) {
-                Log.w(TAG, "User ID not found")
+            if(!tokenManager.isLoggedIn()){
+                Log.w(TAG, "USer not logged in")
                 return@withContext null
             }
 
             Log.d(TAG, "Fetching pet monthly schedules: petId=$petId, year=$year, month=$month")
 
             val response = withTimeoutOrNull(NETWORK_TIMEOUT) {
-                calendarApiService.getPetMonthlySchedules(userId, petId, year, month)
+                calendarApiService.getPetMonthlySchedules(petId, year, month)
             }
 
             if (response?.isSuccessful == true) {
@@ -223,7 +208,7 @@ class CalendarRepository(
                 response.body()?.isSuccess == true &&
                 response.body()?.result != null) {
 
-                val alarms = response.body()!!.result.alarms.map { dto ->
+                response.body()!!.result.alarms.map { dto ->
                     Alarm(
                         scheduleId = dto.scheduleId,
                         title = dto.title,
@@ -237,8 +222,6 @@ class CalendarRepository(
                         isAlarmEnabled = dto.isAlarmEnabled
                     )
                 }
-                Log.d(TAG, "Loaded ${alarms.size} alarms")
-                alarms
             } else {
                 Log.w(TAG, "Failed to fetch alarms: code=${response?.code()}")
                 emptyList()

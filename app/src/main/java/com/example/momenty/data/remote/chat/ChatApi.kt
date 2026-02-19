@@ -9,9 +9,8 @@ import retrofit2.http.Path
 
 interface ChatApi {
 
-    @POST("api/chat/users/{userId}")
+    @POST("api/chat/users")
     suspend fun postFirstChat(
-        @Path("userId") userId: Long,
         @Body body: ChatRequestDto
     ): BaseResponse<ChatResultDto>
 

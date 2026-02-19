@@ -95,16 +95,16 @@ class MyPageViewModel(private val repository: MyPageRepository): ViewModel() {
         }
     }
 
-    fun loadNotice(accessToken: String) {
+    fun loadNotice() {
         viewModelScope.launch {
-            val result = repository.loadNotice(accessToken)
+            val result = repository.loadNotice()
             _loadNoticeResult.postValue(result)
         }
     }
 
-    fun loadNoticeDetail(accessToken: String, noticeId: Long) {
+    fun loadNoticeDetail(noticeId: Long) {
         viewModelScope.launch {
-            val result = repository.loadNoticeDetail(accessToken, noticeId)
+            val result = repository.loadNoticeDetail(noticeId)
             _loadNoticeDetailResult.postValue(result)
         }
     }
@@ -144,16 +144,16 @@ class MyPageViewModel(private val repository: MyPageRepository): ViewModel() {
         }
     }
 
-    fun loadFaq(accessToken: String) {
+    fun loadFaq() {
         viewModelScope.launch {
-            val result = repository.loadFaq(accessToken)
+            val result = repository.loadFaq()
             _loadFaqResult.postValue(result)
         }
     }
 
-    fun loadFaqDetail(accessToken: String, faqId: Long) {
+    fun loadFaqDetail(faqId: Long) {
         viewModelScope.launch {
-            val result = repository.loadFaqDetail(accessToken, faqId)
+            val result = repository.loadFaqDetail(faqId)
             _loadFaqDetailResult.postValue(result)
         }
     }

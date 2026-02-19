@@ -114,11 +114,10 @@ class ProfileViewModel @Inject constructor(
     }
 
     /**
-     * 반려동물 프로필 수정 - PATCH /api/users/{userId}/pets/{petId}
+     * 반려동물 프로필 수정
      * 전달하지 않은 필드는 기존 값 유지
      */
     fun updatePetProfile(
-        userId: Long,
         petId: Long,
         profileImageUrl: String? = null,  // 빈 배열이면 미설정
         petName: String? = null,
@@ -132,7 +131,6 @@ class ProfileViewModel @Inject constructor(
             _uiState.value = ProfileUiState.Loading
 
             when (val result = profileRepository.updatePetProfile(
-                userId = userId,
                 petId = petId,
                 profileImageUrl = profileImageUrl,
                 petName = petName,
@@ -144,6 +142,40 @@ class ProfileViewModel @Inject constructor(
             )) {
                 is ProfileRepository.ProfileResult.Success -> {
                     // 반려동물 수정은 토큰 반환 없음, 단순 성공 처리
+                    _uiState.value = ProfileUiState.Success(
+                        accessToken = null,
+                        refreshToken = null
+                    )
+                }
+                is ProfileRepository.ProfileResult.Error -> {
+                    _uiState.value = ProfileUiState.Error(getErrorMessage(result))
+                }
+            }
+        }
+    }
+
+    fun addPet(
+        profileImageUrl: String? = null,
+        petName: String,
+        gender: String,
+        birth: String,
+        species: String,
+        breedId: Long? = null,
+        intro: String? = null
+    ) {
+        viewModelScope.launch {
+            _uiState.value = ProfileUiState.Loading
+
+            when (val result = profileRepository.addPet(
+                profileImageUrl = profileImageUrl,
+                petName = petName,
+                gender = gender,
+                birth = birth,
+                species = species,
+                breedId = breedId,
+                intro = intro
+            )) {
+                is ProfileRepository.ProfileResult.Success -> {
                     _uiState.value = ProfileUiState.Success(
                         accessToken = null,
                         refreshToken = null

@@ -59,10 +59,7 @@ class PetFormManageActivity: AppCompatActivity() {
     private val TAG = "PetManageAct"
 
     private val myPageViewModel: MyPageViewModel by viewModels {
-        val repo = MyPageRepository(
-            service = MyPageRetrofitClient.myPageService,
-            tokenManager = tokenManager
-        )
+        val repo = MyPageRepository(service = MyPageRetrofitClient.myPageService)
         MyPageViewModelFactory(repo)
     }
 
@@ -97,7 +94,6 @@ class PetFormManageActivity: AppCompatActivity() {
         // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
         if (!tokenManager.isLoggedIn()) {
             tokenManager.saveMockLoginInfo()
-            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
         }
 
         // ✅ ViewModel에 LocalDataManager 설정
@@ -339,7 +335,6 @@ class PetFormManageActivity: AppCompatActivity() {
     }
 
     private fun handleProfileSuccess(state: ProfileUiState.Success) {
-        Log.d(TAG, "프로필 저장 성공: userId=${state.userId}, petId=${state.petId}")
 
         Toast.makeText(
             this@PetFormManageActivity,

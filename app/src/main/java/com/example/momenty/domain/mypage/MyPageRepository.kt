@@ -14,8 +14,7 @@ import kotlin.collections.orEmpty
 import kotlin.collections.take
 
 class MyPageRepository(
-    private val service: MyPageService,
-    private val tokenManager: TokenManager
+    private val service: MyPageService
 ) {
     val TAG = "MyPageRepository"
 
@@ -27,7 +26,7 @@ class MyPageRepository(
 
     suspend fun loadProfile(): Result<LoadProfileData> =
         safeApiCall(
-            apiCall = {service.loadProfile(tokenManager.getUserId())},
+            apiCall = {service.loadProfile()},
             getResult = {it.result}
         )
 
@@ -40,26 +39,26 @@ class MyPageRepository(
 
     suspend fun updatePetProfile(petId: Long, req: UpdatePetProfileRequest): Result<String?> =
         safeApiCall(
-            apiCall = { service.updatePetProfile(tokenManager.getUserId(), petId, req) },
+            apiCall = { service.updatePetProfile(petId, req) },
             getResult = { it.result }
         )
 
     suspend fun addPetProfile(req: AddPetProfileRequest): Result<String?> =
         safeApiCall(
-            apiCall = { service.addPetProfile(tokenManager.getUserId(), req) },
+            apiCall = { service.addPetProfile(req) },
             getResult = { it.result }
         )
 
-    suspend fun loadNotice(accessToken: String): Result<LoadNoticeData<_NoticeData, _PageInfoData>> =
+    suspend fun loadNotice(): Result<LoadNoticeData<_NoticeData, _PageInfoData>> =
         safeApiCall(
-            apiCall = { service.loadNotice(toBearerToken(accessToken)) },
-            getResult = { it.result}
+            apiCall = { service.loadNotice() },
+            getResult = { it.result }
         )
 
-    suspend fun loadNoticeDetail(accessToken: String, noticeId: Long): Result<LoadNoticeDetailData> =
+    suspend fun loadNoticeDetail(noticeId: Long): Result<LoadNoticeDetailData> =
         safeApiCall(
-            apiCall = { service.loadNoticeDetail(toBearerToken(accessToken), noticeId) },
-            getResult = { it.result}
+            apiCall = { service.loadNoticeDetail(noticeId) },
+            getResult = { it.result }
         )
 
     suspend fun addInquiry(type: String, content: String, /*req: AddInquiryRequest<AddInquiryRequestImg>, */imageUris: ArrayList<Uri>?, contentResolver: ContentResolver): Result<String?> {
@@ -180,16 +179,16 @@ class MyPageRepository(
             getResult = { it.result}
         )
 
-    suspend fun loadFaq(accessToken: String): Result<ArrayList<LoadFaqData>> =
+    suspend fun loadFaq(): Result<ArrayList<LoadFaqData>> =
         safeApiCall(
-            apiCall = { service.loadFaq(toBearerToken(accessToken)) },
-            getResult = { it.result}
+            apiCall = { service.loadFaq() },
+            getResult = { it.result }
         )
 
-    suspend fun loadFaqDetail(accessToken: String, faqId: Long): Result<LoadFaqDetailData> =
+    suspend fun loadFaqDetail(faqId: Long): Result<LoadFaqDetailData> =
         safeApiCall(
-            apiCall = { service.loadFaqDetail(toBearerToken(accessToken), faqId) },
-            getResult = { it.result}
+            apiCall = { service.loadFaqDetail(faqId) },
+            getResult = { it.result }
         )
 
     suspend fun logout(): Result<String?> = try {
