@@ -65,6 +65,8 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
     lateinit var rvAdapter: MyPageRVA
 
     private var loadProfileByApi: LoadProfileData ?= null
+    //private var loadPetsProfileByApi = ArrayList<LoadOnePetProfileData>()
+    private var loadPetListByApi = ArrayList<LoadPetListData>()
 
     private var petProfileDatas = ArrayList<MyPagePetProfileData>()
 
@@ -96,6 +98,8 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
         super.onResume()
 
         performLoadProfile()
+        //performLoadPetsProfile()
+        performLoadPetList()
         setName()
     }
 
@@ -114,12 +118,17 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
         myPageViewModel.setLocalDataManager(localDataManager)
 
         observePerformLoadProfile()
+        //observePerformLoadPetsProfile()
+        observePerformLoadPetList()
         observePerformLogout()
 
+        setRVA()
+
         performLoadProfile()
+        //performLoadPetsProfile()
+        performLoadPetList()
 
         initListener()
-        setRVA()
         setName()
 
     }
@@ -228,7 +237,7 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
     }
 
     private fun setRVA() {
-        rvAdapter = MyPageRVA(petProfileDatas) {
+        rvAdapter = MyPageRVA(loadPetListByApi) {
             clickedItem -> showBottomSheet(clickedItem)
         }
         binding.rvMyPagePetProfile.adapter = rvAdapter
@@ -237,8 +246,8 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
         )
     }
 
-    private fun showBottomSheet(data: MyPagePetProfileData) {
-        val bottomSheet = PetSelectBottomSheet()
+    private fun showBottomSheet(data: ArrayList<LoadPetListData>) {
+        val bottomSheet = PetSelectBottomSheet(data)
         bottomSheet.show(childFragmentManager, "PetSelectBottomSheet")
     }
 
@@ -288,7 +297,7 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
         }
     }
 
-    private fun setPetProfileByApi(dataList: ArrayList<PetProfileData>) {
+    private fun setPetProfileByApi(dataList: ArrayList<LoadPetListData>) {
         petProfileDatas.clear()
         for (data in dataList) {
             petProfileDatas.apply {
@@ -298,6 +307,7 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
                 ))
             }
         }
+        binding.rvMyPagePetProfile.adapter?.notifyDataSetChanged()
     }
 
 
@@ -332,6 +342,57 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
             result.onSuccess { data ->
                 bSuccessApi = true
                 Toast.makeText(requireActivity(), "로그아웃 성공!", Toast.LENGTH_SHORT).show()
+                bSuccessApi = false
+            }.onFailure { error ->
+                val message = error.message ?: "알 수 없는 오류"
+                Toast.makeText(requireActivity(), "로그아웃 실패: $message", Toast.LENGTH_LONG).show()
+                Log.d(TAG, "로그아웃 실패: $message")
+                bSuccessApi = false
+            }
+        }
+    }
+
+    /*
+    private fun performLoadPetsProfile() {
+        myPageViewModel.loadPetsProfile()
+    }
+
+    private fun observePerformLoadPetsProfile() {
+        myPageViewModel.loadPetsProfileResult.observe(this) { result ->
+            result.onSuccess { data ->
+                bSuccessApi = true
+                Toast.makeText(requireActivity(), "로그아웃 성공!", Toast.LENGTH_SHORT).show()
+
+                loadPetsProfileByApi = data
+                if (!loadPetsProfileByApi.isNullOrEmpty()){
+                    setPetProfileByApi(loadPetsProfileByApi)
+                }
+
+                bSuccessApi = false
+            }.onFailure { error ->
+                val message = error.message ?: "알 수 없는 오류"
+                Toast.makeText(requireActivity(), "로그아웃 실패: $message", Toast.LENGTH_LONG).show()
+                Log.d(TAG, "로그아웃 실패: $message")
+                bSuccessApi = false
+            }
+        }
+    }*/
+
+    private fun performLoadPetList() {
+        myPageViewModel.loadPetList()
+    }
+
+    private fun observePerformLoadPetList() {
+        myPageViewModel.loadPetListResult.observe(this) { result ->
+            result.onSuccess { data ->
+                bSuccessApi = true
+                Toast.makeText(requireActivity(), "반려동물 리스트 조회 성공!", Toast.LENGTH_SHORT).show()
+
+                loadPetListByApi = data
+                if (!loadPetListByApi.isNullOrEmpty()){
+                    setPetProfileByApi(loadPetListByApi)
+                }
+
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"

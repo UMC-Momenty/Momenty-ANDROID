@@ -56,7 +56,7 @@ class CustomerCenterFaqRVA(private val questList: ArrayList<CustomerCenterFaqDat
 
     inner class viewHolder(val binding: ItemFaqBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(data: CustomerCenterFaqData) {
-            binding.tvFaqQuest.text = data.quest
+            binding.tvFaqQuest.text = "Q " + data.quest
             binding.tvInquiryHistoryAnswer.text = data.answer
         }
     }

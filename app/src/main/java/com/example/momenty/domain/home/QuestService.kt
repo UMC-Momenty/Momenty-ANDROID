@@ -17,6 +17,6 @@ interface QuestService {
     @POST("api/answers")
     suspend fun writeQuest(
         @Body req: WriteQuestRequest
-    ): Response<BaseResponse<String>>
+    ): Response<BaseResponse<String?>>
     //fun writeQuest(@Body writeQuestRequest: WriteQuestRequest): Call<WriteQuestResponse>
 }

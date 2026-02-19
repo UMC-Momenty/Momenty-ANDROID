@@ -17,14 +17,32 @@ data class LoadProfileData(
     @SerializedName(value="resetQuestTime") val resetQuestTime: Boolean
 )
 
+data class LoadProfileDetailData(
+    @SerializedName(value="userId") val userId: Long,
+    @SerializedName(value="profileUrl") val profileUrl: String?,
+    @SerializedName(value="username") val username: String,
+    @SerializedName(value="gender") val gender: String,
+    @SerializedName(value="birth") val birth: String,
+    @SerializedName(value="questTime") val questTime: String?
+)
+
 data class LoadOnePetProfileData(
+    @SerializedName(value="petId") val petId: Long,
     @SerializedName(value="profileImageUrl") val profileImageUrl: String?,
     @SerializedName(value="petName") val petName: String,
     @SerializedName(value="gender") val gender: String,
     @SerializedName(value="birth") val birth: String,
     @SerializedName(value="species") val species: String,
-    @SerializedName(value="breedId") val breedId: Long?,
+    @SerializedName(value="breedName") val breedName: String?,
     @SerializedName(value="intro") val intro: String?
+)
+
+data class LoadPetListData(
+    @SerializedName(value="petId") val petId: Long,
+    @SerializedName(value="petName") val petName: String,
+    @SerializedName(value="species") val species: String,
+    @SerializedName(value="breedName") val breedName: String?,
+    @SerializedName(value="profileImageUrl") val profileImageUrl: String?,
 )
 
 data class PetProfileData(
@@ -98,7 +116,7 @@ data class LoadNoticeData<T1, T2>(
     @SerializedName(value = "notices") var notices: ArrayList<T1>,
     @SerializedName(value = "pageInfo") var pageInfo: T2
 )
-data class _NoticeData(
+data class _NoticeDatas(
     @SerializedName(value="noticeId") var noticeId: Long,
     @SerializedName(value="title") var title: String,
     @SerializedName(value="createdAt") var createdAt: String
@@ -125,7 +143,8 @@ data class AddInquiryRequest<T>(
     @SerializedName(value="images") var images: ArrayList<T>?
 )
 data class AddInquiryRequestImg(
-    @SerializedName(value = "imageKey") var imageKey: String?
+    @SerializedName(value = "inquiryImageId") var inquiryImageId: Long,
+    @SerializedName(value = "imageUrl") var imageUrl: String
 )
 
 data class GetImageUrlRequest(
@@ -156,12 +175,17 @@ data class LoadInquiryDataPageInfo(
 )
 
 data class LoadInquiryDetailData<T>(
+    @SerializedName(value = "inquiryId") var inquiryId: Long,
     @SerializedName(value="type") var type: String,
     @SerializedName(value="content") var content: String,
-    @SerializedName(value="images") var images: ArrayList<T>
+    @SerializedName(value="images") var images: ArrayList<T>,
+    @SerializedName(value = "isAnswered") var isAnswered: Boolean,
+    @SerializedName(value = "answer") var answer: String?,
+    @SerializedName(value = "createdAt") var createdAt: String?,
 )
 data class LoadInquiryDetailDataImages(
-    @SerializedName(value="imageKey") var imageKey: String
+    @SerializedName(value = "inquiryImageId") var inquiryImageId: Long,
+    @SerializedName(value="imageUrl") var imageUrl: String
 )
 
 data class LoadFaqData(

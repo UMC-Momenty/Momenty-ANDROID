@@ -352,6 +352,7 @@ class UserProfileActivity: AppCompatActivity() {
     }
 
     private fun handleProfileSuccess(state: ProfileUiState.Success) {
+        Log.d(TAG, "프로필 저장 성공")
 
         Toast.makeText(
             this@UserProfileActivity,

@@ -7,11 +7,10 @@
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/layout_faq_empty"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        android:background="@color/white"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -19,10 +18,9 @@
         android:visibility="gone">
 
         <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:background="@color/caption_2"
-            android:layout_marginBottom="16dp"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_nodata_character_mypage"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

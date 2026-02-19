@@ -63,7 +63,14 @@ class NotificationFragment: Fragment() {
     }
 
     private fun setRVA() {
-        val RVAdapter = NotificationRVA(notificationDatas)
+        val RVAdapter = NotificationRVA(notificationDatas) {notificationDatas ->
+            val intent = android.content.Intent().apply {
+                action = android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context?.packageName)
+            }
+
+            startActivity(intent)
+        }
         binding.rvNotification.adapter = RVAdapter
         binding.rvNotification.layoutManager = LinearLayoutManager(
             context, LinearLayoutManager.VERTICAL, false

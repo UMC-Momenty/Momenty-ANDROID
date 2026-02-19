@@ -46,8 +46,9 @@ class PetFormManageActivity: AppCompatActivity() {
 
     @Inject
     lateinit var tokenManager: TokenManager
-    private val tmpPetId = 1L //TODO: 테스트용. 이후 삭제 바람!!!!
-    private val tmpBreedId: Long? = 1L //TODO: 테스트용. 이후 삭제 바람!!!!
+    //private val tmpPetId = 1L //TODO: 테스트용. 이후 삭제 바람!!!!
+    //private val tmpBreedId: Long? = 1L //TODO: 테스트용. 이후 삭제 바람!!!!
+    private var breedIndex: Int ?= null
     private var bSuccessApi = false
 
     private var loadOnePetProfileDataByApi: LoadOnePetProfileData ?= null
@@ -114,7 +115,8 @@ class PetFormManageActivity: AppCompatActivity() {
         observePerformUpdatePetProfile()
         observePerformLoadOnePetProfile()
 
-        performLoadOnePetProfile(tmpPetId)
+        val petId = intent.getLongExtra("petId", 0L)
+        performLoadOnePetProfile(petId)
 
         Log.e(TAG, "start ManagyActivity")
 
@@ -126,7 +128,6 @@ class PetFormManageActivity: AppCompatActivity() {
 
     private fun initializeViews() {
         initListener()
-        getPetProfile()
         updateSaveButton()
     }
 
@@ -334,7 +335,9 @@ class PetFormManageActivity: AppCompatActivity() {
         }
     }
 
+
     private fun handleProfileSuccess(state: ProfileUiState.Success) {
+        Log.d(TAG, "프로필 저장 성공")
 
         Toast.makeText(
             this@PetFormManageActivity,
@@ -400,6 +403,7 @@ class PetFormManageActivity: AppCompatActivity() {
             .setTitle("품종 선택")
             .setItems(breeds)   { dialog, which ->
                 binding.etPetFormManageTypeDetail.setText(breeds[which])
+                breedIndex = which
                 updateSaveButton()
                 dialog.dismiss()
             }
@@ -447,7 +451,9 @@ class PetFormManageActivity: AppCompatActivity() {
             else -> ""
         }
         val petBirth = binding.etPetFormManageBirthday.text.toString()
-        val petType = binding.etPetFormManageType.text.toString()
+        val petType = if (binding.etPetFormManageType.text.toString() == "강아지") {
+            "DOG"
+        } else "CAT"
         val petTypeDetail = binding.etPetFormManageTypeDetail.text.toString()
         val petIntro = binding.etPetFormManageIntro.text.toString()
 
@@ -513,9 +519,9 @@ class PetFormManageActivity: AppCompatActivity() {
         )
 
 
-        val petIndex = intent.getLongExtra("petIndex", 0L)
+        val petId = intent.getLongExtra("petId", 0L)
 
-        if (petIndex == 0L) {
+        if (petId == 0L) {
             prefs.edit().apply {
                 putString("pet_name", name)
                 putString("pet_gender", gender)
@@ -528,7 +534,7 @@ class PetFormManageActivity: AppCompatActivity() {
                 putBoolean("pet_profile_completed", true)
                 apply()
             }
-        } else if (petIndex > 0L) {
+        } else if (petId > 0L) {
             val petData = MyPagePetProfileData(name, gender, birth, type,
                 typeDetail, intro, imageKey, imageUri.toString()
             )
@@ -536,7 +542,7 @@ class PetFormManageActivity: AppCompatActivity() {
             val petData2Json = gson.toJson(petData)
 
             prefs.edit().apply {
-                putString("pet_info_${petIndex}", petData2Json)
+                putString("pet_info_${petId}", petData2Json)
 
                 apply()
             }
@@ -571,9 +577,11 @@ class PetFormManageActivity: AppCompatActivity() {
 
      */
 
+    /*
     private fun getPetProfile() {
-        if (bSuccessApi && loadOnePetProfileDataByApi != null) {
+        if (loadOnePetProfileDataByApi != null) {
             // TODO: API 데이터 불러오기
+            /*
             var tmpData = LoadOnePetProfileData(
                 loadOnePetProfileDataByApi?.profileImageUrl,
                 loadOnePetProfileDataByApi!!.petName,
@@ -582,9 +590,9 @@ class PetFormManageActivity: AppCompatActivity() {
                 loadOnePetProfileDataByApi!!.species,
                 loadOnePetProfileDataByApi?.breedId,
                 loadOnePetProfileDataByApi?.intro
-            )
-            setPetProfile(tmpData)
-        } else {
+            )*/
+            setPetProfile(loadOnePetProfileDataByApi)
+        }/* else {
             val spf = getSharedPreferences(
                 "momenty_prefs",
                 android.content.Context.MODE_PRIVATE
@@ -596,7 +604,7 @@ class PetFormManageActivity: AppCompatActivity() {
                 val pet_name = spf.getString("pet_name", "반려동물이름")
                 val pet_gender = spf.getString("pet_gender", "male")
                 val pet_birth = spf.getString("pet_birth", "00.01.01")
-                val pet_type = spf.getString("pet_type", "강아지")
+                val pet_type = spf.getString("pet_type", "DOG")
                 val pet_type_detail = spf.getString("pet_type_detail", "")
                 val pet_intro = spf.getString("pet_intro", "")
                 val petProfileImageKey = spf.getString("pet_profile_image_key", null)  // 변경
@@ -616,38 +624,50 @@ class PetFormManageActivity: AppCompatActivity() {
                 Toast.makeText(this, "잘못된 인덱스", Toast.LENGTH_SHORT).show()
                 return
             }
-        }
+        }*/
 
-    }
+    }*/
 
     private fun setPetProfile(data: LoadOnePetProfileData?) {
-        val breeds = when(data?.species)  {
-            "강아지" -> resources.getStringArray(R.array.dog_type_options)
-            "고양이" -> resources.getStringArray(R.array.cat_type_options)
-            else -> return
-        }
-        if (!data?.profileImageUrl.isNullOrEmpty()) {
-            uploadedImageKey = data?.profileImageUrl
+        if (data != null) {
+            /*
+            val breeds = when(data?.species)  {
+                "DOG" -> resources.getStringArray(R.array.dog_type_options)
+                "CAT" -> resources.getStringArray(R.array.cat_type_options)
+                else -> return
+            }*/
+            if (!data?.profileImageUrl.isNullOrEmpty()) {
+                uploadedImageKey = data?.profileImageUrl
 
-            Glide.with(binding.root.context)
-                .load(uploadedImageKey)
-                .circleCrop()
-                .into(binding.ivPetFormManagePetProfileEdit)
-        }
+                Glide.with(binding.root.context)
+                    .load(uploadedImageKey)
+                    .circleCrop()
+                    .into(binding.ivPetFormManagePetProfileEdit)
+            }
 
-        binding.etPetFormManageName.setText(data?.petName)
-        when (data?.gender) {
-            "male" -> binding.rgPetGender.check(R.id.rb_gender_male)
-            else -> binding.rgPetGender.check(R.id.rb_gender_female)
+            binding.etPetFormManageName.setText(data?.petName)
+            when (data?.gender) {
+                "male" -> binding.rgPetGender.check(R.id.rb_gender_male)
+                else -> binding.rgPetGender.check(R.id.rb_gender_female)
+            }
+            binding.etPetFormManageBirthday.setText(data?.birth)
+            binding.etPetFormManageType.setText(
+                when(data?.species) {
+                    "DOG" -> "강아지"
+                    "CAT" -> "고양이"
+                    else -> ""
+                }
+            )
+            binding.etPetFormManageTypeDetail.setText(data?.breedName)
+            /*
+            if (tmpBreedId != null) {
+                binding.etPetFormManageTypeDetail.setText(breeds[tmpBreedId!!.toInt()])
+            }*/
+            binding.etPetFormManageIntro.setText(data?.intro)
         }
-        binding.etPetFormManageBirthday.setText(data?.birth)
-        binding.etPetFormManageType.setText(data?.species)
-        if (tmpBreedId != null) {
-            binding.etPetFormManageTypeDetail.setText(breeds[tmpBreedId!!.toInt()])
-        }
-        binding.etPetFormManageIntro.setText(data?.intro)
     }
 
+    /*
     private fun setText(name: String, gender: String, birth: String,
                         type: String, typeDetail: String?, intro: String?, imageKey: String?, uri: String?=null) {
 
@@ -678,10 +698,10 @@ class PetFormManageActivity: AppCompatActivity() {
                 .circleCrop()
                 .into(binding.ivPetFormManagePetProfileEdit)
         }
-    }
+    }*/
 
     private fun performUpdatePetProfile() {
-        val petIndex = intent.getLongExtra("petIndex", 0L)
+        val petId = intent.getLongExtra("petId", 0L)
 
         val req = UpdatePetProfileRequest(
             uploadedImageKey,
@@ -695,11 +715,11 @@ class PetFormManageActivity: AppCompatActivity() {
                 "yy.MM.dd", "yyyy-MM-dd")!!,
             binding.etPetFormManageType.text.toString(),
 
-            tmpBreedId,
+            breedIndex?.toLong(),
             binding.etPetFormManageIntro.text.toString()
         )
 
-        myPageViewModel.updatePetProfile(tmpPetId, req)
+        myPageViewModel.updatePetProfile(petId, req)
     }
 
     private fun observePerformUpdatePetProfile() {
@@ -728,7 +748,7 @@ class PetFormManageActivity: AppCompatActivity() {
                 bSuccessApi = true
                 Toast.makeText(this, "반려동물 프로필 로드 성공!", Toast.LENGTH_SHORT).show()
                 loadOnePetProfileDataByApi = data
-                getPetProfile()
+                setPetProfile(loadOnePetProfileDataByApi)
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
