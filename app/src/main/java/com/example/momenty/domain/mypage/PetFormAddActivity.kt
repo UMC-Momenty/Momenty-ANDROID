@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -22,7 +23,7 @@ import com.bumptech.glide.Glide
 import com.example.momenty.R
 import com.example.momenty.data.api.ImagePickerHelper
 import com.example.momenty.databinding.ActivityPetFormAddBinding
-import com.example.momenty.domain.home.KhgApiClient
+import com.example.momenty.domain.calendar.RetrofitClient
 import com.example.momenty.domain.member.ImageUploadState
 import com.example.momenty.domain.member.ProfileUiState
 import com.example.momenty.domain.member.ProfileViewModel
@@ -33,12 +34,20 @@ import java.util.Calendar
 import kotlin.getValue
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import javax.inject.Inject
+import kotlin.getValue
 
 @AndroidEntryPoint
 class PetFormAddActivity: AppCompatActivity() {
     lateinit var binding: ActivityPetFormAddBinding
+
+    @Inject
     lateinit var tokenManager: TokenManager
-    private val tmpUserId = 1 //TODO: 테스트용. 이후 삭제 바람!!!!
+    private val tmpPetId = 1L //TODO: 테스트용. 이후 삭제 바람!!!!
+    private val tmpBreedId: Long? = 1L //TODO: 테스트용. 이후 삭제 바람!!!!
+    private var bSuccessApi = false
 
     private val profileViewModel: ProfileViewModel by viewModels()
     private var selectedPetType: String? = null // 강아지 or 고양이
@@ -47,13 +56,11 @@ class PetFormAddActivity: AppCompatActivity() {
     private val TAG = "PetAddAct"
 
     private val myPageViewModel: MyPageViewModel by viewModels {
-        object: ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val service: MyPageService = KhgApiClient.myPageService
-                val repository = MyPageRepository(service)
-                return MyPageViewModel(repository) as T
-            }
-        }
+        val repo = MyPageRepository(
+            service = MyPageRetrofitClient.myPageService,
+            tokenManager = tokenManager
+        )
+        MyPageViewModelFactory(repo)
     }
 
     private val galleryLauncher = registerForActivityResult(
@@ -82,8 +89,21 @@ class PetFormAddActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
+        MyPageRetrofitClient.initialize(tokenManager, this)
+
+        // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
+        if (!tokenManager.isLoggedIn()) {
+            tokenManager.saveMockLoginInfo()
+            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
+        }
+
+        // ✅ ViewModel에 LocalDataManager 설정
+        val localDataManager = com.example.momenty.global.security.LocalDataManager(this)
+        myPageViewModel.setLocalDataManager(localDataManager)
+
+
         binding = ActivityPetFormAddBinding.inflate(layoutInflater)
-        tokenManager = TokenManager(this)
 
         setContentView(binding.root)
 
@@ -427,9 +447,10 @@ class PetFormAddActivity: AppCompatActivity() {
         val petTypeDetail = binding.etPetFormAddTypeDetail.text.toString()
         val petIntro = binding.etPetFormAddIntro.text.toString()
 
-        performAddPetProfile()
+        //performAddPetProfile()
         saveProfileLocally(petName, petGender, petBirth, petType, petTypeDetail, petIntro, uploadedImageKey, selectedImageUri)
         addPetCount()
+        performAddPetProfile()
 
         finish()
         /*
@@ -535,7 +556,7 @@ class PetFormAddActivity: AppCompatActivity() {
             "momenty_prefs",
             Context.MODE_PRIVATE
         )
-        var petIndex = prefs.getInt("pet_index", 0)
+        var petIndex = prefs.getLong("pet_index", 0L)
         val petData = MyPagePetProfileData(name, gender, birth, type,
             typeDetail, intro, imageKey, imageUri.toString()
         )
@@ -543,7 +564,7 @@ class PetFormAddActivity: AppCompatActivity() {
         val petData2Json = gson.toJson(petData)
 
         prefs.edit().apply {
-            putString("pet_info_${petIndex+1}", petData2Json)
+            putString("pet_info_${petIndex+1L}", petData2Json)
             apply()
         }
 
@@ -599,32 +620,42 @@ class PetFormAddActivity: AppCompatActivity() {
 
      */
 
-    private fun performAddPetProfile() {
-        val prefs = getSharedPreferences(
-            "momenty_prefs",
-            Context.MODE_PRIVATE
-        )
-        val petIndex = prefs.getInt("pet_index", 0)
 
+    private fun performAddPetProfile() {
         val req = AddPetProfileRequest(
-            petIndex,
-            binding.etPetAddName.text.toString(),
             uploadedImageKey,
+            binding.etPetAddName.text.toString(),
             when (binding.rgPetGender.checkedRadioButtonId) {
                 R.id.rb_gender_male -> "male"
                 R.id.rb_gender_female -> "female"
                 else -> ""
             },
-            formatDateForApi(binding.etPetFormAddBirthday.text.toString()),
+            getFormattedDate(binding.etPetFormAddBirthday.text.toString(),
+                "yy.MM.dd", "yyyy-MM-dd")!!,
             binding.etPetFormAddType.text.toString(),
-            binding.etPetFormAddTypeDetail.text.toString(),
+            tmpBreedId,
             binding.etPetFormAddIntro.text.toString()
         )
 
-        val accessToken = tokenManager.getAccessToken()
-        val userId = tokenManager.getUserId()
-        myPageViewModel.addPetProfile(accessToken!!, userId, req)
+        myPageViewModel.addPetProfile(req)
     }
+
+
+    private fun observePerformAddPetProfile() {
+        myPageViewModel.addPetProfileResult.observe(this) { result ->
+            result.onSuccess { data ->
+                bSuccessApi = true
+                Toast.makeText(this, "반려동물 추가 성공!", Toast.LENGTH_SHORT).show()
+                bSuccessApi = false
+            }.onFailure { error ->
+                val message = error.message ?: "알 수 없는 오류"
+                Toast.makeText(this, "반려동물 추가 실패: $message", Toast.LENGTH_LONG).show()
+                Log.d(TAG, "반려동물 추가 실패: $message")
+                bSuccessApi = false
+            }
+        }
+    }
+
 
     private fun addPetCount() {
         val prefs = getSharedPreferences(
@@ -632,23 +663,21 @@ class PetFormAddActivity: AppCompatActivity() {
             Context.MODE_PRIVATE
         )
 
-        val petIndex = prefs.getInt("pet_index", 0)
+        val petIndex = prefs.getLong("pet_index", 0L)
 
         prefs.edit().apply {
-            putInt("pet_index", petIndex+1)
+            putLong("pet_index", petIndex+1L)
             apply()
         }
     }
 
-    private fun observePerformAddPetProfile() {
-        myPageViewModel.addPetProfileResult.observe(this) { result ->
-            result.onSuccess { data ->
-                Toast.makeText(this, "반려동물 추가 성공!", Toast.LENGTH_SHORT).show()
-            }.onFailure { error ->
-                val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(this, "반려동물 추가 실패: $message", Toast.LENGTH_LONG).show()
-                Log.d(TAG, "반려동물 추가 실패: $message")
-            }
-        }
+    private fun getFormattedDate(dateString: String?, inputPattern: String, outputPattern: String): String? {
+        if (dateString == null) return null
+
+        val inputFormat = DateTimeFormatter.ofPattern(inputPattern)
+        val outputFormat = DateTimeFormatter.ofPattern(outputPattern)
+
+        val time = LocalDate.parse(dateString?.trim(), inputFormat)
+        return time.format(outputFormat)
     }
 }

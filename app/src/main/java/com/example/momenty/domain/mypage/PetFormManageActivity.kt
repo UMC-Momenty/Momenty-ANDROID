@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -25,7 +26,6 @@ import com.bumptech.glide.Glide
 import com.example.momenty.R
 import com.example.momenty.data.api.ImagePickerHelper
 import com.example.momenty.databinding.ActivityPetFormManageBinding
-import com.example.momenty.domain.home.KhgApiClient
 import com.example.momenty.domain.member.ImageUploadState
 import com.example.momenty.domain.member.ProfileUiState
 import com.example.momenty.domain.member.ProfileViewModel
@@ -34,15 +34,23 @@ import com.example.momenty.global.security.TokenManager
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import javax.inject.Inject
 import kotlin.getValue
 
 @AndroidEntryPoint
 class PetFormManageActivity: AppCompatActivity() {
     lateinit var binding: ActivityPetFormManageBinding
+
+    @Inject
     lateinit var tokenManager: TokenManager
-    private val tmpUserId = 1 //TODO: 테스트용. 이후 삭제 바람!!!!
-    private val tmpPetId = 1 //TODO: 테스트용. 이후 삭제 바람!!!!
+    private val tmpPetId = 1L //TODO: 테스트용. 이후 삭제 바람!!!!
+    private val tmpBreedId: Long? = 1L //TODO: 테스트용. 이후 삭제 바람!!!!
+    private var bSuccessApi = false
+
+    private var loadOnePetProfileDataByApi: LoadOnePetProfileData ?= null
 
     private val profileViewModel: ProfileViewModel by viewModels()
     private var selectedPetType: String? = null // 강아지 or 고양이
@@ -51,13 +59,11 @@ class PetFormManageActivity: AppCompatActivity() {
     private val TAG = "PetManageAct"
 
     private val myPageViewModel: MyPageViewModel by viewModels {
-        object: ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val service: MyPageService = KhgApiClient.myPageService
-                val repository = MyPageRepository(service)
-                return MyPageViewModel(repository) as T
-            }
-        }
+        val repo = MyPageRepository(
+            service = MyPageRetrofitClient.myPageService,
+            tokenManager = tokenManager
+        )
+        MyPageViewModelFactory(repo)
     }
 
     private val galleryLauncher = registerForActivityResult(
@@ -85,8 +91,21 @@ class PetFormManageActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
+        MyPageRetrofitClient.initialize(tokenManager, this)
+
+        // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
+        if (!tokenManager.isLoggedIn()) {
+            tokenManager.saveMockLoginInfo()
+            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
+        }
+
+        // ✅ ViewModel에 LocalDataManager 설정
+        val localDataManager = com.example.momenty.global.security.LocalDataManager(this)
+        myPageViewModel.setLocalDataManager(localDataManager)
+
+
         binding = ActivityPetFormManageBinding.inflate(layoutInflater)
-        tokenManager = TokenManager(this)
 
         setContentView(binding.root)
 
@@ -97,6 +116,9 @@ class PetFormManageActivity: AppCompatActivity() {
         )
 
         observePerformUpdatePetProfile()
+        observePerformLoadOnePetProfile()
+
+        performLoadOnePetProfile(tmpPetId)
 
         Log.e(TAG, "start ManagyActivity")
 
@@ -496,9 +518,9 @@ class PetFormManageActivity: AppCompatActivity() {
         )
 
 
-        val petIndex = intent.getIntExtra("petIndex", 0)
+        val petIndex = intent.getLongExtra("petIndex", 0L)
 
-        if (petIndex == 0) {
+        if (petIndex == 0L) {
             prefs.edit().apply {
                 putString("pet_name", name)
                 putString("pet_gender", gender)
@@ -511,7 +533,7 @@ class PetFormManageActivity: AppCompatActivity() {
                 putBoolean("pet_profile_completed", true)
                 apply()
             }
-        } else if (petIndex > 0) {
+        } else if (petIndex > 0L) {
             val petData = MyPagePetProfileData(name, gender, birth, type,
                 typeDetail, intro, imageKey, imageUri.toString()
             )
@@ -555,37 +577,80 @@ class PetFormManageActivity: AppCompatActivity() {
      */
 
     private fun getPetProfile() {
-        val spf = getSharedPreferences(
-            "momenty_prefs",
-            android.content.Context.MODE_PRIVATE
-        )
+        if (bSuccessApi && loadOnePetProfileDataByApi != null) {
+            // TODO: API 데이터 불러오기
+            var tmpData = LoadOnePetProfileData(
+                loadOnePetProfileDataByApi?.profileImageUrl,
+                loadOnePetProfileDataByApi!!.petName,
+                loadOnePetProfileDataByApi!!.gender,
+                getFormattedDate(loadOnePetProfileDataByApi?.birth, "yyyy-MM-dd", "yy.MM.dd")!!,
+                loadOnePetProfileDataByApi!!.species,
+                loadOnePetProfileDataByApi?.breedId,
+                loadOnePetProfileDataByApi?.intro
+            )
+            setPetProfile(tmpData)
+        } else {
+            val spf = getSharedPreferences(
+                "momenty_prefs",
+                android.content.Context.MODE_PRIVATE
+            )
 
-        val petIndex = intent.getIntExtra("petIndex", 0)
+            val petIndex = intent.getLongExtra("petIndex", 0L)
 
-        if (petIndex == 0) {
-            val pet_name = spf.getString("pet_name", "반려동물이름")
-            val pet_gender = spf.getString("pet_gender", "male")
-            val pet_birth = spf.getString("pet_birth", "00.01.01")
-            val pet_type = spf.getString("pet_type", "강아지")
-            val pet_type_detail = spf.getString("pet_type_detail", "")
-            val pet_intro = spf.getString("pet_intro", "")
-            val petProfileImageKey = spf.getString("pet_profile_image_key", null)  // 변경
+            if (petIndex == 0L) {
+                val pet_name = spf.getString("pet_name", "반려동물이름")
+                val pet_gender = spf.getString("pet_gender", "male")
+                val pet_birth = spf.getString("pet_birth", "00.01.01")
+                val pet_type = spf.getString("pet_type", "강아지")
+                val pet_type_detail = spf.getString("pet_type_detail", "")
+                val pet_intro = spf.getString("pet_intro", "")
+                val petProfileImageKey = spf.getString("pet_profile_image_key", null)  // 변경
 
-            setText(pet_name!!, pet_gender!!, pet_birth!!, pet_type!!, pet_type_detail, pet_intro, petProfileImageKey)
+                setText(pet_name!!, pet_gender!!, pet_birth!!, pet_type!!, pet_type_detail, pet_intro, petProfileImageKey)
 
-        } else if (petIndex > 0) {
-            val gson = Gson()
-            val petData = gson.fromJson(spf.getString("pet_info_${petIndex}", null), MyPagePetProfileData::class.java)
-            if (petData != null) {
-                setText(petData.name, petData.gender, petData.birth, petData.type, petData.typeDetail, petData.intro, petData.imageKey)
+            } else if (petIndex > 0L) {
+                val gson = Gson()
+                val petData = gson.fromJson(spf.getString("pet_info_${petIndex}", null), MyPagePetProfileData::class.java)
+                if (petData != null) {
+                    setText(petData.name, petData.gender, petData.birth, petData.type, petData.typeDetail, petData.intro, petData.imageKey)
+                } else {
+                    Toast.makeText(this, "반려동물 데이터 로드 실패", Toast.LENGTH_SHORT).show()
+                    return
+                }
             } else {
-                Toast.makeText(this, "반려동물 데이터 로드 실패", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "잘못된 인덱스", Toast.LENGTH_SHORT).show()
                 return
             }
-        } else {
-            Toast.makeText(this, "잘못된 인덱스", Toast.LENGTH_SHORT).show()
-            return
         }
+
+    }
+
+    private fun setPetProfile(data: LoadOnePetProfileData?) {
+        val breeds = when(data?.species)  {
+            "강아지" -> resources.getStringArray(R.array.dog_type_options)
+            "고양이" -> resources.getStringArray(R.array.cat_type_options)
+            else -> return
+        }
+        if (!data?.profileImageUrl.isNullOrEmpty()) {
+            uploadedImageKey = data?.profileImageUrl
+
+            Glide.with(binding.root.context)
+                .load(uploadedImageKey)
+                .circleCrop()
+                .into(binding.ivPetFormManagePetProfileEdit)
+        }
+
+        binding.etPetFormManageName.setText(data?.petName)
+        when (data?.gender) {
+            "male" -> binding.rgPetGender.check(R.id.rb_gender_male)
+            else -> binding.rgPetGender.check(R.id.rb_gender_female)
+        }
+        binding.etPetFormManageBirthday.setText(data?.birth)
+        binding.etPetFormManageType.setText(data?.species)
+        if (tmpBreedId != null) {
+            binding.etPetFormManageTypeDetail.setText(breeds[tmpBreedId!!.toInt()])
+        }
+        binding.etPetFormManageIntro.setText(data?.intro)
     }
 
     private fun setText(name: String, gender: String, birth: String,
@@ -604,12 +669,15 @@ class PetFormManageActivity: AppCompatActivity() {
         if (!imageKey.isNullOrEmpty()) {
             //val baseUrl = "https://api.momenty.com/"
             //val imageUrl = baseUrl + imageKey
+            uploadedImageKey = imageKey
 
             Glide.with(binding.root.context)
                 .load(imageKey)
                 .circleCrop()
                 .into(binding.ivPetFormManagePetProfileEdit)
         } else if (!uri.isNullOrEmpty()) {
+            uploadedImageKey = uri
+
             Glide.with(binding.root.context)
                 .load(Uri.parse(uri))
                 .circleCrop()
@@ -618,37 +686,71 @@ class PetFormManageActivity: AppCompatActivity() {
     }
 
     private fun performUpdatePetProfile() {
-        val petIndex = intent.getIntExtra("petIndex", 0)
+        val petIndex = intent.getLongExtra("petIndex", 0L)
 
         val req = UpdatePetProfileRequest(
-            petIndex,
-            binding.etPetFormManageName.text.toString(),
             uploadedImageKey,
+            binding.etPetFormManageName.text.toString(),
             when (binding.rgPetGender.checkedRadioButtonId) {
                 R.id.rb_gender_male -> "male"
                 R.id.rb_gender_female -> "female"
                 else -> ""
             },
-            formatDateForApi(binding.etPetFormManageBirthday.text.toString()),
+            getFormattedDate(binding.etPetFormManageBirthday.text.toString(),
+                "yy.MM.dd", "yyyy-MM-dd")!!,
             binding.etPetFormManageType.text.toString(),
-            binding.etPetFormManageTypeDetail.text.toString(),
+
+            tmpBreedId,
             binding.etPetFormManageIntro.text.toString()
         )
 
-        val accessToken = tokenManager.getAccessToken()
-        val userId = tokenManager.getUserId()
-        myPageViewModel.updatePetProfile(accessToken!!, userId, tmpPetId, req)
+        myPageViewModel.updatePetProfile(tmpPetId, req)
     }
 
     private fun observePerformUpdatePetProfile() {
         myPageViewModel.updatePetProfileResult.observe(this) { result ->
             result.onSuccess { data ->
+                bSuccessApi = true
                 Toast.makeText(this, "반려동물 수정 성공!", Toast.LENGTH_SHORT).show()
+                bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
                 Toast.makeText(this, "반려동물 수정 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "반려동물 수정 실패: $message")
+                bSuccessApi = false
             }
         }
+    }
+
+
+    private fun performLoadOnePetProfile(petId: Long) {
+        myPageViewModel.loadOnePetProfile(petId)
+    }
+
+    private fun observePerformLoadOnePetProfile() {
+        myPageViewModel.loadOnePetProfileResult.observe(this) { result ->
+            result.onSuccess { data ->
+                bSuccessApi = true
+                Toast.makeText(this, "반려동물 프로필 로드 성공!", Toast.LENGTH_SHORT).show()
+                loadOnePetProfileDataByApi = data
+                getPetProfile()
+                bSuccessApi = false
+            }.onFailure { error ->
+                val message = error.message ?: "알 수 없는 오류"
+                Toast.makeText(this, "반려동물 프로필 로드 실패: $message", Toast.LENGTH_LONG).show()
+                Log.d(TAG, "반려동물 프로필 로드 실패: $message")
+                bSuccessApi = false
+            }
+        }
+    }
+
+    private fun getFormattedDate(dateString: String?, inputPattern: String, outputPattern: String): String? {
+        if (dateString == null) return null
+
+        val inputFormat = DateTimeFormatter.ofPattern(inputPattern)
+        val outputFormat = DateTimeFormatter.ofPattern(outputPattern)
+
+        val time = LocalDate.parse(dateString?.trim(), inputFormat)
+        return time.format(outputFormat)
     }
 }
