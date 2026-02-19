@@ -156,10 +156,10 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
     }
 
     private fun observePerformLoadInquiry() {
-        myPageViewModel.loadInquiryResult.observe(this) { result ->
+        myPageViewModel.loadInquiryResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess { data ->
                 bSuccessApi = true
-                Toast.makeText(requireContext(), "문의내역 로드 성공!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(requireContext(), "문의내역 로드 성공!", Toast.LENGTH_SHORT).show()
                 loadInquiryDataByApi = data
                 Log.d(TAG, "문의내역 로드 성공: $data")
                 getInquiryDetailData()
@@ -168,7 +168,7 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(requireContext(), "문의내역 로드 실패: $message", Toast.LENGTH_LONG).show()
+                //Toast.makeText(requireContext(), "문의내역 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "문의내역 로드 실패: $message")
                 checkHistoryEmpty()
 
@@ -183,10 +183,10 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
 
 
     private fun observePerformLoadInquiryDetail() {
-        myPageViewModel.loadInquiryDetailResult.observe(this) { result ->
+        myPageViewModel.loadInquiryDetailResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess { data ->
                 bSuccessApi = true
-                Toast.makeText(requireContext(), "세부 문의내역 로드 성공!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(requireContext(), "세부 문의내역 로드 성공!", Toast.LENGTH_SHORT).show()
 
                 loadInquiryDetailDataByApi = data
                 setInquiryDetailData(loadInquiryDataInquiriesByApi)
@@ -197,7 +197,7 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
 
-                Toast.makeText(requireContext(), "세부 문의내역 로드 실패: $message", Toast.LENGTH_LONG).show()
+                //Toast.makeText(requireContext(), "세부 문의내역 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "문의내역 로드 실패: $message")
                 checkHistoryEmpty()
                 inputDummyData()

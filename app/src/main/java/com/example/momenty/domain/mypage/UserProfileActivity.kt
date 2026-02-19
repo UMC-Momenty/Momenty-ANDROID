@@ -663,11 +663,11 @@ class UserProfileActivity: AppCompatActivity() {
         myPageViewModel.updateUserProfileResult.observe(this) { result ->
             result.onSuccess { data ->
                 bSuccessApi = true
-                Toast.makeText(this, "프로필 수정 성공!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(this, "프로필 수정 성공!", Toast.LENGTH_SHORT).show()
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(this, "프로필 수정 실패: $message", Toast.LENGTH_LONG).show()
+                //Toast.makeText(this, "프로필 수정 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "프로필 수정 실패: $message")
                 bSuccessApi = false
             }
@@ -682,14 +682,14 @@ class UserProfileActivity: AppCompatActivity() {
         myPageViewModel.loadProfileResult.observe(this) { result ->
             result.onSuccess { data ->
                 bSuccessApi = true
-                Toast.makeText(this, "프로필 로드 성공!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(this, "프로필 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
                 loadProfileByApi = data
                 getUserProfile()
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(this, "프로필 로드 실패: $message", Toast.LENGTH_LONG).show()
+                //Toast.makeText(this, "프로필 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "프로필 로드 실패: $message")
                 bSuccessApi = false
             }

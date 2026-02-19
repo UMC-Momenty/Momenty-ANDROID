@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
 object QuestRetrofitClient {
 
     // Mock을 사용할 때는 URL이 중요하지 않지만, 일관성을 위해 설정
-    private const val BASE_URL = "https://api.momenty.com/"
+    private const val BASE_URL = "https://www.dev-service.shop/"
 
     // TokenManager 인스턴스 (Hilt로 주입받거나 싱글톤으로 접근)
     // 주의: 실제 프로젝트에서는 Hilt를 통해 주입받는 것을 권장
