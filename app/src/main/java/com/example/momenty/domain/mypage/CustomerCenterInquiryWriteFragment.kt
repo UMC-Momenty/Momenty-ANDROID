@@ -2,6 +2,8 @@ package com.example.momenty.domain.mypage
 
 import android.Manifest
 import android.app.Activity
+import android.content.ContentResolver
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -14,6 +16,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.MimeTypeMap
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ImageView
@@ -21,9 +24,11 @@ import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.ui.text.toUpperCase
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -33,20 +38,35 @@ import com.bumptech.glide.request.RequestOptions
 import com.example.momenty.R
 import com.example.momenty.data.api.ImagePickerHelper
 import com.example.momenty.data.api.PermissionHelper
+import com.example.momenty.data.remote.moment.CreateMomentRequestDto
+import com.example.momenty.data.remote.moment.MomentImageKeyDto
+import com.example.momenty.data.remote.moment.PresignedRequestDto
 import com.example.momenty.databinding.FragmentCustomerCenterInquiryWriteBinding
-import com.example.momenty.domain.home.KhgApiClient
+import com.example.momenty.domain.calendar.RetrofitClient
 import com.example.momenty.global.security.TokenManager
+import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.io.FileOutputStream
+import javax.inject.Inject
+import kotlin.collections.forEachIndexed
+import kotlin.collections.map
+import kotlin.collections.orEmpty
+import kotlin.collections.take
 import kotlin.getValue
 
+@AndroidEntryPoint
 class CustomerCenterInquiryWriteFragment: Fragment() {
     lateinit var binding: FragmentCustomerCenterInquiryWriteBinding
+
+    @Inject
     lateinit var tokenManager: TokenManager
+    private var bSuccessApi = false
 
     private val TAG = "InqWriteFrag"
     var imageFiles = mutableListOf<File>()
     var bContent = false
+
+    val imageUris = ArrayList<Uri>()
 
     var imgUri1: Uri ?= null
     var imgUri2: Uri ?= null
@@ -56,14 +76,12 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
     val imgKey = ArrayList<String>()
 
 
-    private val myPageViewModel: MyPageViewModel by viewModels {
-        object: ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val service: MyPageService = KhgApiClient.myPageService
-                val repository = MyPageRepository(service)
-                return MyPageViewModel(repository) as T
-            }
-        }
+    private val myPageViewModel: MyPageViewModel by activityViewModels {
+        val repo = MyPageRepository(
+            service = MyPageRetrofitClient.myPageService,
+            tokenManager = tokenManager
+        )
+        MyPageViewModelFactory(repo)
     }
 
     private val pickMultipleMedia = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(2)) { uris ->
@@ -88,11 +106,24 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
+        MyPageRetrofitClient.initialize(tokenManager, requireContext())
+
+        // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
+        if (!tokenManager.isLoggedIn()) {
+            tokenManager.saveMockLoginInfo()
+            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
+        }
+
+        // ✅ ViewModel에 LocalDataManager 설정
+        val localDataManager = com.example.momenty.global.security.LocalDataManager(requireContext())
+        myPageViewModel.setLocalDataManager(localDataManager)
+
         binding = FragmentCustomerCenterInquiryWriteBinding.inflate(inflater, container, false)
-        tokenManager = TokenManager(requireContext())
+
 
         observePerformAddInquiry()
-        observePerformGetImageUrl()
+        //observePerformGetImageUrl()
 
         setDropdown()
         initListener()
@@ -124,7 +155,7 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
 
             //selectGallery()
             pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-            performGetImageUrl()
+            //performGetImageUrl()
         }
 
         binding.btnInquiryWriteSubmit.setOnClickListener {
@@ -334,56 +365,68 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
         }
     }
 
+
     private fun performAddInquiry() {
         val type = binding.spInquiryWriteType.selectedItem as? String
         val content = binding.etInquiryWriteContent.text.toString()
+        val imageUris = ArrayList<Uri>()
+        imageUris.apply {
+            if (imgUri1 != null) add(imgUri1!!)
+            if (imgUri2 != null) add(imgUri2!!)
+        }
+        val contentResolver = requireContext().contentResolver
+        /*
         val images = ArrayList<AddInquiryRequestImg>().apply {
             for (iter in imgKey) {
                 add(AddInquiryRequestImg(iter))
             }
-            /*
-            if (imgUri1 != null) {
-                add(AddInquiryRequestImg(imgUri1.toString()))
-            }
-            if (imgUri2 != null) {
-                add(AddInquiryRequestImg(imgUri2.toString()))
-            }*/
-        }
-        val req = AddInquiryRequest(
-            type!!, content, images
-        )
+        }*/
 
-        val accessToken = tokenManager.getAccessToken()
-        val userId = tokenManager.getUserId()
-        myPageViewModel.addInquiry(accessToken!!, userId, req)
+        myPageViewModel.addInquiry(type!!, content, imageUris, contentResolver)
     }
 
+
+
+
+    private fun observePerformAddInquiry() {
+        myPageViewModel.addInquiryResult.observe(this) { result ->
+            result.onSuccess { data ->
+                bSuccessApi = true
+                Toast.makeText(requireContext(), "문의하기 성공!", Toast.LENGTH_SHORT).show()
+                bSuccessApi = false
+            }.onFailure { error ->
+                val message = error.message ?: "알 수 없는 오류"
+                Toast.makeText(requireContext(), "문의하기 실패: $message", Toast.LENGTH_LONG).show()
+                Log.d(TAG, "문의하기 실패: $message")
+                bSuccessApi = false
+            }
+        }
+    }
+
+    /*
     private fun performGetImageUrl() {
+
+        /*
         val imagesType = ArrayList<String>().apply {
             if (imgUri1 != null) {
-                add(imgUri1.toString())
+                val contentExtension: String ?= getContentImageExtension(requireContext(), imgUri1!!)
+                val fileExtension: String ?= getFileImageExtension(imgUri1!!)
+                if (checkUploadable(contentExtension)) add(contentExtension!!)
+                else if (checkUploadable(fileExtension)) add(fileExtension!!)
             }
             if (imgUri2 != null) {
-                add(imgUri2.toString())
+                val contentExtension: String ?= getContentImageExtension(requireContext(), imgUri2!!)
+                val fileExtension: String ?= getFileImageExtension(imgUri2!!)
+                if (checkUploadable(contentExtension)) add(contentExtension!!)
+                else if (checkUploadable(fileExtension)) add(fileExtension!!)
             }
         }
         val req = GetImageUrlRequest(imagesType)
 
         val accessToken = tokenManager.getAccessToken()
-        myPageViewModel.getImageUrl(accessToken!!, req)
+        myPageViewModel.getImageUrl(accessToken!!, req)*/
     }
 
-    private fun observePerformAddInquiry() {
-        myPageViewModel.addInquiryResult.observe(this) { result ->
-            result.onSuccess { data ->
-                Toast.makeText(requireContext(), "문의하기 성공!", Toast.LENGTH_SHORT).show()
-            }.onFailure { error ->
-                val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(requireContext(), "문의하기 실패: $message", Toast.LENGTH_LONG).show()
-                Log.d(TAG, "문의하기 실패: $message")
-            }
-        }
-    }
 
     private fun observePerformGetImageUrl() {
         myPageViewModel.getImageUrlResult.observe(this) { result ->
@@ -400,7 +443,7 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
                 Log.d(TAG, "이미지 키 변환 실패: $message")
             }
         }
-    }
+    }*/
 
 
     companion object{
@@ -411,5 +454,32 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
         const val PARAM_KEY_PRODUCT_ID = "product_id"
         const val PARAM_KEY_REVIEW = "review_content"
         const val PARAM_KEY_RATING = "rating"
+    }
+
+    private fun getContentImageExtension(context: Context, uri: Uri): String? {
+        try {
+            val contentResolver = context.contentResolver
+            val mimeType = contentResolver.getType(uri)
+
+            return MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)?.uppercase()
+        } catch (e: Exception) {
+            return null
+        }
+    }
+
+    private fun getFileImageExtension(uri: Uri): String? {
+        try {
+            val res = MimeTypeMap.getFileExtensionFromUrl(uri.toString()).uppercase()
+            return res
+        } catch (e: Exception) {
+            return null
+        }
+    }
+
+    private fun checkUploadable(ext: String?): Boolean {
+        if (ext != null) {
+            if (ext == "JPEG" || ext == "PNG") return true
+        }
+        return false
     }
 }
