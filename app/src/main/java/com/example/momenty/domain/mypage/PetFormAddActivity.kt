@@ -45,8 +45,9 @@ class PetFormAddActivity: AppCompatActivity() {
 
     @Inject
     lateinit var tokenManager: TokenManager
-    private val tmpPetId = 1L //TODO: 테스트용. 이후 삭제 바람!!!!
-    private val tmpBreedId: Long? = 1L //TODO: 테스트용. 이후 삭제 바람!!!!
+    //private val tmpPetId = 1L //TODO: 테스트용. 이후 삭제 바람!!!!
+    //private val tmpBreedId: Long? = 1L //TODO: 테스트용. 이후 삭제 바람!!!!
+    private var breedIndex: Int ?= null
     private var bSuccessApi = false
 
     private val profileViewModel: ProfileViewModel by viewModels()
@@ -95,7 +96,6 @@ class PetFormAddActivity: AppCompatActivity() {
         // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
         if (!tokenManager.isLoggedIn()) {
             tokenManager.saveMockLoginInfo()
-            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
         }
 
         // ✅ ViewModel에 LocalDataManager 설정
@@ -351,7 +351,7 @@ class PetFormAddActivity: AppCompatActivity() {
     }
 
     private fun handleProfileSuccess(state: ProfileUiState.Success) {
-        Log.d(TAG, "프로필 저장 성공: userId=${state.userId}, petId=${state.petId}")
+        Log.d(TAG, "프로필 저장 성공")
 
         Toast.makeText(
             this@PetFormAddActivity,
@@ -396,6 +396,7 @@ class PetFormAddActivity: AppCompatActivity() {
             .setTitle("품종 선택")
             .setItems(breeds)   { dialog, which ->
                 binding.etPetFormAddTypeDetail.setText(breeds[which])
+                breedIndex = which
                 updateSaveButton()
                 dialog.dismiss()
             }
@@ -443,7 +444,9 @@ class PetFormAddActivity: AppCompatActivity() {
             else -> ""
         }
         val petBirth = binding.etPetFormAddBirthday.text.toString()
-        val petType = binding.etPetFormAddType.text.toString()
+        val petType = if (binding.etPetFormAddType.text.toString() == "강아지") {
+            "DOG"
+        } else "CAT"
         val petTypeDetail = binding.etPetFormAddTypeDetail.text.toString()
         val petIntro = binding.etPetFormAddIntro.text.toString()
 
@@ -633,7 +636,7 @@ class PetFormAddActivity: AppCompatActivity() {
             getFormattedDate(binding.etPetFormAddBirthday.text.toString(),
                 "yy.MM.dd", "yyyy-MM-dd")!!,
             binding.etPetFormAddType.text.toString(),
-            tmpBreedId,
+            breedIndex?.toLong(),
             binding.etPetFormAddIntro.text.toString()
         )
 

@@ -12,9 +12,10 @@ import com.example.momenty.domain.mypage.data.MyPagePetProfileData
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
 
-class PetSelectBottomSheet: BottomSheetDialogFragment() {
+class PetSelectBottomSheet(private val petListData: ArrayList<LoadPetListData>): BottomSheetDialogFragment() {
     lateinit var binding: BottomSheetPetSelectBinding
-    private val petDatas = ArrayList<MyPagePetProfileData>()
+    //private val petDatas = ArrayList<LoadPetListData>()
+    private var petDatas = ArrayList<LoadPetListData>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,8 +39,11 @@ class PetSelectBottomSheet: BottomSheetDialogFragment() {
     }
 
     private fun initListener() {
+
     }
     private fun getPetDatas() {
+        petDatas = petListData
+        /*
         val spf = requireActivity().getSharedPreferences(
             "momenty_prefs",
             android.content.Context.MODE_PRIVATE
@@ -61,7 +65,7 @@ class PetSelectBottomSheet: BottomSheetDialogFragment() {
                 val petData = gson.fromJson(spf.getString("pet_info_${i}", null), MyPagePetProfileData::class.java)
                 petDatas.add(petData)
             }
-        }
+        }*/
 
         binding.rvPetSelect.adapter?.notifyDataSetChanged()
     }
