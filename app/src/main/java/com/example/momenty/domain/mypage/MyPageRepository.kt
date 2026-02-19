@@ -19,49 +19,50 @@ class MyPageRepository(
 ) {
     val TAG = "MyPageRepository"
 
-    suspend fun updateUserProfile(req: UpdateUserProfileRequest): Result<UpdateUserProfileData> =
+    // ===================== pet-controller =====================
+
+    /**
+     * 반려동물 프로필 추가
+     */
+    suspend fun addPetProfile(req: AddPetProfileRequest): Result<String?> =
         safeApiCall(
-            apiCall = { service.updateUserProfile(req) },
+            apiCall = { service.addPetProfile(req) },
             getResult = { it.result }
         )
 
-    suspend fun loadProfile(): Result<LoadProfileData> =
-        safeApiCall(
-            apiCall = {service.loadProfile(tokenManager.getUserId())},
-            getResult = {it.result}
-        )
-
+    /**
+     * 특정 반려동물 프로필 조회
+     */
     suspend fun loadOnePetProfile(petId: Long): Result<LoadOnePetProfileData> =
         safeApiCall(
             apiCall = {service.loadOnePetProfile(petId)},
             getResult = {it.result}
         )
 
-
+    /**
+     * 반려동물 프로필 수정
+     */
     suspend fun updatePetProfile(petId: Long, req: UpdatePetProfileRequest): Result<String?> =
         safeApiCall(
-            apiCall = { service.updatePetProfile(tokenManager.getUserId(), petId, req) },
+            apiCall = { service.updatePetProfile(petId, req) },
             getResult = { it.result }
         )
 
-    suspend fun addPetProfile(req: AddPetProfileRequest): Result<String?> =
+    /**
+     * 내 반려동물 리스트 조회
+     */
+    suspend fun loadPetList(): Result<ArrayList<LoadPetListData>> =
         safeApiCall(
-            apiCall = { service.addPetProfile(tokenManager.getUserId(), req) },
+            apiCall = { service.loadPetList() },
             getResult = { it.result }
         )
 
-    suspend fun loadNotice(accessToken: String): Result<LoadNoticeData<_NoticeData, _PageInfoData>> =
-        safeApiCall(
-            apiCall = { service.loadNotice(toBearerToken(accessToken)) },
-            getResult = { it.result}
-        )
 
-    suspend fun loadNoticeDetail(accessToken: String, noticeId: Long): Result<LoadNoticeDetailData> =
-        safeApiCall(
-            apiCall = { service.loadNoticeDetail(toBearerToken(accessToken), noticeId) },
-            getResult = { it.result}
-        )
+    // ===================== inquiry-controller =====================
 
+    /**
+     * 문의하기
+     */
     suspend fun addInquiry(type: String, content: String, /*req: AddInquiryRequest<AddInquiryRequestImg>, */imageUris: ArrayList<Uri>?, contentResolver: ContentResolver): Result<String?> {
         lateinit var body: AddInquiryRequest<AddInquiryRequestImg>
         if (!imageUris.isNullOrEmpty()) {
@@ -116,7 +117,7 @@ class MyPageRepository(
             }
 
             body = AddInquiryRequest(
-                type, content, ArrayList(presigned!!.map { AddInquiryRequestImg(it.key)})
+                type, content, ArrayList(presigned!!.map { AddInquiryRequestImg(0L, it.key)})
             )
         } else {
             body = AddInquiryRequest(
@@ -125,10 +126,6 @@ class MyPageRepository(
         }
 
         //if (imageUris!!.isEmpty()) throw IllegalArgumentException("사진 1장 이상 필요")
-
-
-
-
 
 
         return try {
@@ -162,35 +159,111 @@ class MyPageRepository(
             getResult = { it.result}
         )*/
 
+    /**
+     * 문의하기 이미지 업로드용 Presigned URL 발급
+     */
     suspend fun createInquiryPresignedUrls(req: GetImageUrlRequest): Result<ArrayList<GetImageUrlData>> =
         safeApiCall(
             apiCall = { service.createInquiryPresignedUrls(req) },
             getResult = { it.result}
         )
 
-    suspend fun loadInquiry(page: Int, size: Int, sort: ArrayList<String>): Result<LoadInquiryData<LoadInquiryDataInquiries, LoadInquiryDataPageInfo>> =
-        safeApiCall(
-            apiCall = { service.loadInquiry(page, size, sort) },
-            getResult = { it.result}
-        )
-
+    /**
+     * 문의내역 상세 조회
+     */
     suspend fun loadInquiryDetail(inquiryId: Long): Result<LoadInquiryDetailData<LoadInquiryDetailDataImages>> =
         safeApiCall(
             apiCall = { service.loadInquiryDetail(inquiryId) },
             getResult = { it.result}
         )
 
-    suspend fun loadFaq(accessToken: String): Result<ArrayList<LoadFaqData>> =
+    /**
+     * 문의내역 리스트 조회
+     */
+    suspend fun loadInquiry(page: Int, size: Int, sort: ArrayList<String>): Result<LoadInquiryData<LoadInquiryDataInquiries, LoadInquiryDataPageInfo>> =
         safeApiCall(
-            apiCall = { service.loadFaq(toBearerToken(accessToken)) },
+            apiCall = { service.loadInquiry(page, size, sort) },
             getResult = { it.result}
         )
 
-    suspend fun loadFaqDetail(accessToken: String, faqId: Long): Result<LoadFaqDetailData> =
+
+
+    // ===================== user-controller =====================
+
+    /**
+     * 사용자 프로필 조회
+     */
+    suspend fun loadProfile(): Result<LoadProfileData> =
         safeApiCall(
-            apiCall = { service.loadFaqDetail(toBearerToken(accessToken), faqId) },
+            apiCall = {service.loadProfile()},
+            getResult = {it.result}
+        )
+
+    /**
+     * 사용자 프로필 수정
+     */
+    suspend fun updateUserProfile(req: UpdateUserProfileRequest): Result<UpdateUserProfileData> =
+        safeApiCall(
+            apiCall = { service.updateUserProfile(req) },
+            getResult = { it.result }
+        )
+
+    /**
+     * 사용자 상세 조회
+     */
+    suspend fun loadProfileDetail(): Result<LoadProfileDetailData> =
+        safeApiCall(
+            apiCall = {service.loadProfileDetail()},
+            getResult = {it.result}
+        )
+
+
+
+    // ===================== notice-controller =====================
+
+    /**
+     * 공지사항 리스트 조회
+     */
+    suspend fun loadNotice(page: Int, size: Int, sort: ArrayList<String>): Result<LoadNoticeData<_NoticeDatas, _PageInfoData>> =
+        safeApiCall(
+            apiCall = { service.loadNotice(page, size, sort) },
             getResult = { it.result}
         )
+
+    /**
+     * 공지사항 상세 조회
+     */
+    suspend fun loadNoticeDetail(noticeId: Long): Result<LoadNoticeDetailData> =
+        safeApiCall(
+            apiCall = { service.loadNoticeDetail(noticeId) },
+            getResult = { it.result}
+        )
+
+
+
+    // ===================== faq-controller =====================
+
+    /**
+     * FAQ 리스트 조회
+     */
+    suspend fun loadFaq(): Result<ArrayList<LoadFaqData>> =
+        safeApiCall(
+            apiCall = { service.loadFaq() },
+            getResult = { it.result}
+        )
+
+    /**
+     * FAQ 상세 조회
+     */
+    suspend fun loadFaqDetail(faqId: Long): Result<LoadFaqDetailData> =
+        safeApiCall(
+            apiCall = { service.loadFaqDetail(faqId) },
+            getResult = { it.result}
+        )
+
+
+
+    // ===================== UNKNOWN =====================
 
     suspend fun logout(): Result<String?> = try {
         val response = service.logout()
@@ -219,6 +292,13 @@ class MyPageRepository(
     } catch (e: Exception) {
         Result.failure(e)
     }
+
+    /*
+    suspend fun loadPetsProfile(): Result<ArrayList<LoadOnePetProfileData>> =
+        safeApiCall(
+            apiCall = {service.loadPetsProfile(tokenManager.getUserId())},
+            getResult = {it.result}
+        )*/
 
 
     private suspend inline fun <T, R> safeApiCall(
