@@ -115,14 +115,16 @@
                     android:layout_height="100dp"
                     android:background="@color/caption_1"
                     android:layout_weight="1"
-                    android:layout_margin="10dp"/>
+                    android:layout_margin="10dp"
+                    android:visibility="invisible"/>
                 <ImageView
                     android:id="@+id/iv_inquiry_history_photo2"
                     android:layout_width="0dp"
                     android:layout_height="100dp"
                     android:background="@color/caption_1"
                     android:layout_weight="1"
-                    android:layout_margin="10dp"/>
+                    android:layout_margin="10dp"
+                    android:visibility="invisible"/>
             </LinearLayout>
         </LinearLayout>
 

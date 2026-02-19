@@ -8,35 +8,40 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.databinding.FragmentCustomerCenterInquiryHistoryBinding
-import com.example.momenty.domain.home.KhgApiClient
+import com.example.momenty.domain.calendar.RetrofitClient
 import com.example.momenty.domain.mypage.RVA.CustomerCenterInquiryHistoryRVA
 import com.example.momenty.domain.mypage.data.CustomerCenterInquiryHistoryData
 import com.example.momenty.global.security.TokenManager
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlin.getValue
 
+@AndroidEntryPoint
 class CustomerCenterInquiryHistoryFragment: Fragment() {
     lateinit var binding: FragmentCustomerCenterInquiryHistoryBinding
+
+    @Inject
     lateinit var tokenManager: TokenManager
     private val TAG = "InqHisFrag"
     private var bSuccessApi = false
 
     private var historyDatas = ArrayList<CustomerCenterInquiryHistoryData>()
-    private var loadInquiryData: LoadInquiryData<LoadInquiryDataInquiries, LoadInquiryDataPageInfo> ?= null
-    private var loadInquiryDetailData: LoadInquiryDetailData<LoadInquiryDetailDataImages> ?= null
+    private var loadInquiryDataByApi: LoadInquiryData<LoadInquiryDataInquiries, LoadInquiryDataPageInfo> ?= null
+    private var loadInquiryDataInquiriesByApi: LoadInquiryDataInquiries ?= null
+    private var loadInquiryDetailDataByApi: LoadInquiryDetailData<LoadInquiryDetailDataImages> ?= null
 
-    private val myPageViewModel: MyPageViewModel by viewModels {
-        object: ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val service: MyPageService = KhgApiClient.myPageService
-                val repository = MyPageRepository(service)
-                return MyPageViewModel(repository) as T
-            }
-        }
+    private val myPageViewModel: MyPageViewModel by activityViewModels {
+        val repo = MyPageRepository(
+            service = MyPageRetrofitClient.myPageService,
+            tokenManager = tokenManager
+        )
+        MyPageViewModelFactory(repo)
     }
 
     override fun onCreateView(
@@ -44,19 +49,31 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        MyPageRetrofitClient.initialize(tokenManager, requireContext())
+
+        // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
+        if (!tokenManager.isLoggedIn()) {
+            tokenManager.saveMockLoginInfo()
+            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
+        }
+
+        // ✅ ViewModel에 LocalDataManager 설정
+        val localDataManager = com.example.momenty.global.security.LocalDataManager(requireContext())
+        myPageViewModel.setLocalDataManager(localDataManager)
+
         binding = FragmentCustomerCenterInquiryHistoryBinding.inflate(inflater, container, false)
-        tokenManager = TokenManager(requireContext())
 
         observePerformLoadInquiry()
         observePerformLoadInquiryDetail()
 
+        setRVA()
         performLoadInquiry()
+        /*
         if (bSuccessApi) {
             getInquiryDetailData()
         } else {
             inputDummyData()
-        }
-        setRVA()
+        }*/
 
         return binding.root
     }
@@ -88,6 +105,8 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
                 )
             )
         }
+
+        binding.rvInquiryHistory.adapter?.notifyDataSetChanged()
     }
 
     private fun setRVA() {
@@ -105,44 +124,50 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
     }
 
     private fun getInquiryDetailData() {
-        historyDatas.apply {
-            clear()
-
-
-
-            for (iter in loadInquiryData!!.inquiries){
-                performLoadInquiryDetail(iter.inquiryId)
-                if (loadInquiryDetailData != null) {
-                    add(CustomerCenterInquiryHistoryData(
-                        "서비스 이용 안내", // TODO: 더미데이터. API에 제목?? 없다???
-                        iter.createdAt,
-                        iter.type,
-                        loadInquiryDetailData!!.content,
-                        loadInquiryDetailData!!.images,
-                        ""
-                    ))
+        if (bSuccessApi) {
+            historyDatas.apply {
+                clear()
+                Log.e(TAG, "getInquiryDetailData 진입")
+                for (iter in loadInquiryDataByApi!!.inquiries){
+                    loadInquiryDataInquiriesByApi = iter
+                    Log.e(TAG, "for문 진입")
+                    performLoadInquiryDetail(iter.inquiryId)
                 }
             }
+
+        }
+
+    }
+
+    private fun setInquiryDetailData(inquiries: LoadInquiryDataInquiries?) {
+        if (bSuccessApi && loadInquiryDetailDataByApi != null && inquiries != null) {
+            Log.e(TAG, "세부 문의내역 데이터 작성")
+            historyDatas.add(CustomerCenterInquiryHistoryData(
+                content2Title(loadInquiryDetailDataByApi!!.content),
+                inquiries.createdAt,
+                inquiries.type,
+                loadInquiryDetailDataByApi!!.content,
+                loadInquiryDetailDataByApi!!.images,
+                ""
+            ))
+            binding.rvInquiryHistory.adapter?.notifyDataSetChanged()
         }
     }
 
-    private fun performLoadInquiry() {
-        val accessToken = tokenManager.getAccessToken()
-        val userId = tokenManager.getUserId()
-        myPageViewModel.loadInquiry(accessToken!!, userId)
-    }
 
-    private fun performLoadInquiryDetail(inquiryId: Int) {
-        val accessToken = tokenManager.getAccessToken()
-        myPageViewModel.loadInquiryDetail(accessToken!!, inquiryId)
+    private fun performLoadInquiry() {
+        myPageViewModel.loadInquiry()
     }
 
     private fun observePerformLoadInquiry() {
         myPageViewModel.loadInquiryResult.observe(this) { result ->
             result.onSuccess { data ->
-                Toast.makeText(requireContext(), "문의내역 로드 성공!", Toast.LENGTH_SHORT).show()
-                loadInquiryData = data
                 bSuccessApi = true
+                Toast.makeText(requireContext(), "문의내역 로드 성공!", Toast.LENGTH_SHORT).show()
+                loadInquiryDataByApi = data
+                Log.d(TAG, "문의내역 로드 성공: $data")
+                getInquiryDetailData()
+                bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
                 Toast.makeText(requireContext(), "문의내역 로드 실패: $message", Toast.LENGTH_LONG).show()
@@ -152,18 +177,35 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
         }
     }
 
+    private fun performLoadInquiryDetail(inquiryId: Long) {
+        myPageViewModel.loadInquiryDetail(inquiryId)
+    }
+
+
     private fun observePerformLoadInquiryDetail() {
         myPageViewModel.loadInquiryDetailResult.observe(this) { result ->
             result.onSuccess { data ->
-                Toast.makeText(requireContext(), "문의내역 로드 성공!", Toast.LENGTH_SHORT).show()
-                loadInquiryDetailData = data
                 bSuccessApi = true
+                Toast.makeText(requireContext(), "세부 문의내역 로드 성공!", Toast.LENGTH_SHORT).show()
+                loadInquiryDetailDataByApi = data
+                setInquiryDetailData(loadInquiryDataInquiriesByApi)
+                Log.d(TAG, "세부 문의내역 로드 성공: $data")
+                bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(requireContext(), "문의내역 로드 실패: $message", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "세부 문의내역 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "문의내역 로드 실패: $message")
+                inputDummyData()
                 bSuccessApi = false
             }
+        }
+    }
+
+    private fun content2Title(input: String): String {
+        return if (input.length >= 7) {
+            input.take(7) + "..."
+        } else {
+            input
         }
     }
 }
