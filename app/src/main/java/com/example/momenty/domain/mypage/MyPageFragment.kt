@@ -316,6 +316,7 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
                 Toast.makeText(requireActivity(), "프로필 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
                 loadProfileByApi = data
+                setName()
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
