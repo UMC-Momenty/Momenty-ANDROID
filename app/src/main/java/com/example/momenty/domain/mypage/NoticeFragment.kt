@@ -29,12 +29,8 @@ class NoticeFragment: Fragment() {
 
     private val TAG = "NoticeFrag"
 
-    //private var noticeDatas = ArrayList<NoticeData>()
-    private var noticeDatas = ArrayList<_NoticeData>()
-    private var test_noticeDatas = ArrayList<_NoticeData>()
-    private var loadNoticeByApi = ArrayList<LoadNoticeData<_NoticeData, _PageInfoData>>()
-    private var noticeDetailData: LoadNoticeDetailData ?= null
-    private var test_noticeDetailList = ArrayList<LoadNoticeDetailData>()
+    private var loadNoticeByApi: LoadNoticeData<_NoticeDatas, _PageInfoData> ?= null
+    private var noticeDetailDataListByApi = ArrayList<LoadNoticeDetailData>()
 
     private val myPageViewModel: MyPageViewModel by activityViewModels {
         val repo = MyPageRepository(
@@ -55,7 +51,6 @@ class NoticeFragment: Fragment() {
         // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
         if (!tokenManager.isLoggedIn()) {
             tokenManager.saveMockLoginInfo()
-            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
         }
 
         // ✅ ViewModel에 LocalDataManager 설정
@@ -66,13 +61,11 @@ class NoticeFragment: Fragment() {
         binding = FragmentNoticeBinding.inflate(inflater, container, false)
 
 
-        //observePerformLoadNotice()
-        //observePerformLoadNoticeDetail()
+        observePerformLoadNotice()
+        observePerformLoadNoticeDetail()
 
         initListener()
-        inputDummyData()
-        //performLoadNotice()
-        loadData()
+        performLoadNotice()
 
         setRVA()
 
@@ -85,59 +78,36 @@ class NoticeFragment: Fragment() {
         }
     }
 
-    private fun loadData() {
-        if (!loadNoticeByApi.isNullOrEmpty()) {
-            Log.e(TAG, "api 요청 성공")
-            noticeDatas.clear()
-            for (data in loadNoticeByApi[0].notices) {
-                noticeDatas.add(data)
+    private fun loadNoticeDetail(dataList: LoadNoticeData<_NoticeDatas, _PageInfoData>?) {
+        noticeDetailDataListByApi.clear()
+        if (dataList != null) {
+            for (iter in dataList.notices) {
+                performLoadNoticeDetail(iter.noticeId)
             }
         } else {
-            Log.e(TAG, "api 요청 실패")
-            noticeDatas.clear()
-            for (data in test_noticeDatas) {
-                noticeDatas.add(data)
-            }
+            inputDummyData()
         }
+        binding.rvNotice.adapter?.notifyDataSetChanged()
     }
 
-
     private fun inputDummyData() {
-        test_noticeDatas.apply {
-            clear()
-            add(_NoticeData(0, "이용 약관 변경 안내", "2026-02-16T13:09:49.627Z"))
-            add(_NoticeData(1, "시스템 점검 안내", "2026-02-16T13:09:49.627Z"))
-        }
-        test_noticeDetailList.apply {
-            clear()
-            add(LoadNoticeDetailData(0, "이용 약관 변경 안내",
-                "이용 약관 변경 안내 내용", "2026-02-16T13:09:49.627Z"))
-            add(LoadNoticeDetailData(1, "시스템 점검 안내",
-                "시스템 점검 안내 내용", "2026-02-16T13:09:49.627Z"))
-        }
-        /*
-        noticeDatas.apply {
-            clear()
+        noticeDetailDataListByApi.apply {
             add(
-                NoticeData(
-                    "이용 약관 변경 안내",
-                    "26-02-14",
-                    "이용 약관 변경 안내 내용"
-                )
+                LoadNoticeDetailData(
+                0, "이용 약관 변경 안내",
+                "이용 약관 변경 안내 내용", "2026-02-16T13:09:49.627Z")
             )
 
             add(
-                NoticeData(
-                    "시스템 점검 안내",
-                    "26-02-15",
-                    "시스템 점검 안내 내용"
-                )
+                LoadNoticeDetailData(
+                    0, "시스템 점검 안내",
+                    "시스템 점검 안내 내용", "2026-02-16T13:09:49.627Z")
             )
-        }*/
+        }
     }
 
     private fun setRVA() {
-        val RVAdapter = NoticeRVA(noticeDatas)
+        val RVAdapter = NoticeRVA(noticeDetailDataListByApi)
         binding.rvNotice.adapter = RVAdapter
         binding.rvNotice.layoutManager = LinearLayoutManager(
             context, LinearLayoutManager.VERTICAL, false
@@ -145,45 +115,21 @@ class NoticeFragment: Fragment() {
 
         RVAdapter.setMyItemClickListener(object: NoticeRVA.MyItemClickListener{
             override fun onItemClick(position: Int) {
-                //performLoadNoticeDetail(noticeDatas[position].noticeId)
-
-                if (bSuccessApi) {
-                    Log.e(TAG, "api 요청 성공")
-                    val title = noticeDetailData?.title
-                    val content = noticeDetailData?.content
-                    this@NoticeFragment.findNavController().navigate(
-                        NoticeFragmentDirections.actionNoticeFragmentToNoticeDetailFragment(
-                            title!!, content!!
-                        )
-                    )
-                } else {
-                    Log.e(TAG, "api 요청 실패 ${noticeDatas[position].noticeId}")
-                    //noticeDetailData = test_noticeDetailList[noticeDatas[position].noticeId]
-                    val title = noticeDetailData?.title
-                    val content = noticeDetailData?.content
-                    this@NoticeFragment.findNavController().navigate(
-                        NoticeFragmentDirections.actionNoticeFragmentToNoticeDetailFragment(
-                            title!!, content!!
-                        )
-                    )
-                }
-
-                /*
-                val data = RVAdapter.getNoticeData(position)
+                val data = noticeDetailDataListByApi[position]
 
                 this@NoticeFragment.findNavController().navigate(
                     NoticeFragmentDirections.actionNoticeFragmentToNoticeDetailFragment(
-                        data.title, data.content
+                        title = data.title,
+                        content = data.content
                     )
-                )*/
+                )
             }
         })
     }
 
-    /*
+
     private fun performLoadNotice() {
-        val accessToken = tokenManager.getAccessToken()
-        myPageViewModel.loadNotice(accessToken!!)
+        myPageViewModel.loadNotice()
     }
 
     private fun observePerformLoadNotice() {
@@ -191,23 +137,25 @@ class NoticeFragment: Fragment() {
             result.onSuccess { data ->
                 Toast.makeText(requireActivity(), "공지 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
-                loadNoticeByApi.apply {
-                    clear()
-                    add(data)
-                }
                 bSuccessApi = true
+
+                loadNoticeByApi = data
+                loadNoticeDetail(loadNoticeByApi)
+
+                bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
                 Toast.makeText(requireActivity(), "공지 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "공지 로드 실패: $message")
+
+                //inputDummyData()
                 bSuccessApi = false
             }
         }
     }
 
-    private fun performLoadNoticeDetail(noticeId: Int=1) {
-        val accessToken = tokenManager.getAccessToken()
-        myPageViewModel.loadNoticeDetail(accessToken!!, noticeId)
+    private fun performLoadNoticeDetail(noticeId: Long) {
+        myPageViewModel.loadNoticeDetail(noticeId)
     }
 
     private fun observePerformLoadNoticeDetail() {
@@ -215,7 +163,9 @@ class NoticeFragment: Fragment() {
             result.onSuccess { data ->
                 Toast.makeText(requireActivity(), "공지 세부 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
-                noticeDetailData = data
+
+                noticeDetailDataListByApi.add(data)
+
                 bSuccessApi = true
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
@@ -224,14 +174,5 @@ class NoticeFragment: Fragment() {
                 bSuccessApi = false
             }
         }
-    }*/
-
-    /*
-    private fun getFormattedDate(date: String): String {
-        val parsedDate = ZonedDateTime.parse(date)
-        val formatter = DateTimeFormatter.ofPattern("yy-MM-dd")
-        val result = parsedDate.format(formatter)
-
-        return result
-    }*/
+    }
 }
