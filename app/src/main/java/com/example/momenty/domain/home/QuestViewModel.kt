@@ -7,23 +7,23 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 class QuestViewModel(private val repository: QuestRepository): ViewModel() {
-    private val _writeQuestResult = MutableLiveData<Result<WriteQuestData>>()
-    val writeQuestResult: LiveData<Result<WriteQuestData>> = _writeQuestResult
+    private val _writeQuestResult = MutableLiveData<Result<String>>()
+    val writeQuestResult: LiveData<Result<String>> = _writeQuestResult
 
     private val _loadQuestResult = MutableLiveData<Result<LoadQuestData>>()
     val loadQuestResult: LiveData<Result<LoadQuestData>> = _loadQuestResult
 
-    fun writeQuest(accessToken:String, questId: String, petId: String, answer: String) {
+    fun writeQuest(questId: Long, petId: Long, answer: String) {
         viewModelScope.launch {
             val request = WriteQuestRequest(questId, petId, answer)
-            val result = repository.writeQuest(accessToken, request)
+            val result = repository.writeQuest(request)
             _writeQuestResult.postValue(result)
         }
     }
 
-    fun loadQuest(accessToken:String) {
+    fun loadQuest() {
         viewModelScope.launch {
-            val result = repository.loadQuest(accessToken)
+            val result = repository.loadQuest()
             _loadQuestResult.postValue(result)
         }
     }

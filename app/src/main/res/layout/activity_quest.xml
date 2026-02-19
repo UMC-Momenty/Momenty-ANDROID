@@ -83,6 +83,42 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_write_question_number"/>
 
+    <RadioGroup
+        android:id="@+id/rg_write_question"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tv_write_question_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal"
+        android:layout_marginTop="18dp"
+        android:gravity="center">
+
+        <RadioButton
+            android:id="@+id/rb_write_good"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:drawableStart="@drawable/rb_feel_good_quest"
+            android:layout_weight="1"/>
+
+        <RadioButton
+            android:id="@+id/rb_write_soso"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:drawableStart="@drawable/rb_feel_soso_quest"
+            android:layout_weight="1"/>
+
+        <RadioButton
+            android:id="@+id/rb_write_bad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:drawableStart="@drawable/rb_feel_bad_quest"/>
+
+    </RadioGroup>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_write_input_container"
         android:layout_width="match_parent"
@@ -90,7 +126,7 @@
         android:layout_marginTop="24dp"
         android:background="@drawable/bg_edittext_normal"
         android:padding="16dp"
-        app:layout_constraintTop_toBottomOf="@id/tv_write_question_content">
+        app:layout_constraintTop_toBottomOf="@id/rg_write_question">
 
         <TextView
             android:id="@+id/tv_write_question_text_count"

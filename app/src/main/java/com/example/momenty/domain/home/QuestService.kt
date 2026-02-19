@@ -7,18 +7,17 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface QuestService {
     @GET("api/quest/today")
     //fun loadQuest(@Header("Authorization") token: String): Call<LoadQuestResponse>
-    suspend fun loadQuest(
-        @Header("Authorization") token: String
-    ): Response<BaseResponse<LoadQuestData>>
+    suspend fun loadQuest(): Response<BaseResponse<LoadQuestData>>
 
-    @POST("api/quest")
+    @POST("api/users/{userId}/answers")
     suspend fun writeQuest(
-        @Header("Authorization") token: String,
+        @Path("userId") id: Long,
         @Body req: WriteQuestRequest
-    ): Response<BaseResponse<WriteQuestData>>
+    ): Response<BaseResponse<String>>
     //fun writeQuest(@Body writeQuestRequest: WriteQuestRequest): Call<WriteQuestResponse>
 }
