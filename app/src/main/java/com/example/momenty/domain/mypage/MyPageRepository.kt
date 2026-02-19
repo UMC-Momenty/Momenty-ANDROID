@@ -1,32 +1,52 @@
 package com.example.momenty.domain.mypage
 
+import android.content.ContentResolver
+import android.net.Uri
 import android.util.Log
+import com.example.momenty.data.remote.moment.CreateMomentRequestDto
+import com.example.momenty.data.remote.moment.MomentImageKeyDto
+import com.example.momenty.data.remote.moment.PresignedRequestDto
+import com.example.momenty.global.security.TokenManager
 import retrofit2.Response
+import kotlin.collections.forEachIndexed
+import kotlin.collections.map
+import kotlin.collections.orEmpty
+import kotlin.collections.take
 
-class MyPageRepository(private val service: MyPageService) {
+class MyPageRepository(
+    private val service: MyPageService,
+    private val tokenManager: TokenManager
+) {
     val TAG = "MyPageRepository"
 
-    suspend fun loadProfile(accessToken: String, userId: Long): Result<LoadProfileData> =
+    suspend fun updateUserProfile(req: UpdateUserProfileRequest): Result<UpdateUserProfileData> =
         safeApiCall(
-            apiCall = {service.loadProfile(toBearerToken(accessToken), userId)},
+            apiCall = { service.updateUserProfile(req) },
+            getResult = { it.result }
+        )
+
+    suspend fun loadProfile(): Result<LoadProfileData> =
+        safeApiCall(
+            apiCall = {service.loadProfile(tokenManager.getUserId())},
             getResult = {it.result}
         )
 
-    suspend fun updateUserProfile(accessToken: String, userId: Long, req: UpdateUserProfileRequest): Result<Unit> =
+    suspend fun loadOnePetProfile(petId: Long): Result<LoadOnePetProfileData> =
         safeApiCall(
-            apiCall = { service.updateUserProfile(toBearerToken(accessToken), userId, req) },
+            apiCall = {service.loadOnePetProfile(petId)},
+            getResult = {it.result}
+        )
+
+
+    suspend fun updatePetProfile(petId: Long, req: UpdatePetProfileRequest): Result<String?> =
+        safeApiCall(
+            apiCall = { service.updatePetProfile(tokenManager.getUserId(), petId, req) },
             getResult = { it.result }
         )
 
-    suspend fun updatePetProfile(accessToken: String, userId: Long, petId: Int, req: UpdatePetProfileRequest): Result<Unit> =
+    suspend fun addPetProfile(req: AddPetProfileRequest): Result<String?> =
         safeApiCall(
-            apiCall = { service.updatePetProfile(toBearerToken(accessToken), userId, petId, req) },
-            getResult = { it.result }
-        )
-
-    suspend fun addPetProfile(accessToken: String, userId: Long, req: AddPetProfileRequest): Result<Unit> =
-        safeApiCall(
-            apiCall = { service.addPetProfile(toBearerToken(accessToken), userId, req) },
+            apiCall = { service.addPetProfile(tokenManager.getUserId(), req) },
             getResult = { it.result }
         )
 
@@ -36,33 +56,127 @@ class MyPageRepository(private val service: MyPageService) {
             getResult = { it.result}
         )
 
-    suspend fun loadNoticeDetail(accessToken: String, noticeId: Int): Result<LoadNoticeDetailData> =
+    suspend fun loadNoticeDetail(accessToken: String, noticeId: Long): Result<LoadNoticeDetailData> =
         safeApiCall(
             apiCall = { service.loadNoticeDetail(toBearerToken(accessToken), noticeId) },
             getResult = { it.result}
         )
 
-    suspend fun addInquiry(accessToken: String, userId: Long, req: AddInquiryRequest<AddInquiryRequestImg>): Result<String> =
+    suspend fun addInquiry(type: String, content: String, /*req: AddInquiryRequest<AddInquiryRequestImg>, */imageUris: ArrayList<Uri>?, contentResolver: ContentResolver): Result<String?> {
+        lateinit var body: AddInquiryRequest<AddInquiryRequestImg>
+        if (!imageUris.isNullOrEmpty()) {
+            val safeUris = imageUris.take(2)
+            val imageCount = safeUris.size
+
+            val mimeTypes = safeUris.map { uri ->
+                contentResolver.getType(uri) ?: "image/jpeg"
+            }
+
+            val imageTypes = mimeTypes.map { mime ->
+                if (mime == "image/png") "PNG" else "JPEG"
+            }
+
+            val imgReq = GetImageUrlRequest(
+                ArrayList(imageTypes)
+            )
+
+            val presignedRes = service.createInquiryPresignedUrls(imgReq)
+            val presigned = presignedRes.body()?.result
+
+            if (!presignedRes.isSuccessful) {
+                throw IllegalStateException("presigned 발급 실패")
+            }
+            if (presigned?.size != imageCount) {
+                Log.e(TAG, "presigned:${presigned?.size}, imageCount:${imageCount}")
+                Log.e(TAG, "safeUris: $safeUris")
+                Log.e(TAG, "presigned: $presigned")
+                throw IllegalStateException("presigned 개수 불일치")
+            }
+
+
+
+            if (!com.example.momenty.global.mock.MockApiInterceptor.isMockEnabled) {
+                presigned?.forEachIndexed { idx, item ->
+                    val uri = safeUris[idx]
+                    val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                        ?: throw IllegalStateException("이미지 읽기 실패: $uri")
+
+                    val contentType = mimeTypes[idx]
+
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        com.example.momenty.data.remote.S3Uploader.upload(
+                            presignedUrl = item.url,
+                            bytes = bytes,
+                            contentType = contentType
+                        )
+                    }
+                }
+            } else {
+                android.util.Log.d("MockApi", "SKIP S3 upload (mock mode)")
+            }
+
+            body = AddInquiryRequest(
+                type, content, ArrayList(presigned!!.map { AddInquiryRequestImg(it.key)})
+            )
+        } else {
+            body = AddInquiryRequest(
+                type, content, null
+            )
+        }
+
+        if (imageUris!!.isEmpty()) throw IllegalArgumentException("사진 1장 이상 필요")
+
+
+
+
+
+
+        return try {
+            val response = service.addInquiry(body)
+
+            if (response.isSuccessful) {
+                val resBody = response.body()
+
+                if (resBody == null) {
+                    Log.d(TAG, "Response Body is null")
+                    Result.failure(RuntimeException("Response Body is null"))
+                } else if(resBody.result == null) {
+                    Log.d(TAG, "Response OK but Data is null")
+                    Result.failure(RuntimeException("Response OK but Data is null"))
+                } else {
+                    Log.d(TAG, "OK")
+                    Result.success(resBody.result)
+                }
+            } else {
+                val errMsg = response.errorBody()?.string() ?: response.message()
+                Log.d(TAG, "비상: $errMsg")
+                Result.failure(RuntimeException("HTTP ${response.code()}: $errMsg"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    /*=
         safeApiCall(
-            apiCall = { service.addInquiry(toBearerToken(accessToken), userId, req) },
+            apiCall = { service.addInquiry(tokenManager.getUserId(), req) },
+            getResult = { it.result}
+        )*/
+
+    suspend fun createInquiryPresignedUrls(req: GetImageUrlRequest): Result<ArrayList<GetImageUrlData>> =
+        safeApiCall(
+            apiCall = { service.createInquiryPresignedUrls(req) },
             getResult = { it.result}
         )
 
-    suspend fun getImageUrl(accessToken: String, req: GetImageUrlRequest): Result<ArrayList<GetImageUrlData>> =
+    suspend fun loadInquiry(page: Int, size: Int, sort: ArrayList<String>): Result<LoadInquiryData<LoadInquiryDataInquiries, LoadInquiryDataPageInfo>> =
         safeApiCall(
-            apiCall = { service.getImageUrl(toBearerToken(accessToken), req) },
+            apiCall = { service.loadInquiry(page, size, sort) },
             getResult = { it.result}
         )
 
-    suspend fun loadInquiry(accessToken: String, userId: Long): Result<LoadInquiryData<LoadInquiryDataInquiries, LoadInquiryDataPageInfo>> =
+    suspend fun loadInquiryDetail(inquiryId: Long): Result<LoadInquiryDetailData<LoadInquiryDetailDataImages>> =
         safeApiCall(
-            apiCall = { service.loadInquiry(toBearerToken(accessToken), userId) },
-            getResult = { it.result}
-        )
-
-    suspend fun loadInquiryDetail(accessToken: String, inquiryId: Int): Result<LoadInquiryDetailData<LoadInquiryDetailDataImages>> =
-        safeApiCall(
-            apiCall = { service.loadInquiryDetail(toBearerToken(accessToken), inquiryId) },
+            apiCall = { service.loadInquiryDetail(inquiryId) },
             getResult = { it.result}
         )
 
@@ -72,11 +186,39 @@ class MyPageRepository(private val service: MyPageService) {
             getResult = { it.result}
         )
 
-    suspend fun loadFaqDetail(accessToken: String, faqId: Int): Result<LoadFaqDetailData> =
+    suspend fun loadFaqDetail(accessToken: String, faqId: Long): Result<LoadFaqDetailData> =
         safeApiCall(
             apiCall = { service.loadFaqDetail(toBearerToken(accessToken), faqId) },
             getResult = { it.result}
         )
+
+    suspend fun logout(): Result<String?> = try {
+        val response = service.logout()
+
+        if (response.isSuccessful) {
+            val body = response.body()
+
+            if (body == null) {
+                Log.d(TAG, "Response body is null")
+                Result.failure(RuntimeException("Response body is null"))
+            }
+            else if (body.result == null) {
+                Log.d(TAG, "Response OK but Data is null")
+                Result.success(body.result)
+            }
+            else {
+                Log.d(TAG, "OK")
+                Result.success(body.result)
+            }
+        }
+        else {
+            val errMsg = response.errorBody()?.string() ?: response.message()
+            Log.d(TAG, "비상: $errMsg")
+            Result.failure(RuntimeException("HTTP ${response.code()}: $errMsg"))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 
 
     private suspend inline fun <T, R> safeApiCall(

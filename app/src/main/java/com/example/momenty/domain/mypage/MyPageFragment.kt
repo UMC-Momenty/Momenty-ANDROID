@@ -11,23 +11,32 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.example.momenty.BuildConfig
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentMyPageBinding
-import com.example.momenty.domain.home.KhgApiClient
+import com.example.momenty.domain.calendar.RetrofitClient
+import com.example.momenty.domain.home.LogoutDialog
+import com.example.momenty.domain.home.MyLogoutInterface
+import com.example.momenty.domain.home.MyUnsubscribeInterface
+import com.example.momenty.domain.home.UnsubscribeDialog
 import com.example.momenty.domain.main.presentation.MainActivity
 import com.example.momenty.domain.mypage.RVA.MyPageRVA
 import com.example.momenty.domain.mypage.RVA.NoticeRVA
 import com.example.momenty.domain.mypage.data.MyPagePetProfileData
 import com.example.momenty.domain.mypage.data.NoticeData
+import com.example.momenty.global.mock.MockApiInterceptor
 import com.example.momenty.global.security.TokenManager
 import com.google.gson.Gson
 import com.kakao.sdk.user.model.User
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlin.getValue
 
 // TODO: Rename parameter arguments, choose names that match
@@ -40,15 +49,17 @@ private const val ARG_PARAM2 = "param2"
  * Use the [MyPageFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class MyPageFragment : Fragment() {
+@AndroidEntryPoint
+class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
 
     private val TAG = "MyPageFrag"
-    private val tmpUserId = 1 //TODO: 테스트용. 이후 삭제 바람!!!!
 
     lateinit var binding: FragmentMyPageBinding
+
+    @Inject
     lateinit var tokenManager: TokenManager
     private var bSuccessApi = false
     lateinit var rvAdapter: MyPageRVA
@@ -57,6 +68,7 @@ class MyPageFragment : Fragment() {
 
     private var petProfileDatas = ArrayList<MyPagePetProfileData>()
 
+    /*
     private val myPageViewModel: MyPageViewModel by viewModels {
         object: ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -65,6 +77,14 @@ class MyPageFragment : Fragment() {
                 return MyPageViewModel(repository) as T
             }
         }
+    }*/
+
+    private val myPageViewModel: MyPageViewModel by activityViewModels {
+        val repo = MyPageRepository(
+            service = MyPageRetrofitClient.myPageService,
+            tokenManager = tokenManager
+        )
+        MyPageViewModelFactory(repo)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,7 +98,34 @@ class MyPageFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
+        performLoadProfile()
         setName()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        MyPageRetrofitClient.initialize(tokenManager, requireContext())
+
+        // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
+        if (!tokenManager.isLoggedIn()) {
+            tokenManager.saveMockLoginInfo()
+            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
+        }
+
+        // ✅ ViewModel에 LocalDataManager 설정
+        val localDataManager = com.example.momenty.global.security.LocalDataManager(requireContext())
+        myPageViewModel.setLocalDataManager(localDataManager)
+
+        observePerformLoadProfile()
+        observePerformLogout()
+
+        performLoadProfile()
+
+        initListener()
+        setRVA()
+        setName()
+
     }
 
     override fun onCreateView(
@@ -87,15 +134,11 @@ class MyPageFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         //return inflater.inflate(R.layout.fragment_my_page, container, false)
+
         binding = FragmentMyPageBinding.inflate(layoutInflater)
-        tokenManager = TokenManager(requireActivity())
 
-        observePerformLoadProfile()
-        performLoadProfile()
+        Log.e(TAG, "Mock enabled?: ${MockApiInterceptor.isMockEnabled}")
 
-        initListener()
-        setRVA()
-        setName()
 
 
         return binding.root
@@ -125,9 +168,6 @@ class MyPageFragment : Fragment() {
         binding.btnMyPageManageProfile.setOnClickListener {
             activityTransition(UserProfileActivity())
         }
-//        binding.btnMyPageManagePet.setOnClickListener {
-//            activityTransition(PetFormManageActivity())
-//        }
         binding.layoutMyPageAddPet.setOnClickListener {
             activityTransition(PetFormAddActivity())
         }
@@ -143,7 +183,14 @@ class MyPageFragment : Fragment() {
         binding.tvMyPageAppInfo.setOnClickListener {
             findNavController().navigate(R.id.appInfoFragment)
         }
-
+        binding.tvMyPageLogout.setOnClickListener {
+            val logoutDialog = LogoutDialog(this)
+            logoutDialog.show(childFragmentManager, "LogoutDialog")
+        }
+        binding.tvMyPageUnsubscribe.setOnClickListener {
+            val unsubscribeDialog = UnsubscribeDialog(this)
+            unsubscribeDialog.show(childFragmentManager, "UnsubscribeDialog")
+        }
 
     }
 
@@ -153,11 +200,10 @@ class MyPageFragment : Fragment() {
     }
 
     private fun setName() {
-        if (bSuccessApi) {
+        if (bSuccessApi && loadProfileByApi != null) {
             Log.e(TAG, "api 로드 성공")
 
             setUserProfile(loadProfileByApi!!.username, loadProfileByApi!!.profileUrl)
-            //setPetProfileByApi(loadProfileByApi.pets)
         }
 
         else {
@@ -232,12 +278,11 @@ class MyPageFragment : Fragment() {
 
         // 두 번째 이상 반려동물 데이터
         val gson = Gson()
-        val petIndex = spf.getInt("pet_index", 0)
+        val petIndex = spf.getLong("pet_index", 0L)
         Log.e("petIndex", petIndex.toString())
-        if (petIndex > 0) {
-            for (i in 1 until petIndex+1) {
+        if (petIndex > 0L) {
+            for (i in 1L until petIndex+1L) {
                 val petData = gson.fromJson(spf.getString("pet_info_${i}", null), MyPagePetProfileData::class.java)
-                //Log.e("MyPage", "$i petData:"+petData.toString())
                 petProfileDatas.add(petData)
             }
         }
@@ -245,8 +290,6 @@ class MyPageFragment : Fragment() {
         for (i in 0 until petProfileDatas.size) {
             Log.e("MyPage", "$i petdata:"+petProfileDatas[i].toString())
         }
-
-        rvAdapter.notifyDataSetChanged()
     }
 
     private fun setPetProfileByApi(dataList: ArrayList<PetProfileData>) {
@@ -259,23 +302,21 @@ class MyPageFragment : Fragment() {
                 ))
             }
         }
-
-        rvAdapter.notifyDataSetChanged()
     }
 
+
     private fun performLoadProfile() {
-        val accessToken = tokenManager.getAccessToken()
-        val userId = tokenManager.getUserId()
-        myPageViewModel.loadProfile(accessToken!!, userId)
+        myPageViewModel.loadProfile()
     }
 
     private fun observePerformLoadProfile() {
         myPageViewModel.loadProfileResult.observe(this) { result ->
             result.onSuccess { data ->
+                bSuccessApi = true
                 Toast.makeText(requireActivity(), "프로필 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
                 loadProfileByApi = data
-                bSuccessApi = true
+                bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
                 Toast.makeText(requireActivity(), "프로필 로드 실패: $message", Toast.LENGTH_LONG).show()
@@ -283,5 +324,34 @@ class MyPageFragment : Fragment() {
                 bSuccessApi = false
             }
         }
+    }
+
+    private fun performLogout() {
+        myPageViewModel.logout()
+    }
+
+    private fun observePerformLogout() {
+        myPageViewModel.logoutResult.observe(this) { result ->
+            result.onSuccess { data ->
+                bSuccessApi = true
+                Toast.makeText(requireActivity(), "로그아웃 성공!", Toast.LENGTH_SHORT).show()
+                bSuccessApi = false
+            }.onFailure { error ->
+                val message = error.message ?: "알 수 없는 오류"
+                Toast.makeText(requireActivity(), "로그아웃 실패: $message", Toast.LENGTH_LONG).show()
+                Log.d(TAG, "로그아웃 실패: $message")
+                bSuccessApi = false
+            }
+        }
+    }
+
+    override fun onLogoutClickListener() {
+        performLogout()
+        requireActivity().finish()
+    }
+
+    override fun onUnsubscribeClickListener() {
+        // TODO: 계정탈퇴
+        requireActivity().finish()
     }
 }
