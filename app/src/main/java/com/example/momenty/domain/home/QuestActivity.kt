@@ -27,7 +27,6 @@ class QuestActivity/* @Inject constructor(
 )*/: AppCompatActivity(), ConfirmDialogInterface/*, LoadQuestView, WriteQuestView*/ {
 
     lateinit var binding: ActivityQuestBinding
-    lateinit var tokenManager: TokenManager
 
     private var loadQuestByApi: LoadQuestData ?= null
 
@@ -47,8 +46,7 @@ class QuestActivity/* @Inject constructor(
 
     private val questViewModel: QuestViewModel by viewModels {
         val repo = QuestRepository(
-            service = QuestRetrofitClient.questService,
-            tokenManager = tokenManager
+            service = QuestRetrofitClient.questService
         )
         QuestViewModelFactory(repo)
     }
@@ -58,7 +56,6 @@ class QuestActivity/* @Inject constructor(
         super.onCreate(savedInstanceState)
 
         binding = ActivityQuestBinding.inflate(layoutInflater)
-        tokenManager = TokenManager(this)
 
         setContentView(binding.root)
 

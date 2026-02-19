@@ -38,9 +38,7 @@ class CustomerCenterFaqFragment: Fragment() {
         object: ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val service: MyPageService = MyPageRetrofitClient.myPageService
-                val repository = MyPageRepository(
-                    service = service,
-                    tokenManager = tokenManager)
+                val repository = MyPageRepository(service = service)
                 return MyPageViewModel(repository) as T
             }
         }

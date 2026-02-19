@@ -9,8 +9,8 @@ class ChatRepositoryImpl @Inject constructor(
     private val chatApi: ChatApi
 ) : ChatRepository {
 
-    override suspend fun requestFirst(userId: Long, message: String): ChatResultDto {
-        val res = chatApi.postFirstChat(userId, ChatRequestDto(message))
+    override suspend fun requestFirst(message: String): ChatResultDto {
+        val res = chatApi.postFirstChat(ChatRequestDto(message))
         if (!res.isSuccess || res.result == null) {
             throw IllegalStateException("Chat first failed: ${res.message}")
         }

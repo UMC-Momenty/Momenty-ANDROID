@@ -167,3 +167,12 @@ interface MyPageService {
         @Path("userId") userId: Long
     ): Response<BaseResponse<ArrayList<LoadOnePetProfileData>>>*/
 }
+
+data class LoadUserDetailData(
+    val userId: Long,
+    val profileUrl: String?,
+    val username: String,
+    val gender: String,
+    val birth: String,
+    val questTime: String?
+)

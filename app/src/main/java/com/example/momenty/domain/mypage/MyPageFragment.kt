@@ -82,10 +82,7 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
     }*/
 
     private val myPageViewModel: MyPageViewModel by activityViewModels {
-        val repo = MyPageRepository(
-            service = MyPageRetrofitClient.myPageService,
-            tokenManager = tokenManager
-        )
+        val repo = MyPageRepository(service = MyPageRetrofitClient.myPageService)
         MyPageViewModelFactory(repo)
     }
 

@@ -95,8 +95,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun getUserId(): Long = tokenManager.getUserId()
-
     /**
      * destination이 특정 graph(또는 그 하위)에 속하는지 체크
      */

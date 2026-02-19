@@ -14,8 +14,7 @@ import kotlin.collections.orEmpty
 import kotlin.collections.take
 
 class MyPageRepository(
-    private val service: MyPageService,
-    private val tokenManager: TokenManager
+    private val service: MyPageService
 ) {
     val TAG = "MyPageRepository"
 

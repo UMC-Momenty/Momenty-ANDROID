@@ -15,8 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChatbotRoomViewModel @Inject constructor(
-    private val chatRepository: ChatRepository,
-    private val tokenManager: TokenManager
+    private val chatRepository: ChatRepository
 ) : ViewModel() {
 
     private val idGen = AtomicLong(1)
@@ -47,19 +46,9 @@ class ChatbotRoomViewModel @Inject constructor(
 
         // 2) 서버 호출
         viewModelScope.launch {
-            val userId = tokenManager.getUserId()
-            if (userId <= 0L) {
-                _messages.value = _messages.value + ChatMessage(
-                    idGen.getAndIncrement(),
-                    Sender.BOT,
-                    "로그인이 필요해요 (userId 없음)"
-                )
-                return@launch
-            }
-
             runCatching {
                 if (conversationId == 0L) {
-                    chatRepository.requestFirst(userId, msg).also { res ->
+                    chatRepository.requestFirst(msg).also { res ->
                         conversationId = res.chatId
                     }
                 } else {

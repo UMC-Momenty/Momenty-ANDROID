@@ -63,10 +63,7 @@ class UserProfileActivity: AppCompatActivity() {
     private val TAG = "UserProfileActivity"
 
     private val myPageViewModel: MyPageViewModel by viewModels {
-        val repo = MyPageRepository(
-            service = MyPageRetrofitClient.myPageService,
-            tokenManager = tokenManager
-        )
+        val repo = MyPageRepository(service = MyPageRetrofitClient.myPageService)
         MyPageViewModelFactory(repo)
     }
 

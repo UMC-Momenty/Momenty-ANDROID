@@ -5,8 +5,7 @@ import com.example.momenty.global.security.TokenManager
 import retrofit2.Response
 
 class QuestRepository(
-    private val service: QuestService,
-    private val tokenManager: TokenManager
+    private val service: QuestService
 ) {
     val TAG = "QuestRepository"
 
