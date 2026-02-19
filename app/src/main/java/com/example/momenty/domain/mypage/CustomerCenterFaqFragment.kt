@@ -31,8 +31,8 @@ class CustomerCenterFaqFragment: Fragment() {
     private val questDatas = ArrayList<CustomerCenterFaqData>()
     private var bSuccessApi = false
 
-    private var loadFaqDatas = ArrayList<LoadFaqData>()
-    private var loadFaqDetailData: LoadFaqDetailData ?= null
+    private var loadFaqDatasByApi = ArrayList<LoadFaqData>()
+    private var loadFaqDetailDataByApi: LoadFaqDetailData ?= null
 
     private val myPageViewModel: MyPageViewModel by viewModels {
         object: ViewModelProvider.Factory {
@@ -56,7 +56,6 @@ class CustomerCenterFaqFragment: Fragment() {
         // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
         if (!tokenManager.isLoggedIn()) {
             tokenManager.saveMockLoginInfo()
-            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
         }
 
         // ✅ ViewModel에 LocalDataManager 설정
@@ -66,35 +65,39 @@ class CustomerCenterFaqFragment: Fragment() {
         binding = FragmentCustomerCenterFaqBinding.inflate(inflater, container, false)
 
 
-        //observePerformLoadFaq()
-        //observePerformLoadFaqDetail()
+        observePerformLoadFaq()
+        observePerformLoadFaqDetail()
 
-        //performLoadFaq()
+        performLoadFaq()
 
+        /*
         if (bSuccessApi) {
             inputApiData()
         } else {
             inputDummyData()
-        }
+        }*/
 
         setRVA()
-        checkQuestEmpty()
 
         return binding.root
     }
 
     private fun inputDummyData() {
         questDatas.apply {
-            add(CustomerCenterFaqData("Q. 이 서비스는 어떤 앱인가요?", "반려동물 기록 앱"))
-            add(CustomerCenterFaqData("Q. 어떤 내용을 기록할 수 있나요?", "감정, 질문, 사진"))
+            add(CustomerCenterFaqData("이 서비스는 어떤 앱인가요?", "반려동물 기록 앱"))
+            add(CustomerCenterFaqData("어떤 내용을 기록할 수 있나요?", "감정, 질문, 사진"))
         }
     }
 
     private fun inputApiData() {
-        for (iter in loadFaqDatas) {
-            //performLoadFaqDetail(iter.faqId)
-            if (bSuccessApi) {
-                questDatas.add(CustomerCenterFaqData(loadFaqDetailData!!.question, loadFaqDetailData!!.answer))
+        if (!loadFaqDatasByApi.isNullOrEmpty()) {
+            questDatas.clear()
+            for (iter in loadFaqDatasByApi) {
+                performLoadFaqDetail(iter.faqId)
+                /*
+                if (bSuccessApi) {
+                    questDatas.add(CustomerCenterFaqData(loadFaqDetailDataByApi!!.question, loadFaqDetailDataByApi!!.answer))
+                }*/
             }
         }
     }
@@ -123,46 +126,67 @@ class CustomerCenterFaqFragment: Fragment() {
         }
     }
 
-    /*
-    private fun performLoadFaq() {
-        val accessToken = tokenManager.getAccessToken()
-        myPageViewModel.loadFaq(accessToken!!)
-    }
 
-    private fun performLoadFaqDetail(faqId: Int) {
-        val accessToken = tokenManager.getAccessToken()
-        //myPageViewModel.loadFaqDetail(accessToken!!, faqId)
+    private fun performLoadFaq() {
+        myPageViewModel.loadFaq()
     }
 
     private fun observePerformLoadFaq() {
         myPageViewModel.loadFaqResult.observe(this) { result ->
             result.onSuccess { data ->
-                Toast.makeText(requireActivity(), "프로필 로드 성공!", Toast.LENGTH_SHORT).show()
-                Log.d(TAG, "작성 데이터: $data")
-                loadFaqDatas = data
                 bSuccessApi = true
+
+                Toast.makeText(requireActivity(), "FAQ 로드 성공!", Toast.LENGTH_SHORT).show()
+                Log.d(TAG, "작성 데이터: $data")
+
+                loadFaqDatasByApi = data
+                inputApiData()
+                checkQuestEmpty()
+
+                bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(requireActivity(), "프로필 로드 실패: $message", Toast.LENGTH_LONG).show()
-                Log.d(TAG, "프로필 로드 실패: $message")
+                Toast.makeText(requireActivity(), "FAQ 로드 실패: $message", Toast.LENGTH_LONG).show()
+                Log.d(TAG, "FAQ 로드 실패: $message")
+
+                inputDummyData()
+                checkQuestEmpty()
+
                 bSuccessApi = false
             }
         }
     }
 
+    private fun performLoadFaqDetail(faqId: Long) {
+        myPageViewModel.loadFaqDetail(faqId)
+    }
+
     private fun observePerformLoadFaqDetail() {
         myPageViewModel.loadFaqDetailResult.observe(this) { result ->
             result.onSuccess { data ->
-                Toast.makeText(requireActivity(), "프로필 로드 성공!", Toast.LENGTH_SHORT).show()
-                Log.d(TAG, "작성 데이터: $data")
-                loadFaqDetailData = data
                 bSuccessApi = true
+
+                Toast.makeText(requireActivity(), "상세 FAQ 로드 성공!", Toast.LENGTH_SHORT).show()
+                Log.d(TAG, "작성 데이터: $data")
+
+                loadFaqDetailDataByApi = data
+                if (loadFaqDetailDataByApi != null){
+                    questDatas.add(CustomerCenterFaqData(
+                        loadFaqDetailDataByApi!!.question, loadFaqDetailDataByApi!!.answer))
+                }
+                checkQuestEmpty()
+
+                bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(requireActivity(), "프로필 로드 실패: $message", Toast.LENGTH_LONG).show()
-                Log.d(TAG, "프로필 로드 실패: $message")
+                Toast.makeText(requireActivity(), "상세 FAQ 로드 실패: $message", Toast.LENGTH_LONG).show()
+                Log.d(TAG, "상세 FAQ 로드 실패: $message")
+
+                inputDummyData()
+                checkQuestEmpty()
+
                 bSuccessApi = false
             }
         }
-    }*/
+    }
 }

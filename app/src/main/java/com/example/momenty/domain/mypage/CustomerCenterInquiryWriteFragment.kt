@@ -112,7 +112,6 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
         // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
         if (!tokenManager.isLoggedIn()) {
             tokenManager.saveMockLoginInfo()
-            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
         }
 
         // ✅ ViewModel에 LocalDataManager 설정

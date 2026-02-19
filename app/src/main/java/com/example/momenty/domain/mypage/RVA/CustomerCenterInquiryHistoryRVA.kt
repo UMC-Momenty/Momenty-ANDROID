@@ -69,14 +69,14 @@ class CustomerCenterInquiryHistoryRVA(private val historyList: ArrayList<Custome
                     when (cnt) {
                         0 -> {
                             Glide.with(binding.root.context)
-                                .load(Uri.parse(iter.imageKey))
+                                .load(Uri.parse(iter.imageUrl))
                                 .circleCrop()
                                 .into(binding.ivInquiryHistoryPhoto1)
                             binding.ivInquiryHistoryPhoto1.visibility = View.VISIBLE
                         }
                         1 -> {
                             Glide.with(binding.root.context)
-                                .load(Uri.parse(iter.imageKey))
+                                .load(Uri.parse(iter.imageUrl))
                                 .circleCrop()
                                 .into(binding.ivInquiryHistoryPhoto2)
                             binding.ivInquiryHistoryPhoto2.visibility = View.VISIBLE
