@@ -59,7 +59,7 @@ class PetSelectBottomSheetRVA(
         holder.bind(petData[position])
         holder.binding.rbMyPagePetSelect.setOnClickListener {
             val intent = Intent(holder.itemView.context, PetFormManageActivity::class.java)
-            intent.putExtra("petIndex", position)
+            intent.putExtra("petIndex", position.toLong())
             Log.e("PetSelectRVA", "position: $position")
             holder.itemView.context.startActivity(intent)
             holder.binding.rbMyPagePetSelect.setChecked(false)
