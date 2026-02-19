@@ -545,6 +545,10 @@ class PetProfileFragment : Fragment() {
             .setLaunchSingleTop(true)
             .build()
 
+        val bundle = Bundle().apply {
+            putBoolean("isNewUser", true)  // 추가!
+        }
+
         findNavController().navigate(R.id.home_graph, null, navOptions)
     }
 

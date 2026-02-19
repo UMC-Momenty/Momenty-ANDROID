@@ -9,6 +9,11 @@
         android:id="@+id/homeFragment"
         android:name="com.example.momenty.domain.home.HomeFragment"
         android:label="홈"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home">
+        <argument
+            android:name="isNewUser"
+            app:argType="boolean"
+            android:defaultValue="false" />
+    </fragment>
 
 </navigation>
