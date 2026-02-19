@@ -1,6 +1,7 @@
 package com.example.momenty.data.repository
 
 import android.util.Log
+import com.example.momenty.data.remote.profile.AddPetRequest
 import com.example.momenty.data.remote.profile.PetApi
 import com.example.momenty.data.remote.profile.ProfileApi
 import com.example.momenty.data.remote.profile.UpdatePetProfileRequest
@@ -104,7 +105,6 @@ class ProfileRepository @Inject constructor(
      * 빈 배열이면 사진, 소개글 미설정
      */
     suspend fun updatePetProfile(
-        userId: Long,
         petId: Long,
         profileImageUrl: String? = null,
         petName: String? = null,
@@ -130,7 +130,7 @@ class ProfileRepository @Inject constructor(
                 intro = intro
             )
 
-            val response = petApi.updatePetProfile(userId, petId, request)
+            val response = petApi.updatePetProfile(petId, request)
 
             if (response.isSuccess) {
                 // 반려동물 수정은 토큰 반환 없음
@@ -170,6 +170,55 @@ class ProfileRepository @Inject constructor(
                 message = e.message ?: "알 수 없는 오류가 발생했습니다",
                 throwable = e
             )
+        }
+    }
+
+    suspend fun addPet(
+        profileImageUrl: String? = null,
+        petName: String,
+        gender: String,
+        birth: String,
+        species: String,
+        breedId: Long? = null,
+        intro: String? = null
+    ): ProfileResult = withContext(Dispatchers.IO) {
+        try {
+            val accessToken = tokenManager.getAccessToken()
+            if (accessToken.isNullOrEmpty()) {
+                return@withContext ProfileResult.Error.Unauthorized()
+            }
+
+            val request = AddPetRequest(
+                profileImageUrl = profileImageUrl,
+                petName = petName,
+                gender = gender,
+                birth = birth,
+                species = species,
+                breedId = breedId,
+                intro = intro
+            )
+
+            val response = petApi.addPet(request)
+
+            if (response.isSuccess) {
+                ProfileResult.Success(accessToken = null, refreshToken = null)
+            } else {
+                ProfileResult.Error.Api(
+                    message = response.message ?: "반려동물 추가 실패",
+                    code = response.code ?: "UNKNOWN"
+                )
+            }
+        } catch (e: retrofit2.HttpException) {
+            when (e.code()) {
+                401 -> ProfileResult.Error.Unauthorized()
+                else -> ProfileResult.Error.Api("서버 오류", e.code().toString())
+            }
+        } catch (e: java.net.UnknownHostException) {
+            ProfileResult.Error.Network("네트워크 연결을 확인해주세요")
+        } catch (e: java.net.SocketTimeoutException) {
+            ProfileResult.Error.Network("요청 시간이 초과되었습니다")
+        } catch (e: Exception) {
+            ProfileResult.Error.Unknown(e.message ?: "알 수 없는 오류", e)
         }
     }
 

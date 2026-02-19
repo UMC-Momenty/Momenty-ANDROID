@@ -80,10 +80,7 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
     }*/
 
     private val myPageViewModel: MyPageViewModel by activityViewModels {
-        val repo = MyPageRepository(
-            service = MyPageRetrofitClient.myPageService,
-            tokenManager = tokenManager
-        )
+        val repo = MyPageRepository(service = MyPageRetrofitClient.myPageService)
         MyPageViewModelFactory(repo)
     }
 
@@ -110,7 +107,6 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
         // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
         if (!tokenManager.isLoggedIn()) {
             tokenManager.saveMockLoginInfo()
-            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
         }
 
         // ✅ ViewModel에 LocalDataManager 설정

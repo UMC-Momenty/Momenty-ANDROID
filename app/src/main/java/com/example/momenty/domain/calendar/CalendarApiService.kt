@@ -13,9 +13,8 @@ interface CalendarApiService {
     /**
      * 2. 모든 반려동물 달별 일정 조회
      */
-    @GET("api/users/{userId}/schedules/calendar")
+    @GET("api/users/schedules/calendar")
     suspend fun getAllPetsMonthlySchedules(
-        @Path("userId") userId: Long,
         @Query("year") year: Int,
         @Query("month") month: Int
     ): Response<MonthlyScheduleResponse>
@@ -23,9 +22,8 @@ interface CalendarApiService {
     /**
      * 3. 반려동물별 달별 일정 조회
      */
-    @GET("api/users/{userId}/schedules/pets/{petId}/calendar")
+    @GET("api/users/schedules/pets/{petId}/calendar")
     suspend fun getPetMonthlySchedules(
-        @Path("userId") userId: Long,
         @Path("petId") petId: Long,
         @Query("year") year: Int,
         @Query("month") month: Int

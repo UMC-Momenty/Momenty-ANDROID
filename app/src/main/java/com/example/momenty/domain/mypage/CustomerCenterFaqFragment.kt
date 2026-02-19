@@ -38,9 +38,7 @@ class CustomerCenterFaqFragment: Fragment() {
         object: ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val service: MyPageService = MyPageRetrofitClient.myPageService
-                val repository = MyPageRepository(
-                    service = service,
-                    tokenManager = tokenManager)
+                val repository = MyPageRepository(service = service)
                 return MyPageViewModel(repository) as T
             }
         }
@@ -56,7 +54,6 @@ class CustomerCenterFaqFragment: Fragment() {
         // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
         if (!tokenManager.isLoggedIn()) {
             tokenManager.saveMockLoginInfo()
-            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
         }
 
         // ✅ ViewModel에 LocalDataManager 설정

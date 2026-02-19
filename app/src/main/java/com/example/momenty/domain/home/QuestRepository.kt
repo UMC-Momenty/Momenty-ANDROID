@@ -5,14 +5,13 @@ import com.example.momenty.global.security.TokenManager
 import retrofit2.Response
 
 class QuestRepository(
-    private val service: QuestService,
-    private val tokenManager: TokenManager
+    private val service: QuestService
 ) {
     val TAG = "QuestRepository"
 
     suspend fun writeQuest(req: WriteQuestRequest): Result<String> =
         safeApiCall(
-            apiCall = { service.writeQuest(tokenManager.getUserId(), req) },
+            apiCall = { service.writeQuest(req) },
             getResult = { it.result }
         )
 

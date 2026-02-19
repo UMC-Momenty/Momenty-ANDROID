@@ -12,42 +12,42 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface MyPageService {
-    @PATCH("khg/api/mypage") // TODO: 실제 주소 수정 바람!!!!!
-    suspend fun updateUserProfile( // DONE
+    @GET("api/mypage")
+    suspend fun loadProfile(): Response<BaseResponse<LoadProfileData>>
+
+    @PATCH("api/mypage")
+    suspend fun updateUserProfile(
         @Body req: UpdateUserProfileRequest
     ): Response<BaseResponse<UpdateUserProfileData>>
 
-    @GET("khg/api/mypage/{userId}") // TODO: 실제 주소 수정 바람!!!!!
-    suspend fun loadProfile( // DONE
-        @Path("userId") id: Long
-    ): Response<BaseResponse<LoadProfileData>>
+    @GET("api/mypage/user")
+    suspend fun loadUserDetail(): Response<BaseResponse<LoadUserDetailData>>
 
     @GET("/api/pets/{petId}")
     suspend fun loadOnePetProfile( // DONE
         @Path("petId") petId: Long
     ): Response<BaseResponse<LoadOnePetProfileData>>
 
-    @POST("api/users/{userId}/pets")
+    @POST("api/pets")
     suspend fun addPetProfile( // DONE
-        @Path("userId") id: Long,
         @Body req: AddPetProfileRequest
     ): Response<BaseResponse<String?>>
 
-    @PATCH("api/users/{userId}/pets/{petId}")
+    @PATCH("api/pets/{petId}")
     suspend fun updatePetProfile( // DONE
-        @Path("userId") userId: Long,
         @Path("petId") petId: Long,
         @Body req: UpdatePetProfileRequest
     ): Response<BaseResponse<String?>>
 
     @GET("api/notice")
     suspend fun loadNotice(
-        @Header("Authorization") token: String
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10,
+        @Query("sort") sort: String = "createdAt,DESC"
     ): Response<BaseResponse<LoadNoticeData<_NoticeData, _PageInfoData>>>
 
     @GET("api/notice/{noticeId}")
     suspend fun loadNoticeDetail(
-        @Header("Authorization") token: String,
         @Path("noticeId") id: Long
     ): Response<BaseResponse<LoadNoticeDetailData>>
 
@@ -75,16 +75,22 @@ interface MyPageService {
     ): Response<BaseResponse<LoadInquiryDetailData<LoadInquiryDetailDataImages>>>
 
     @GET("api/faq")
-    suspend fun loadFaq(
-        @Header("Authorization") token: String
-    ): Response<BaseResponse<ArrayList<LoadFaqData>>>
+    suspend fun loadFaq(): Response<BaseResponse<ArrayList<LoadFaqData>>>
 
     @GET("api/faq/{faqId}")
     suspend fun loadFaqDetail(
-        @Header("Authorization") token: String,
         @Path("faqId") id: Long
     ): Response<BaseResponse<LoadFaqDetailData>>
 
     @POST("api/oauth/logout")
     suspend fun logout(): Response<BaseResponse<String?>>
 }
+
+data class LoadUserDetailData(
+    val userId: Long,
+    val profileUrl: String?,
+    val username: String,
+    val gender: String,
+    val birth: String,
+    val questTime: String?
+)
