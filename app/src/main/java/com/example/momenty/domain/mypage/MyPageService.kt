@@ -1,10 +1,5 @@
 package com.example.momenty.domain.mypage
 
-import com.example.momenty.domain.home.LoadQuestData
-import com.example.momenty.domain.home.LoadQuestResponse
-import com.example.momenty.domain.home.WriteQuestData
-import com.example.momenty.domain.home.WriteQuestRequest
-import com.example.momenty.domain.home.WriteQuestResponse
 import com.example.momenty.global.api.BaseResponse
 import retrofit2.Call
 import retrofit2.Response
@@ -14,35 +9,36 @@ import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface MyPageService {
-    @GET("api/mypage/{userId}")
-    suspend fun loadProfile(
-        @Header("Authorization") token: String,
+    @PATCH("khg/api/mypage") // TODO: 실제 주소 수정 바람!!!!!
+    suspend fun updateUserProfile( // DONE
+        @Body req: UpdateUserProfileRequest
+    ): Response<BaseResponse<UpdateUserProfileData>>
+
+    @GET("khg/api/mypage/{userId}") // TODO: 실제 주소 수정 바람!!!!!
+    suspend fun loadProfile( // DONE
         @Path("userId") id: Long
     ): Response<BaseResponse<LoadProfileData>>
 
-    @PATCH("api/mypage/{userId}")
-    suspend fun updateUserProfile(
-        @Header("Authorization") token: String,
-        @Path("userId") id: Long,
-        @Body req: UpdateUserProfileRequest
-    ): Response<BaseResponse<Unit>>
-
-    @PATCH("api/users/{userId}/pets/{petId}")
-    suspend fun updatePetProfile(
-        @Header("Authorization") token: String,
-        @Path("userId") userId: Long,
-        @Path("petId") petId: Int,
-        @Body req: UpdatePetProfileRequest
-    ): Response<BaseResponse<Unit>>
+    @GET("/api/pets/{petId}")
+    suspend fun loadOnePetProfile( // DONE
+        @Path("petId") petId: Long
+    ): Response<BaseResponse<LoadOnePetProfileData>>
 
     @POST("api/users/{userId}/pets")
-    suspend fun addPetProfile(
-        @Header("Authorization") token: String,
+    suspend fun addPetProfile( // DONE
         @Path("userId") id: Long,
         @Body req: AddPetProfileRequest
-    ): Response<BaseResponse<Unit>>
+    ): Response<BaseResponse<String?>>
+
+    @PATCH("api/users/{userId}/pets/{petId}")
+    suspend fun updatePetProfile( // DONE
+        @Path("userId") userId: Long,
+        @Path("petId") petId: Long,
+        @Body req: UpdatePetProfileRequest
+    ): Response<BaseResponse<String?>>
 
     @GET("api/notice")
     suspend fun loadNotice(
@@ -52,32 +48,30 @@ interface MyPageService {
     @GET("api/notice/{noticeId}")
     suspend fun loadNoticeDetail(
         @Header("Authorization") token: String,
-        @Path("noticeId") id: Int
+        @Path("noticeId") id: Long
     ): Response<BaseResponse<LoadNoticeDetailData>>
 
-    @POST("api/inquiry/{userId}")
+    @POST("api/inquiry") // DONE
     suspend fun addInquiry(
-        @Header("Authorization") token: String,
-        @Path("userId") id: Long,
         @Body req: AddInquiryRequest<AddInquiryRequestImg>
-    ): Response<BaseResponse<String>>
+    ): Response<BaseResponse<String?>>
 
-    @POST("api/inquiry/image")
-    suspend fun getImageUrl(
-        @Header("Authorization") token: String,
+    @POST("api/inquiry/image") // DONE
+    suspend fun createInquiryPresignedUrls(
         @Body req: GetImageUrlRequest
     ): Response<BaseResponse<ArrayList<GetImageUrlData>>>
 
-    @GET("api/inquiry/user/{userId}")
+    @GET("api/inquiry/user")
     suspend fun loadInquiry(
-        @Header("Authorization") token: String,
-        @Path("userId") id: Long
+        @Query("page") page: Int,
+        @Query("size") size: Int,
+        @Query("sort") sort: ArrayList<String>
     ): Response<BaseResponse<LoadInquiryData<LoadInquiryDataInquiries, LoadInquiryDataPageInfo>>>
+
 
     @GET("api/inquiry/{inquiryId}")
     suspend fun loadInquiryDetail(
-        @Header("Authorization") token: String,
-        @Path("inquiryId") id: Int
+        @Path("inquiryId") id: Long
     ): Response<BaseResponse<LoadInquiryDetailData<LoadInquiryDetailDataImages>>>
 
     @GET("api/faq")
@@ -88,6 +82,9 @@ interface MyPageService {
     @GET("api/faq/{faqId}")
     suspend fun loadFaqDetail(
         @Header("Authorization") token: String,
-        @Path("faqId") id: Int
+        @Path("faqId") id: Long
     ): Response<BaseResponse<LoadFaqDetailData>>
+
+    @POST("api/oauth/logout")
+    suspend fun logout(): Response<BaseResponse<String?>>
 }

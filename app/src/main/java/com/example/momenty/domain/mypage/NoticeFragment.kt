@@ -7,13 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.databinding.FragmentNoticeBinding
-import com.example.momenty.domain.home.KhgApiClient
+import com.example.momenty.domain.calendar.RetrofitClient
 import com.example.momenty.domain.mypage.RVA.NoticeRVA
 import com.example.momenty.domain.mypage.data.NoticeData
 import com.example.momenty.global.security.TokenManager
@@ -35,14 +36,12 @@ class NoticeFragment: Fragment() {
     private var noticeDetailData: LoadNoticeDetailData ?= null
     private var test_noticeDetailList = ArrayList<LoadNoticeDetailData>()
 
-    private val myPageViewModel: MyPageViewModel by viewModels {
-        object: ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val service: MyPageService = KhgApiClient.myPageService
-                val repository = MyPageRepository(service)
-                return MyPageViewModel(repository) as T
-            }
-        }
+    private val myPageViewModel: MyPageViewModel by activityViewModels {
+        val repo = MyPageRepository(
+            service = MyPageRetrofitClient.myPageService,
+            tokenManager = tokenManager
+        )
+        MyPageViewModelFactory(repo)
     }
 
     override fun onCreateView(
@@ -50,15 +49,29 @@ class NoticeFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentNoticeBinding.inflate(inflater, container, false)
-        tokenManager = TokenManager(requireActivity())
 
-        observePerformLoadNotice()
-        observePerformLoadNoticeDetail()
+        MyPageRetrofitClient.initialize(tokenManager, requireContext())
+
+        // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
+        if (!tokenManager.isLoggedIn()) {
+            tokenManager.saveMockLoginInfo()
+            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
+        }
+
+        // ✅ ViewModel에 LocalDataManager 설정
+        val localDataManager = com.example.momenty.global.security.LocalDataManager(requireContext())
+        myPageViewModel.setLocalDataManager(localDataManager)
+
+
+        binding = FragmentNoticeBinding.inflate(inflater, container, false)
+
+
+        //observePerformLoadNotice()
+        //observePerformLoadNoticeDetail()
 
         initListener()
         inputDummyData()
-        performLoadNotice()
+        //performLoadNotice()
         loadData()
 
         setRVA()
@@ -132,7 +145,7 @@ class NoticeFragment: Fragment() {
 
         RVAdapter.setMyItemClickListener(object: NoticeRVA.MyItemClickListener{
             override fun onItemClick(position: Int) {
-                performLoadNoticeDetail(noticeDatas[position].noticeId)
+                //performLoadNoticeDetail(noticeDatas[position].noticeId)
 
                 if (bSuccessApi) {
                     Log.e(TAG, "api 요청 성공")
@@ -145,7 +158,7 @@ class NoticeFragment: Fragment() {
                     )
                 } else {
                     Log.e(TAG, "api 요청 실패 ${noticeDatas[position].noticeId}")
-                    noticeDetailData = test_noticeDetailList[noticeDatas[position].noticeId]
+                    //noticeDetailData = test_noticeDetailList[noticeDatas[position].noticeId]
                     val title = noticeDetailData?.title
                     val content = noticeDetailData?.content
                     this@NoticeFragment.findNavController().navigate(
@@ -167,6 +180,7 @@ class NoticeFragment: Fragment() {
         })
     }
 
+    /*
     private fun performLoadNotice() {
         val accessToken = tokenManager.getAccessToken()
         myPageViewModel.loadNotice(accessToken!!)
@@ -210,7 +224,7 @@ class NoticeFragment: Fragment() {
                 bSuccessApi = false
             }
         }
-    }
+    }*/
 
     /*
     private fun getFormattedDate(date: String): String {

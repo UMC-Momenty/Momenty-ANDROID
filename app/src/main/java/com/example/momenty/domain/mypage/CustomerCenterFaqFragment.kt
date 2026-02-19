@@ -12,14 +12,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.databinding.FragmentCustomerCenterFaqBinding
-import com.example.momenty.domain.home.KhgApiClient
+import com.example.momenty.domain.calendar.RetrofitClient
 import com.example.momenty.domain.mypage.RVA.CustomerCenterFaqRVA
 import com.example.momenty.domain.mypage.data.CustomerCenterFaqData
 import com.example.momenty.global.security.TokenManager
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlin.getValue
 
+@AndroidEntryPoint
 class CustomerCenterFaqFragment: Fragment() {
     lateinit var binding: FragmentCustomerCenterFaqBinding
+
+    @Inject
     lateinit var tokenManager: TokenManager
 
     private val TAG = "CC_FaqFrag"
@@ -32,8 +37,10 @@ class CustomerCenterFaqFragment: Fragment() {
     private val myPageViewModel: MyPageViewModel by viewModels {
         object: ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val service: MyPageService = KhgApiClient.myPageService
-                val repository = MyPageRepository(service)
+                val service: MyPageService = MyPageRetrofitClient.myPageService
+                val repository = MyPageRepository(
+                    service = service,
+                    tokenManager = tokenManager)
                 return MyPageViewModel(repository) as T
             }
         }
@@ -44,13 +51,25 @@ class CustomerCenterFaqFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        RetrofitClient.initialize(tokenManager, requireContext())
+
+        // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
+        if (!tokenManager.isLoggedIn()) {
+            tokenManager.saveMockLoginInfo()
+            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
+        }
+
+        // ✅ ViewModel에 LocalDataManager 설정
+        val localDataManager = com.example.momenty.global.security.LocalDataManager(requireContext())
+        myPageViewModel.setLocalDataManager(localDataManager)
+
         binding = FragmentCustomerCenterFaqBinding.inflate(inflater, container, false)
-        tokenManager = TokenManager(requireActivity())
 
-        observePerformLoadFaq()
-        observePerformLoadFaqDetail()
 
-        performLoadFaq()
+        //observePerformLoadFaq()
+        //observePerformLoadFaqDetail()
+
+        //performLoadFaq()
 
         if (bSuccessApi) {
             inputApiData()
@@ -73,7 +92,7 @@ class CustomerCenterFaqFragment: Fragment() {
 
     private fun inputApiData() {
         for (iter in loadFaqDatas) {
-            performLoadFaqDetail(iter.faqId)
+            //performLoadFaqDetail(iter.faqId)
             if (bSuccessApi) {
                 questDatas.add(CustomerCenterFaqData(loadFaqDetailData!!.question, loadFaqDetailData!!.answer))
             }
@@ -104,6 +123,7 @@ class CustomerCenterFaqFragment: Fragment() {
         }
     }
 
+    /*
     private fun performLoadFaq() {
         val accessToken = tokenManager.getAccessToken()
         myPageViewModel.loadFaq(accessToken!!)
@@ -111,7 +131,7 @@ class CustomerCenterFaqFragment: Fragment() {
 
     private fun performLoadFaqDetail(faqId: Int) {
         val accessToken = tokenManager.getAccessToken()
-        myPageViewModel.loadFaqDetail(accessToken!!, faqId)
+        //myPageViewModel.loadFaqDetail(accessToken!!, faqId)
     }
 
     private fun observePerformLoadFaq() {
@@ -144,5 +164,5 @@ class CustomerCenterFaqFragment: Fragment() {
                 bSuccessApi = false
             }
         }
-    }
+    }*/
 }

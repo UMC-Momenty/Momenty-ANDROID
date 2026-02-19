@@ -55,9 +55,9 @@ class PetSelectBottomSheet: BottomSheetDialogFragment() {
 
         // 두 번째 이상 반려동물 데이터
         val gson = Gson()
-        val petIndex = spf.getInt("pet_index", 0)
-        if (petIndex > 0) {
-            for (i in 1 until petIndex+1) {
+        val petIndex = spf.getLong("pet_index", 0L)
+        if (petIndex > 0L) {
+            for (i in 1L until petIndex+1L) {
                 val petData = gson.fromJson(spf.getString("pet_info_${i}", null), MyPagePetProfileData::class.java)
                 petDatas.add(petData)
             }

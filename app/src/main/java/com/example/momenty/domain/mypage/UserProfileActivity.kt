@@ -27,23 +27,31 @@ import com.bumptech.glide.Glide
 import com.example.momenty.R
 import com.example.momenty.data.api.ImagePickerHelper
 import com.example.momenty.databinding.ActivityUserProfileBinding
-import com.example.momenty.domain.home.KhgApiClient
+import com.example.momenty.domain.calendar.CalendarRepository
+import com.example.momenty.domain.calendar.CalendarViewModel
+import com.example.momenty.domain.calendar.CalendarViewModelFactory
+import com.example.momenty.domain.calendar.RetrofitClient
 import com.example.momenty.domain.member.ImageUploadState
 import com.example.momenty.domain.member.ProfileUiState
 import com.example.momenty.domain.member.ProfileViewModel
 import com.example.momenty.global.security.TokenManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import java.util.Locale
+import javax.inject.Inject
 import kotlin.getValue
 
 @AndroidEntryPoint
 class UserProfileActivity: AppCompatActivity() {
     lateinit var binding: ActivityUserProfileBinding
+
+    @Inject
     lateinit var tokenManager: TokenManager
-    private val tmpUserId = 1 //TODO: 테스트용. 이후 삭제 바람!!!!
     private var bSuccessApi = false
 
     private val profileViewModel: ProfileViewModel by viewModels()
@@ -55,13 +63,11 @@ class UserProfileActivity: AppCompatActivity() {
     private val TAG = "UserProfileActivity"
 
     private val myPageViewModel: MyPageViewModel by viewModels {
-        object: ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val service: MyPageService = KhgApiClient.myPageService
-                val repository = MyPageRepository(service)
-                return MyPageViewModel(repository) as T
-            }
-        }
+        val repo = MyPageRepository(
+            service = MyPageRetrofitClient.myPageService,
+            tokenManager = tokenManager
+        )
+        MyPageViewModelFactory(repo)
     }
 
     private val galleryLauncher = registerForActivityResult(
@@ -89,8 +95,19 @@ class UserProfileActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        MyPageRetrofitClient.initialize(tokenManager, this)
+
+        // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
+        if (!tokenManager.isLoggedIn()) {
+            tokenManager.saveMockLoginInfo()
+            android.util.Log.d(TAG, "Mock login info saved: userId=${tokenManager.getUserId()}")
+        }
+
+        // ✅ ViewModel에 LocalDataManager 설정
+        val localDataManager = com.example.momenty.global.security.LocalDataManager(this)
+        myPageViewModel.setLocalDataManager(localDataManager)
+
         binding = ActivityUserProfileBinding.inflate(layoutInflater)
-        tokenManager = TokenManager(this)
 
         setContentView(binding.root)
 
@@ -426,7 +443,17 @@ class UserProfileActivity: AppCompatActivity() {
 
     private fun getUserProfile() {
         if (bSuccessApi) {
-            TODO("api 데이터 연결")
+            Log.e(TAG, "api 로드 성공")
+            var tmpData = LoadProfileData(
+                loadProfileByApi!!.username,
+                loadProfileByApi!!.gender,
+                getFormattedDate(loadProfileByApi!!.birth, "yyyy-MM-dd", "yy.MM.dd")!!,
+                loadProfileByApi?.profileUrl,
+                loadProfileByApi?.questTime,
+                loadProfileByApi!!.resetQuestTime
+            )
+            setUserProfile(tmpData)
+            /*
             binding.etUserProfileName.setText(loadProfileByApi?.username)
 
             val parsedDate = ZonedDateTime.parse(loadProfileByApi?.birth)
@@ -449,16 +476,15 @@ class UserProfileActivity: AppCompatActivity() {
             }
 
             if (!loadProfileByApi?.profileUrl.isNullOrEmpty()) {
-                //val baseUrl = "https://api.momenty.com/"
-                //val imageUrl = baseUrl + user_profile_image_key
                 selectedImageUri = loadProfileByApi?.profileUrl?.toUri()
 
                 Glide.with(binding.root.context)
                     .load(loadProfileByApi?.profileUrl)
                     .circleCrop()
                     .into(binding.ivPetFormPetProfileEdit)
-            }
+            }*/
         } else {
+            Log.e(TAG, "api 로드 실패, spf 시도")
             val spf = getSharedPreferences(
                 "momenty_prefs",
                 android.content.Context.MODE_PRIVATE
@@ -470,8 +496,14 @@ class UserProfileActivity: AppCompatActivity() {
             val user_profile_image_key = spf.getString("user_profile_image_key", null)
             val user_profile_image_uri = spf.getString("user_profile_image_uri", null)
 
-            Log.d("gender", user_gender!!)
+            val tmpData = LoadProfileData(
+                user_name!!, user_gender!!, user_birth!!, user_profile_image_key,
+                alarm_time, false
+            )
 
+            setUserProfile(tmpData)
+
+            /*
             binding.etUserProfileName.setText(user_name)
             binding.etUserProfileBirthday.setText(user_birth)
 
@@ -487,8 +519,6 @@ class UserProfileActivity: AppCompatActivity() {
             }
 
             if (!user_profile_image_key.isNullOrEmpty()) {
-                //val baseUrl = "https://api.momenty.com/"
-                //val imageUrl = baseUrl + user_profile_image_key
                 selectedImageUri = user_profile_image_key.toUri()
 
                 Glide.with(binding.root.context)
@@ -501,7 +531,48 @@ class UserProfileActivity: AppCompatActivity() {
                     .load(Uri.parse(user_profile_image_uri))
                     .circleCrop()
                     .into(binding.ivPetFormPetProfileEdit)
-            }
+            }*/
+        }
+    }
+
+    private fun setUserProfile(data: LoadProfileData?) {
+        // 이름
+        binding.etUserProfileName.setText(data?.username)
+
+        // 성별
+        when (data?.gender) {
+            "male" -> binding.rgUserGender.check(R.id.rb_gender_male)
+            else -> binding.rgUserGender.check(R.id.rb_gender_female)
+        }
+
+        // 생일(날짜 형식 변경)
+        binding.etUserProfileBirthday.setText(data?.birth)
+        /*
+        val parsedDate = ZonedDateTime.parse(data?.birth)
+        // 연도 2자리(yy), 월 2자리(MM), 일 2자리(dd)로 포맷터 생성
+        val formatter = DateTimeFormatter.ofPattern("yy.MM.dd")
+        val result = parsedDate.format(formatter)*/
+        /*
+        val birth = getFormattedDate(data?.birth, "yy.MM.dd", "yy.MM.dd")
+        binding.etUserProfileBirthday.setText(birth)*/
+
+        // 프로필 사진
+        if (!data?.profileUrl.isNullOrEmpty()) {
+            selectedImageUri = data?.profileUrl?.toUri()
+
+            Glide.with(binding.root.context)
+                .load(loadProfileByApi?.profileUrl)
+                .circleCrop()
+                .into(binding.ivPetFormPetProfileEdit)
+        }
+
+        // 질문 시간
+        if (data?.resetQuestTime == true || data?.questTime == null) {
+            binding.cbUserProfileNoSetAlarm.isChecked = true
+        } else {
+            val toIndex = getSpinnerIndex(binding.spinnerType,
+                getFormattedTime(data?.questTime, "yy.MM.dd", "yyyy-MM-dd")!!)
+            binding.spinnerType.setSelection(toIndex)
         }
     }
 
@@ -562,6 +633,7 @@ class UserProfileActivity: AppCompatActivity() {
             binding.spinnerType.selectedItem as? String
         }
 
+        /*
         val req = UpdateUserProfileRequest(
             binding.etUserProfileName.text.toString(),
             uploadedImageKey,
@@ -572,18 +644,31 @@ class UserProfileActivity: AppCompatActivity() {
             },
             formatDateForApi(binding.etUserProfileBirthday.text.toString()),
             alarmTime
+        )*/
+        val req = UpdateUserProfileRequest(
+            binding.etUserProfileName.text.toString(),
+            when (binding.rgUserGender.checkedRadioButtonId) {
+                R.id.rb_gender_male -> "male"
+                R.id.rb_gender_female -> "female"
+                else -> ""
+            },
+            getFormattedDate(binding.etUserProfileBirthday.text.toString(), "yy.MM.dd", "yyyy-MM-dd")!!,
+            uploadedImageKey,
+            alarmTime,
+            binding.cbUserProfileNoSetAlarm.isChecked
         )
 
-        val accessToken = tokenManager.getAccessToken()
-        val userId = tokenManager.getUserId()
-        myPageViewModel.updateUserProfile(accessToken!!, userId, req)
+        //val accessToken = tokenManager.getAccessToken()
+        //val userId = tokenManager.getUserId()
+        myPageViewModel.updateUserProfile(/*accessToken!!, userId, */req)
     }
 
     private fun observePerformUpdateUserProfile() {
         myPageViewModel.updateUserProfileResult.observe(this) { result ->
             result.onSuccess { data ->
-                Toast.makeText(this, "프로필 수정 성공!", Toast.LENGTH_SHORT).show()
                 bSuccessApi = true
+                Toast.makeText(this, "프로필 수정 성공!", Toast.LENGTH_SHORT).show()
+                bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
                 Toast.makeText(this, "프로필 수정 실패: $message", Toast.LENGTH_LONG).show()
@@ -594,18 +679,18 @@ class UserProfileActivity: AppCompatActivity() {
     }
 
     private fun performLoadProfile() {
-        val accessToken = tokenManager.getAccessToken()
-        val userId = tokenManager.getUserId()
-        myPageViewModel.loadProfile(accessToken!!, userId)
+        myPageViewModel.loadProfile()
     }
 
     private fun observePerformLoadProfile() {
         myPageViewModel.loadProfileResult.observe(this) { result ->
             result.onSuccess { data ->
+                bSuccessApi = true
                 Toast.makeText(this, "프로필 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
                 loadProfileByApi = data
-                bSuccessApi = true
+                getUserProfile()
+                bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
                 Toast.makeText(this, "프로필 로드 실패: $message", Toast.LENGTH_LONG).show()
@@ -613,5 +698,42 @@ class UserProfileActivity: AppCompatActivity() {
                 bSuccessApi = false
             }
         }
+    }
+
+    /*
+    private fun getFormattedTimeForApi(timeString: String?): String {
+        val inputFormat = DateTimeFormatter.ofPattern("a hh:mm", Locale.US)
+        val outputFormat = DateTimeFormatter.ofPattern("HH:mm")
+
+        val time = LocalTime.parse(timeString?.trim(), inputFormat)
+        return time.format(outputFormat)
+    }
+
+    private fun getFormattedTimeForProj(timeString: String?): String {
+        val inputFormat = DateTimeFormatter.ofPattern("HH:mm")
+        val outputFormat = DateTimeFormatter.ofPattern("a hh:mm", Locale.US)
+
+        val time = LocalTime.parse(timeString?.trim(), inputFormat)
+        return time.format(outputFormat)
+    }*/
+
+    private fun getFormattedTime(timeString: String?, inputPattern: String, outputPattern: String): String? {
+        if (timeString == null) return null
+
+        val inputFormat = DateTimeFormatter.ofPattern(inputPattern)
+        val outputFormat = DateTimeFormatter.ofPattern(outputPattern)
+
+        val time = LocalTime.parse(timeString?.trim(), inputFormat)
+        return time.format(outputFormat)
+    }
+
+    private fun getFormattedDate(dateString: String?, inputPattern: String, outputPattern: String): String? {
+        if (dateString == null) return null
+
+        val inputFormat = DateTimeFormatter.ofPattern(inputPattern)
+        val outputFormat = DateTimeFormatter.ofPattern(outputPattern)
+
+        val time = LocalDate.parse(dateString?.trim(), inputFormat)
+        return time.format(outputFormat)
     }
 }

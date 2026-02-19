@@ -1,27 +1,34 @@
 package com.example.momenty.domain.mypage
 
+import android.content.ContentResolver
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.momenty.domain.home.LoadQuestData
-import com.example.momenty.domain.home.QuestRepository
-import com.example.momenty.domain.home.WriteQuestData
-import com.example.momenty.domain.home.WriteQuestRequest
+import com.example.momenty.global.security.LocalDataManager
 import kotlinx.coroutines.launch
 
 class MyPageViewModel(private val repository: MyPageRepository): ViewModel() {
+
+    private var localDataManager: LocalDataManager? = null
+    fun setLocalDataManager(manager: LocalDataManager) {
+        this.localDataManager = manager
+    }
+    private val _updateUserProfileResult = MutableLiveData<Result<UpdateUserProfileData>>()
+    val updateUserProfileResult: LiveData<Result<UpdateUserProfileData>> = _updateUserProfileResult
+
     private val _loadProfileResult = MutableLiveData<Result<LoadProfileData>>()
     val loadProfileResult: LiveData<Result<LoadProfileData>> = _loadProfileResult
 
-    private val _updateUserProfileResult = MutableLiveData<Result<Unit>>()
-    val updateUserProfileResult: LiveData<Result<Unit>> = _updateUserProfileResult
+    private val _loadOnePetProfileResult = MutableLiveData<Result<LoadOnePetProfileData>>()
+    val loadOnePetProfileResult: LiveData<Result<LoadOnePetProfileData>> = _loadOnePetProfileResult
 
-    private val _updatePetProfileResult = MutableLiveData<Result<Unit>>()
-    val updatePetProfileResult: LiveData<Result<Unit>> = _updatePetProfileResult
+    private val _updatePetProfileResult = MutableLiveData<Result<String?>>()
+    val updatePetProfileResult: LiveData<Result<String?>> = _updatePetProfileResult
 
-    private val _addPetProfileResult = MutableLiveData<Result<Unit>>()
-    val addPetProfileResult: LiveData<Result<Unit>> = _addPetProfileResult
+    private val _addPetProfileResult = MutableLiveData<Result<String?>>()
+    val addPetProfileResult: LiveData<Result<String?>> = _addPetProfileResult
 
     private val _loadNoticeResult = MutableLiveData<Result<LoadNoticeData<_NoticeData, _PageInfoData>>>()
     val loadNoticeResult: LiveData<Result<LoadNoticeData<_NoticeData, _PageInfoData>>> = _loadNoticeResult
@@ -29,8 +36,8 @@ class MyPageViewModel(private val repository: MyPageRepository): ViewModel() {
     private val _loadNoticeDetailResult = MutableLiveData<Result<LoadNoticeDetailData>>()
     val loadNoticeDetailResult: LiveData<Result<LoadNoticeDetailData>> = _loadNoticeDetailResult
 
-    private val _addInquiryResult = MutableLiveData<Result<String>>()
-    val addInquiryResult: LiveData<Result<String>> = _addInquiryResult
+    private val _addInquiryResult = MutableLiveData<Result<String?>>()
+    val addInquiryResult: LiveData<Result<String?>> = _addInquiryResult
 
     private val _getImageUrlResult = MutableLiveData<Result<ArrayList<GetImageUrlData>>>()
     val getImageUrlResult: LiveData<Result<ArrayList<GetImageUrlData>>> = _getImageUrlResult
@@ -48,30 +55,42 @@ class MyPageViewModel(private val repository: MyPageRepository): ViewModel() {
     val loadFaqDetailResult: LiveData<Result<LoadFaqDetailData>> = _loadFaqDetailResult
 
 
-    fun loadProfile(accessToken:String, userId: Long) {
-        viewModelScope.launch {
-            val result = repository.loadProfile(accessToken, userId)
-            _loadProfileResult.postValue(result)
-        }
-    }
+    private val _logoutResult = MutableLiveData<Result<String?>>()
+    val logoutResult: LiveData<Result<String?>> = _logoutResult
 
-    fun updateUserProfile(accessToken: String, userId: Long, req: UpdateUserProfileRequest) {
+
+    fun updateUserProfile(req: UpdateUserProfileRequest) {
         viewModelScope.launch {
-            val result = repository.updateUserProfile(accessToken, userId, req)
+            val result = repository.updateUserProfile(req)
             _updateUserProfileResult.postValue(result)
         }
     }
 
-    fun updatePetProfile(accessToken: String, userId: Long, petId: Int, req: UpdatePetProfileRequest) {
+    fun loadProfile() {
         viewModelScope.launch {
-            val result = repository.updatePetProfile(accessToken, userId, petId, req)
+            val result = repository.loadProfile()
+            _loadProfileResult.postValue(result)
+        }
+    }
+
+    fun loadOnePetProfile(petId: Long) {
+        viewModelScope.launch {
+            val result = repository.loadOnePetProfile(petId)
+            _loadOnePetProfileResult.postValue(result)
+        }
+    }
+
+
+    fun updatePetProfile(petId: Long, req: UpdatePetProfileRequest) {
+        viewModelScope.launch {
+            val result = repository.updatePetProfile(petId, req)
             _updatePetProfileResult.postValue(result)
         }
     }
 
-    fun addPetProfile(accessToken: String, userId: Long, req: AddPetProfileRequest) {
+    fun addPetProfile(req: AddPetProfileRequest) {
         viewModelScope.launch {
-            val result = repository.addPetProfile(accessToken, userId, req)
+            val result = repository.addPetProfile(req)
             _addPetProfileResult.postValue(result)
         }
     }
@@ -83,37 +102,44 @@ class MyPageViewModel(private val repository: MyPageRepository): ViewModel() {
         }
     }
 
-    fun loadNoticeDetail(accessToken: String, noticeId: Int) {
+    fun loadNoticeDetail(accessToken: String, noticeId: Long) {
         viewModelScope.launch {
             val result = repository.loadNoticeDetail(accessToken, noticeId)
             _loadNoticeDetailResult.postValue(result)
         }
     }
 
-    fun addInquiry(accessToken: String, userId: Long, req: AddInquiryRequest<AddInquiryRequestImg>) {
+    fun addInquiry(type: String, content: String, imageUris: ArrayList<Uri>?, contentResolver: ContentResolver) {
         viewModelScope.launch {
-            val result = repository.addInquiry(accessToken, userId, req)
+            val result = repository.addInquiry(type, content, imageUris, contentResolver)
             _addInquiryResult.postValue(result)
         }
     }
 
-    fun getImageUrl(accessToken: String, req: GetImageUrlRequest) {
+    fun createInquiryPresignedUrls(req: GetImageUrlRequest) {
         viewModelScope.launch {
-            val result = repository.getImageUrl(accessToken, req)
+            val result = repository.createInquiryPresignedUrls(req)
             _getImageUrlResult.postValue(result)
         }
     }
 
-    fun loadInquiry(accessToken: String, userId: Long) {
+    fun loadInquiry(page: Int = 0,
+                    size: Int = 10,
+                    sort: ArrayList<String>
+                    = ArrayList<String>().apply {
+                        add("createdAt")
+                        add("DESC")
+                    }
+    ) {
         viewModelScope.launch {
-            val result = repository.loadInquiry(accessToken, userId)
+            val result = repository.loadInquiry(page, size, sort)
             _loadInquiryResult.postValue(result)
         }
     }
 
-    fun loadInquiryDetail(accessToken: String, inquiryId: Int) {
+    fun loadInquiryDetail(inquiryId: Long) {
         viewModelScope.launch {
-            val result = repository.loadInquiryDetail(accessToken, inquiryId)
+            val result = repository.loadInquiryDetail(inquiryId)
             _loadInquiryDetailResult.postValue(result)
         }
     }
@@ -125,10 +151,17 @@ class MyPageViewModel(private val repository: MyPageRepository): ViewModel() {
         }
     }
 
-    fun loadFaqDetail(accessToken: String, faqId: Int) {
+    fun loadFaqDetail(accessToken: String, faqId: Long) {
         viewModelScope.launch {
             val result = repository.loadFaqDetail(accessToken, faqId)
             _loadFaqDetailResult.postValue(result)
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            val result = repository.logout()
+            _logoutResult.postValue(result)
         }
     }
 }

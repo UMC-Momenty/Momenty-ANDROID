@@ -5,13 +5,22 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.momenty.databinding.ActivityQuestBinding
+import com.example.momenty.domain.mypage.MyPageRepository
+import com.example.momenty.domain.mypage.MyPageRetrofitClient
+import com.example.momenty.domain.mypage.MyPageViewModel
+import com.example.momenty.domain.mypage.MyPageViewModelFactory
+import com.example.momenty.R
 import com.example.momenty.global.security.TokenManager
+import kotlin.getValue
 
 class QuestActivity/* @Inject constructor(
     private val tokenManager: TokenManager
@@ -20,9 +29,12 @@ class QuestActivity/* @Inject constructor(
     lateinit var binding: ActivityQuestBinding
     lateinit var tokenManager: TokenManager
 
-    lateinit var myLoadQuestResp: LoadQuestData
+    private var loadQuestByApi: LoadQuestData ?= null
+
+    private var bSuccessApi = false
     private val TAG = "QuestActivity"
 
+    /*
     private val questViewModel: QuestViewModel by viewModels {
         object: ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -31,6 +43,14 @@ class QuestActivity/* @Inject constructor(
                 return QuestViewModel(repository) as T
             }
         }
+    }*/
+
+    private val questViewModel: QuestViewModel by viewModels {
+        val repo = QuestRepository(
+            service = QuestRetrofitClient.questService,
+            tokenManager = tokenManager
+        )
+        QuestViewModelFactory(repo)
     }
 
 
@@ -146,57 +166,60 @@ class QuestActivity/* @Inject constructor(
 
         binding.tvWriteQuestionDate.visibility = View.VISIBLE
 
-        Toast.makeText(this, "저장 기능 구현 필요", Toast.LENGTH_SHORT).show()
+        val btnGood = binding.rbWriteGood
+        val btnSoso= binding.rbWriteSoso
+        val btnBad = binding.rbWriteBad
+
+        when(binding.rgWriteQuestion.checkedRadioButtonId) {
+            R.id.rb_write_good -> {
+                btnBad.visibility = View.GONE
+                btnSoso.visibility = View.GONE
+            }
+            R.id.rb_write_soso -> {
+                btnBad.visibility = View.GONE
+                btnGood.visibility = View.GONE
+            }
+            R.id.rb_write_bad -> {
+                btnGood.visibility = View.GONE
+                btnSoso.visibility = View.GONE
+            }
+            else -> {
+                binding.rgWriteQuestion.visibility = View.GONE
+            }
+        }
+
         performWriteQuest()
     }
 
-    /*
-    override fun onLoadQuestSuccess(loadQuestData: LoadQuestData) {
-        Log.d("LoadQuest/QuestAct", "load success")
-        myLoadQuestResp = loadQuestData
-        binding.tvWriteQuestionNumber.text = "#" + loadQuestData.questId + "번째 질문"
-        binding.tvWriteQuestionContent.text = loadQuestData.quest
-        binding.tvWriteQuestionDate.text = loadQuestData.date
-    }
-
-    override fun onLoadQuestFailure() {
-        Log.d("LoadQuest/QuestAct", "load failure")
-        //TODO("Not yet implemented")
-    }
-
-    override fun onWriteQuestSuccess() {
-        Log.d("WriteQuest/QuestAct", "write success")
-        //TODO("Not yet implemented")
-    }
-
-    override fun onWriteQuestFailure() {
-        Log.d("WriteQuest/QuestAct", "write failure")
-        //TODO("Not yet implemented")
-    }
-    */
 
 
     private fun performLoadQuest() {
-        val accessToken = tokenManager.getAccessToken()
-        questViewModel.loadQuest(accessToken!!)
+        questViewModel.loadQuest()
     }
 
     private fun performWriteQuest() {
-        val questId = binding.tvWriteQuestionNumber.toString()
-        val petId = ""
+
+        var questId = 0L
+        var petId = 0L
         val answer = binding.etWriteQuestionAnswer.toString()
 
-        val accessToken = tokenManager.getAccessToken()
+        if (loadQuestByApi != null) {
+            questId = loadQuestByApi!!.questId
 
-        questViewModel.writeQuest(accessToken!!, questId, petId, answer)
+        }
+
+        questViewModel.writeQuest(questId, petId, answer)
     }
 
     private fun observeQuest() {
         questViewModel.writeQuestResult.observe(this) {result ->
             result.onSuccess { data ->
+                bSuccessApi = true
                 Toast.makeText(this, "질문 작성 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
+                bSuccessApi = false
             }.onFailure { error ->
+                bSuccessApi = false
                 val message = error.message ?: "알 수 없는 오류"
                 Toast.makeText(this, "질문 작성 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "질문 작성 실패: $message")
@@ -205,11 +228,16 @@ class QuestActivity/* @Inject constructor(
 
         questViewModel.loadQuestResult.observe(this) {result ->
             result.onSuccess { data ->
+                bSuccessApi = true
                 Toast.makeText(this, "질문 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "로드 데이터: $data")
-                binding.tvWriteQuestionNumber.text = data.questId
+                loadQuestByApi = data
+                binding.tvWriteQuestionNumber.text = "#${data.questId.toString()}번째 질문"
                 binding.tvWriteQuestionContent.text = data.quest
+                binding.tvWriteQuestionDate.text = data.date
+                bSuccessApi = false
             }.onFailure { error ->
+                bSuccessApi = false
                 val message = error.message ?: "알 수 없는 오류"
                 Toast.makeText(this, "질문 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "질문 로드 실패: $message")
