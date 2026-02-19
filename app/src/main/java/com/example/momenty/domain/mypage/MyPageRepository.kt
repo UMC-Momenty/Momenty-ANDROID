@@ -124,7 +124,7 @@ class MyPageRepository(
             )
         }
 
-        if (imageUris!!.isEmpty()) throw IllegalArgumentException("사진 1장 이상 필요")
+        //if (imageUris!!.isEmpty()) throw IllegalArgumentException("사진 1장 이상 필요")
 
 
 
