@@ -214,7 +214,7 @@ class MockApiInterceptor : Interceptor {
             }
 
             // 특정 반려동물 프로필 조회
-            path.matches(Regex(".*api/pet/\\d+")) && method == "GET" -> {
+            path.matches(Regex(".*api/pets/\\d+")) && method == "GET" -> {
                 mockGetPetProfile()
             }
 
