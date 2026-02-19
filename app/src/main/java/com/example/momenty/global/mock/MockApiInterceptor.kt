@@ -665,6 +665,19 @@ class MockApiInterceptor : Interceptor {
                     "isSuccess": true,
                     "code": "ANSWER_SUBMITTED",
                     "message": "답변 제출 성공",
+                    "result": "String"
+                }
+            """.trimIndent()
+        )
+        /*
+        return MockResponse(
+            code = 201,
+            message = "Created",
+            body = """
+                {
+                    "isSuccess": true,
+                    "code": "ANSWER_SUBMITTED",
+                    "message": "답변 제출 성공",
                     "result": {
                         "answerId": "a_${UUID.randomUUID()}",
                         "questionId": "q_123",
@@ -672,7 +685,7 @@ class MockApiInterceptor : Interceptor {
                     }
                 }
             """.trimIndent()
-        )
+        )*/
     }
 
     /**
