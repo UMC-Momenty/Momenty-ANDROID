@@ -32,7 +32,8 @@ class HomeFragment : Fragment() {
         val repo = QuestRepository(
             service = QuestRetrofitClient.questService
         )
-        QuestViewModelFactory(repo)
+        QuestViewModelFactory(repo)}
+
     private val viewModel: HomeViewModel by viewModels()
 
     // 회원가입 직후인지 여부 (NavArgs 또는 Arguments로 전달받음)

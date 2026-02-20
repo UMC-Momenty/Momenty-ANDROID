@@ -94,12 +94,17 @@ class ProfileViewModel @Inject constructor(
                 resetQuestTime = resetQuestTime
             )) {
                 is ProfileRepository.ProfileResult.Success -> {
+                    android.util.Log.d("ProfileVM", "response accessToken: ${result.accessToken}")
+                    android.util.Log.d("ProfileVM", "현재 저장된 토큰: ${tokenManager.getAccessToken()}")
 
                     if (result.accessToken != null && result.refreshToken != null) {
                         tokenManager.saveTokens(
                             accessToken = result.accessToken,
                             refreshToken = result.refreshToken
                         )
+                        android.util.Log.d("ProfileVM", "✅ 토큰 갱신 완료 (ROLE_USER)")
+                    }else{
+                        android.util.Log.w("ProfileVM", "⚠️ 서버가 토큰 반환 안 함 - ROLE_QUEST 토큰 유지")
                     }
                     _uiState.value = ProfileUiState.Success(
                         accessToken = result.accessToken,

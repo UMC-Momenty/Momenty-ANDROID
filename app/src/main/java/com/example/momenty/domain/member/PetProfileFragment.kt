@@ -488,7 +488,7 @@ class PetProfileFragment : Fragment() {
             gender = petGender,
             birth = petBirth,
             species = petSpecies,
-            breedId = null,   // TODO: 품종 선택 시 breedId로 변환 필요
+            breedId = 1,   // TODO: 품종 선택 시 breedId로 변환 필요
             intro = petIntro
         )
     }
