@@ -633,7 +633,7 @@ class PetFormAddActivity: AppCompatActivity() {
             getFormattedDate(binding.etPetFormAddBirthday.text.toString(),
                 "yy.MM.dd", "yyyy-MM-dd")!!,
             binding.etPetFormAddType.text.toString(),
-            breedIndex?.toLong(),
+            1L, // breedIndex?.toLong(),
             binding.etPetFormAddIntro.text.toString()
         )
 

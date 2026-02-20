@@ -715,7 +715,7 @@ class PetFormManageActivity: AppCompatActivity() {
                 "yy.MM.dd", "yyyy-MM-dd")!!,
             binding.etPetFormManageType.text.toString(),
 
-            breedIndex?.toLong(),
+            1L, //breedIndex?.toLong(),
             binding.etPetFormManageIntro.text.toString()
         )
 

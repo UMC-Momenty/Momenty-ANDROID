@@ -14,12 +14,16 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.momenty.databinding.DialogWelcomeBinding
 import com.example.momenty.databinding.FragmentHomeBinding
+import com.example.momenty.global.security.TokenManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
 import kotlin.getValue
 
+@AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
@@ -27,12 +31,16 @@ class HomeFragment : Fragment() {
 
     private val TAG = "HomeFrag"
 
+    @Inject
+    lateinit var tokenManager: TokenManager
+
 
     private val questViewModel: QuestViewModel by activityViewModels {
         val repo = QuestRepository(
             service = QuestRetrofitClient.questService
         )
         QuestViewModelFactory(repo)
+    }
     private val viewModel: HomeViewModel by viewModels()
 
     // 회원가입 직후인지 여부 (NavArgs 또는 Arguments로 전달받음)
@@ -51,6 +59,8 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        QuestRetrofitClient.initialize(tokenManager, requireContext())
 
         initDate()
         initClickListeners()
