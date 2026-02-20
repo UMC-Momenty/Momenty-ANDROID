@@ -336,15 +336,14 @@ class PetProfileFragment : Fragment() {
     }
 
     private fun handleProfileSuccess(state: ProfileUiState.Success) {
+        // 로컬에도 저장 (캐싱용)
+        saveProfileLocally()
 
         Toast.makeText(
             requireContext(),
             "프로필이 저장되었습니다!",
             Toast.LENGTH_SHORT
         ).show()
-
-        // 로컬에도 저장 (캐싱용)
-        saveProfileLocally()
 
         // 메인 화면으로 이동
         navigateToHome()
