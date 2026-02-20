@@ -230,11 +230,11 @@ class CustomerCenterInquiryHistoryFragment: Fragment() {
 
     private fun checkHistoryEmpty() {
         if (!historyDatas.isEmpty()) {
-            binding.layoutInquiryHistoryNoData.visibility = View.VISIBLE
-            binding.rvInquiryHistory.visibility = View.GONE
-        } else {
             binding.layoutInquiryHistoryNoData.visibility = View.GONE
             binding.rvInquiryHistory.visibility = View.VISIBLE
+        } else {
+            binding.layoutInquiryHistoryNoData.visibility = View.VISIBLE
+            binding.rvInquiryHistory.visibility = View.GONE
         }
     }
 }
