@@ -1,5 +1,6 @@
 package com.example.momenty.domain.mypage.RVA
 
+import android.content.SharedPreferences
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
@@ -14,6 +15,7 @@ class NotificationRVA(
     private val onNotificationOff: (NotificationData) -> Unit
 ) : RecyclerView.Adapter<NotificationRVA.viewHolder>(), MyNotifyInterface {
 
+    lateinit var spf: SharedPreferences
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewHolder {
         val binding: ItemNotificationBinding = ItemNotificationBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
@@ -29,6 +31,13 @@ class NotificationRVA(
             val manager = (holder.itemView.context as? FragmentActivity)?.supportFragmentManager
             confirmDialog.show(manager!!, "ConfirmDialog")
         }
+        spf = holder.itemView.context.getSharedPreferences("notifySpf", android.content.Context.MODE_PRIVATE)
+        spf.edit().apply {
+            putString("notifyAll", "ON")
+            putString("notifyMarketing", "OFF")
+
+            apply()
+        }
     }
 
     override fun getItemCount(): Int {
@@ -36,9 +45,12 @@ class NotificationRVA(
     }
 
     override fun onSaveClickListener(id: Int) {
+        spf.getString("notifyAll", "ON")
+
         val currentData = notificationList[id]
         currentData.enabled = "ON"
         notifyItemChanged(id)
+        onNotificationOff(currentData)
     }
 
     override fun onCancelClickListener(id: Int) {

@@ -117,12 +117,14 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
         val localDataManager = com.example.momenty.global.security.LocalDataManager(requireContext())
         myPageViewModel.setLocalDataManager(localDataManager)
 
+
+        //setRVA()
+
         observePerformLoadProfile()
         //observePerformLoadPetsProfile()
         observePerformLoadPetList()
         observePerformLogout()
 
-        setRVA()
 
         performLoadProfile()
         //performLoadPetsProfile()
@@ -205,7 +207,7 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
     }
 
     private fun setName() {
-        if (bSuccessApi && loadProfileByApi != null) {
+        if (loadProfileByApi != null) {
             Log.e(TAG, "api 로드 성공")
 
             setUserProfile(loadProfileByApi!!.username, loadProfileByApi!!.profileUrl)
@@ -231,11 +233,9 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
             setUserProfile(user_name!!, user_profile_image_key, user_profile_image_uri)
             setPetProfileBySpf()
         }
-
-
-        rvAdapter.notifyDataSetChanged()
     }
 
+    /*
     private fun setRVA() {
         rvAdapter = MyPageRVA(loadPetListByApi) {
             clickedItem -> showBottomSheet(clickedItem)
@@ -244,7 +244,7 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
         binding.rvMyPagePetProfile.layoutManager = LinearLayoutManager(
             context, LinearLayoutManager.VERTICAL, false
         )
-    }
+    }*/
 
     private fun showBottomSheet(data: ArrayList<LoadPetListData>) {
         val bottomSheet = PetSelectBottomSheet(data)
@@ -390,9 +390,30 @@ class MyPageFragment : Fragment(), MyLogoutInterface, MyUnsubscribeInterface {
 
                 loadPetListByApi = data
                 if (!loadPetListByApi.isNullOrEmpty()){
-                    setPetProfileByApi(loadPetListByApi)
+                    //setPetProfileByApi(loadPetListByApi)
+
+                    /*
+                    petProfileDatas.clear()
+                    for (iter in loadPetListByApi) {
+                        petProfileDatas.apply {
+                            add(MyPagePetProfileData(
+                                name = iter.petName,
+                                imageKey = iter.profileImageUrl
+                            ))
+                        }
+                    }*/
+                    Log.e(TAG, "$loadPetListByApi")
                 }
 
+                rvAdapter = MyPageRVA(data) {
+                        clickedItem -> showBottomSheet(clickedItem)
+                }
+                binding.rvMyPagePetProfile.adapter = rvAdapter
+                binding.rvMyPagePetProfile.layoutManager = LinearLayoutManager(
+                    context, LinearLayoutManager.VERTICAL, false
+                )
+
+                binding.rvMyPagePetProfile.adapter?.notifyDataSetChanged()
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
