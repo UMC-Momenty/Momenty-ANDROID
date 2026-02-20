@@ -455,8 +455,12 @@ class UserProfileActivity: AppCompatActivity() {
             Log.e(TAG, "api 로드 성공")
             var tmpData = LoadProfileData(
                 loadProfileByApi!!.username,
-                loadProfileByApi!!.gender,
-                getFormattedDate(loadProfileByApi!!.birth, "yyyy-MM-dd", "yy.MM.dd")!!,
+                if (loadProfileByApi!!.gender != null) {
+                    loadProfileByApi!!.gender
+                } else "",
+                if (loadProfileByApi!!.birth != null) {
+                    getFormattedDate(loadProfileByApi!!.birth, "yyyy-MM-dd", "yy.MM.dd")!!
+                } else "",
                 loadProfileByApi?.profileUrl,
                 loadProfileByApi?.questTime,
                 loadProfileByApi!!.resetQuestTime
