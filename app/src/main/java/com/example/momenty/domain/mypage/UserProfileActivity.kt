@@ -27,6 +27,7 @@ import com.bumptech.glide.Glide
 import com.example.momenty.R
 import com.example.momenty.data.api.ImagePickerHelper
 import com.example.momenty.databinding.ActivityUserProfileBinding
+import com.example.momenty.domain.calendar.AlarmTimePickerDialog
 import com.example.momenty.domain.calendar.CalendarRepository
 import com.example.momenty.domain.calendar.CalendarViewModel
 import com.example.momenty.domain.calendar.CalendarViewModelFactory
@@ -61,6 +62,7 @@ class UserProfileActivity: AppCompatActivity() {
     private var selectedImageUri: Uri? = null
     private var uploadedImageKey: String? = null
     private val TAG = "UserProfileActivity"
+    private var selectedAlarmTime: String? = null
 
     private val myPageViewModel: MyPageViewModel by viewModels {
         val repo = MyPageRepository(service = MyPageRetrofitClient.myPageService)
@@ -139,7 +141,7 @@ class UserProfileActivity: AppCompatActivity() {
             timeOptions
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerType.adapter = adapter
+        //binding.spinnerType.adapter = adapter
     }
     private fun initListener() {
         binding.btnUserProfileBack.setOnClickListener {
@@ -173,6 +175,9 @@ class UserProfileActivity: AppCompatActivity() {
             showDatePicker()
         }
 
+        binding.etQuestionAlarm.setOnClickListener { showAlarmTimePicker() }
+
+        /*
         binding.spinnerType.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -193,12 +198,17 @@ class UserProfileActivity: AppCompatActivity() {
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
-            }
+            }*/
 
         // 알람 설정 안 함 체크박스
         binding.cbUserProfileNoSetAlarm.setOnCheckedChangeListener { _, isChecked ->
             if (isUpdating) return@setOnCheckedChangeListener
+            if (isChecked) {
+                selectedAlarmTime = null
+                binding.etQuestionAlarm.setText("")
+            }
 
+            /*
             if (isChecked) {
                 isUpdating = true
                 binding.spinnerType.setSelection(0)
@@ -206,7 +216,7 @@ class UserProfileActivity: AppCompatActivity() {
                 isUpdating = false
             } else {
                 binding.spinnerType.isEnabled = true
-            }
+            }*/
             updateSaveButton()
         }
 
@@ -389,8 +399,10 @@ class UserProfileActivity: AppCompatActivity() {
         val hasName = binding.etUserProfileName.text?.isNotBlank() == true
         val hasGender = binding.rgUserGender.checkedRadioButtonId != -1
         val hasBirth = binding.etUserProfileBirthday.text?.isNotBlank() == true
-        val hasAlarmSetting = binding.spinnerType.selectedItemPosition > 0
-                || binding.cbUserProfileNoSetAlarm.isChecked
+
+        /*val hasAlarmSetting = binding.spinnerType.selectedItemPosition > 0
+                || binding.cbUserProfileNoSetAlarm.isChecked*/
+        val hasAlarmSetting = selectedAlarmTime != null || binding.cbUserProfileNoSetAlarm.isChecked
 
         val allFieldsFilled = hasName && hasGender && hasBirth && hasAlarmSetting
 
@@ -420,7 +432,8 @@ class UserProfileActivity: AppCompatActivity() {
         val alarmTime = if (binding.cbUserProfileNoSetAlarm.isChecked) {
             null
         } else {
-            binding.spinnerType.selectedItem as? String
+            binding.etQuestionAlarm.text.toString()
+            //binding.spinnerType.selectedItem as? String
         }
 
         performUpdateUserProfile() //TODO: 백엔드 서버 열리면 다시 켜서 확인해볼것!!!
@@ -566,9 +579,11 @@ class UserProfileActivity: AppCompatActivity() {
         if (data?.resetQuestTime == true || data?.questTime == null) {
             binding.cbUserProfileNoSetAlarm.isChecked = true
         } else {
+            binding.etQuestionAlarm.setText(data?.questTime)
+            /*
             val toIndex = getSpinnerIndex(binding.spinnerType,
                 getFormattedTime(data?.questTime, "yy.MM.dd", "yyyy-MM-dd")!!)
-            binding.spinnerType.setSelection(toIndex)
+            binding.spinnerType.setSelection(toIndex)*/
         }
     }
 
@@ -626,7 +641,8 @@ class UserProfileActivity: AppCompatActivity() {
         val alarmTime = if (binding.cbUserProfileNoSetAlarm.isChecked) {
             null
         } else {
-            binding.spinnerType.selectedItem as? String
+            //binding.spinnerType.selectedItem as? String
+            binding.etQuestionAlarm.text.toString()
         }
 
         /*
@@ -731,5 +747,17 @@ class UserProfileActivity: AppCompatActivity() {
 
         val time = LocalDate.parse(dateString?.trim(), inputFormat)
         return time.format(outputFormat)
+    }
+
+    private fun showAlarmTimePicker() {
+        val dialog = AlarmTimePickerDialog(this) { timeString ->
+            selectedAlarmTime = timeString
+            binding.etQuestionAlarm.setText(timeString)
+            isUpdating = true
+            binding.cbUserProfileNoSetAlarm.isChecked = false
+            isUpdating = false
+            updateSaveButton()
+        }
+        dialog.show()
     }
 }

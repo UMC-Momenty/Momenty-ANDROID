@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Typeface
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -24,6 +25,10 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.momenty.R
 import com.example.momenty.databinding.FragmentCalendarBinding
+import com.example.momenty.domain.mypage.MyPageRepository
+import com.example.momenty.domain.mypage.MyPageRetrofitClient
+import com.example.momenty.domain.mypage.MyPageViewModel
+import com.example.momenty.domain.mypage.MyPageViewModelFactory
 import com.example.momenty.global.security.TokenManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
@@ -59,6 +64,13 @@ class CalendarFragment : Fragment() {
         CalendarViewModelFactory(repo)
     }
 
+
+    private val myPageViewModel: MyPageViewModel by activityViewModels {
+        val repo = MyPageRepository(service = MyPageRetrofitClient.myPageService)
+        MyPageViewModelFactory(repo)
+    }
+    private var myUserId: Long ?= null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -72,6 +84,7 @@ class CalendarFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         RetrofitClient.initialize(tokenManager, requireContext())
+        MyPageRetrofitClient.initialize(tokenManager, requireContext())
 
         // Mock 모드에서 토큰이 없으면 Mock 로그인 정보 설정
         if (!tokenManager.isLoggedIn()) {
@@ -82,6 +95,9 @@ class CalendarFragment : Fragment() {
         // ✅ ViewModel에 LocalDataManager 설정
         val localDataManager = com.example.momenty.global.security.LocalDataManager(requireContext())
         viewModel.setLocalDataManager(localDataManager)
+
+        observerPerformLoadProfileDetail()
+        performLoadProfileDetail()
 
         setupWeekdayHeader()
         setupCalendarRecyclerView()
@@ -289,5 +305,20 @@ class CalendarFragment : Fragment() {
         scheduleAdapter = null
         _binding = null
         super.onDestroyView()
+    }
+
+    private fun performLoadProfileDetail() {
+        myPageViewModel.loadProfileDetail()
+    }
+
+    private fun observerPerformLoadProfileDetail() {
+        myPageViewModel.loadProfileDetailResult.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { data ->
+                myUserId = data.userId
+            }.onFailure { error ->
+                val message = error.message ?: "알 수 없는 오류"
+                Log.d("CalendarFrag", "프로필 상세 조회 실패: $message")
+            }
+        }
     }
 }
