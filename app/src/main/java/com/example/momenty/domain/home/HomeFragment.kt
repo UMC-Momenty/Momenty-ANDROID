@@ -2,10 +2,13 @@ package com.example.momenty.domain.home
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -15,12 +18,21 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.getValue
 
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
+    private val TAG = "HomeFrag"
+
+
+    private val questViewModel: QuestViewModel by activityViewModels {
+        val repo = QuestRepository(
+            service = QuestRetrofitClient.questService
+        )
+        QuestViewModelFactory(repo)
     private val viewModel: HomeViewModel by viewModels()
 
     // 회원가입 직후인지 여부 (NavArgs 또는 Arguments로 전달받음)
@@ -43,6 +55,8 @@ class HomeFragment : Fragment() {
         initDate()
         initClickListeners()
 
+        observeQuest()
+        performLoadQuest()
         if (isNewUser) {
             viewModel.loadMyPets()
             observeAndShowWelcomePopup()
@@ -118,5 +132,21 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun performLoadQuest() {
+        questViewModel.loadQuest()
+    }
+
+    private fun observeQuest() {
+        questViewModel.loadQuestResult.observe(viewLifecycleOwner) {result ->
+            result.onSuccess { data ->
+                Log.d(TAG, "로드 데이터: $data")
+                binding.tvCardQuestion.text = data.quest
+            }.onFailure { error ->
+                val message = error.message ?: "알 수 없는 오류"
+                Log.d(TAG, "질문 로드 실패: $message")
+            }
+        }
     }
 }
