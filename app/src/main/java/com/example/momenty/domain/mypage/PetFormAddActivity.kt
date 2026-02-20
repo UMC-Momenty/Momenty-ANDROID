@@ -645,11 +645,11 @@ class PetFormAddActivity: AppCompatActivity() {
         myPageViewModel.addPetProfileResult.observe(this) { result ->
             result.onSuccess { data ->
                 bSuccessApi = true
-                Toast.makeText(this, "반려동물 추가 성공!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(this, "반려동물 추가 성공!", Toast.LENGTH_SHORT).show()
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(this, "반려동물 추가 실패: $message", Toast.LENGTH_LONG).show()
+                //Toast.makeText(this, "반려동물 추가 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "반려동물 추가 실패: $message")
                 bSuccessApi = false
             }

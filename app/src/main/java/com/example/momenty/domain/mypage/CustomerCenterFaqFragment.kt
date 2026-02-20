@@ -130,11 +130,11 @@ class CustomerCenterFaqFragment: Fragment() {
     }
 
     private fun observePerformLoadFaq() {
-        myPageViewModel.loadFaqResult.observe(this) { result ->
+        myPageViewModel.loadFaqResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess { data ->
                 bSuccessApi = true
 
-                Toast.makeText(requireActivity(), "FAQ 로드 성공!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(requireActivity(), "FAQ 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
 
                 loadFaqDatasByApi = data
@@ -144,7 +144,7 @@ class CustomerCenterFaqFragment: Fragment() {
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(requireActivity(), "FAQ 로드 실패: $message", Toast.LENGTH_LONG).show()
+                //Toast.makeText(requireActivity(), "FAQ 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "FAQ 로드 실패: $message")
 
                 inputDummyData()
@@ -160,11 +160,11 @@ class CustomerCenterFaqFragment: Fragment() {
     }
 
     private fun observePerformLoadFaqDetail() {
-        myPageViewModel.loadFaqDetailResult.observe(this) { result ->
+        myPageViewModel.loadFaqDetailResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess { data ->
                 bSuccessApi = true
 
-                Toast.makeText(requireActivity(), "상세 FAQ 로드 성공!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(requireActivity(), "상세 FAQ 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
 
                 loadFaqDetailDataByApi = data
@@ -177,7 +177,7 @@ class CustomerCenterFaqFragment: Fragment() {
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(requireActivity(), "상세 FAQ 로드 실패: $message", Toast.LENGTH_LONG).show()
+                //Toast.makeText(requireActivity(), "상세 FAQ 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "상세 FAQ 로드 실패: $message")
 
                 inputDummyData()

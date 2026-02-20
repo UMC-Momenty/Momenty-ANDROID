@@ -385,14 +385,14 @@ class CustomerCenterInquiryWriteFragment: Fragment() {
 
 
     private fun observePerformAddInquiry() {
-        myPageViewModel.addInquiryResult.observe(this) { result ->
+        myPageViewModel.addInquiryResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess { data ->
                 bSuccessApi = true
-                Toast.makeText(requireContext(), "문의하기 성공!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(requireContext(), "문의하기 성공!", Toast.LENGTH_SHORT).show()
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(requireContext(), "문의하기 실패: $message", Toast.LENGTH_LONG).show()
+                //Toast.makeText(requireContext(), "문의하기 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "문의하기 실패: $message")
                 bSuccessApi = false
             }
