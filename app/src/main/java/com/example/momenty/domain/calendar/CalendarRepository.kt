@@ -41,15 +41,14 @@ class CalendarRepository(
                 petApiService.getUserPets()
             }
 
-            if (response?.isSuccessful == true && response.body() != null) {
-                response.body()!!.pets?.map { dto ->
+            if (response?.isSuccess == true) {
+                response.result?.map { dto ->
                     Pet(
                         petId = dto.petId,
-                        profile = dto.profile
+                        profile = dto.profileImageUrl ?: ""
                     )
                 } ?: emptyList()
             } else {
-                Log.w(TAG, "Failed to fetch pets: code=${response?.code()}")
                 emptyList()
             }
         } catch (e: Exception) {
