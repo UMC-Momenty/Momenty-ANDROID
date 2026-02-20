@@ -56,7 +56,7 @@ class CommunityFragment : Fragment(R.layout.fragment_community) {
                     author = "익명",
                     dateText = "2026.01.29",
                     title = "질문",
-                    content = "질문 있어요! UFilterChip 선택 토글이 왜 안 되죠?",
+                    content = "저희집 깜이가 밥을 안 먹어요....아침부터 밥을 굶는데 무슨 이상이라도 있는걸까요",
                     likeCount = 12,
                     commentCount = 3
                 ),
@@ -66,7 +66,7 @@ class CommunityFragment : Fragment(R.layout.fragment_community) {
                     author = "도리",
                     dateText = "2026.01.29",
                     title = "정보공유합니다",
-                    content = "정보공유합니다: 길게길게길게 일단은 길게",
+                    content = "정보공유합니다: catrr에서 지금 고양이 사료 80%할인중입니다!",
                     likeCount = 7,
                     commentCount = 1
                 ),
@@ -76,7 +76,7 @@ class CommunityFragment : Fragment(R.layout.fragment_community) {
                     author = "익명",
                     dateText = "2026.01.28",
                     title = "후기",
-                    content = "후기 남겨요! 너무 졸리네요\n한줄더\n한줄더\n한줄더\n한줄더\n한줄더",
+                    content = "후기 남겨요! 오늘 후기입니다 ㅎㅎ",
                     likeCount = 20,
                     commentCount = 5
                 )

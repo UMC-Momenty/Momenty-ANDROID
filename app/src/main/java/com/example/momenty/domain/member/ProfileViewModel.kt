@@ -94,6 +94,8 @@ class ProfileViewModel @Inject constructor(
                 resetQuestTime = resetQuestTime
             )) {
                 is ProfileRepository.ProfileResult.Success -> {
+                    android.util.Log.d("ProfileVM", "response accessToken: ${result.accessToken}")
+                    android.util.Log.d("ProfileVM", "현재 저장된 토큰 : ${tokenManager.getAccessToken()}")
 
                     if (result.accessToken != null && result.refreshToken != null) {
                         tokenManager.saveTokens(

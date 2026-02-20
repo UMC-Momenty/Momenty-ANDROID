@@ -50,11 +50,24 @@
                 android:layout_height="32dp"
                 android:src="@drawable/ic_home_btn_footstep"
                 android:layout_marginEnd="16dp" />
+
+            <ImageView
+                android:id="@+id/btn_chatbot"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_bottom_nav_chatbot"
+                android:tint="@color/primary"
+                android:layout_marginEnd="16dp"/>
+
             <ImageView
                 android:id="@+id/btn_notification"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:src="@drawable/ic_home_alarm" />
+                android:src="@drawable/ic_home_alarm"
+                />
+
+
+
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 

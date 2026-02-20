@@ -11,7 +11,22 @@
         app:destination="@id/community_graph"
         />
 
+    <action
+        android:id="@+id/action_global_to_chatbot"
+        app:destination="@id/chatbot_graph" />
 
+
+    <action
+        android:id="@+id/action_global_to_record"
+        app:destination="@id/record_graph" />
+
+    <action
+        android:id="@+id/action_global_to_notification"
+        app:destination="@id/notification_graph"/>
+
+
+
+    <include app:graph="@navigation/notification_graph" />
     <include app:graph="@navigation/home_graph" />
     <include app:graph="@navigation/record_graph" />
     <include app:graph="@navigation/calendar_graph" />

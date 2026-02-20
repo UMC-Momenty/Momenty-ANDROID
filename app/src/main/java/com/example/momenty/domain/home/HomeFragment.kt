@@ -13,6 +13,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.momenty.databinding.DialogWelcomeBinding
+import com.example.momenty.R
+import android.net.Uri
 import com.example.momenty.databinding.FragmentHomeBinding
 import com.example.momenty.global.security.TokenManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,6 +24,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlin.getValue
+import androidx.navigation.fragment.findNavController
+
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -116,7 +120,7 @@ class HomeFragment : Fragment() {
     private fun initClickListeners() {
         // 하단 질문 이동 버튼
         binding.ivHomeToQuestion.setOnClickListener {
-            navigateToQuest()
+            goWriteWithDeepLink()
         }
 
         // 질문 텍스트 영역 (연필 아이콘 포함) 클릭
@@ -126,9 +130,25 @@ class HomeFragment : Fragment() {
 
         // 알림 버튼
         binding.btnNotification.setOnClickListener {
-            navigateToNotification()
+            findNavController().navigate(R.id.action_global_to_notification)
         }
+
+        // 챗봇 버튼
+        binding.btnChatbot.setOnClickListener {
+            findNavController().navigate(R.id.action_global_to_chatbot)
+        }
+
+
+
+
+
     }
+
+    private fun goWriteWithDeepLink() {
+        val uri = Uri.parse("momenty://record/write")
+        findNavController().navigate(uri)
+    }
+
 
     private fun navigateToQuest() {
         val intent = Intent(requireContext(), QuestActivity::class.java)
