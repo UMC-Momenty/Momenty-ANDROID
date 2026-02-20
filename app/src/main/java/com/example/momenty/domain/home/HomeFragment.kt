@@ -9,7 +9,13 @@ import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.example.momenty.databinding.DialogWelcomeBinding
 import com.example.momenty.databinding.FragmentHomeBinding
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.getValue
@@ -27,6 +33,11 @@ class HomeFragment : Fragment() {
             service = QuestRetrofitClient.questService
         )
         QuestViewModelFactory(repo)
+    private val viewModel: HomeViewModel by viewModels()
+
+    // 회원가입 직후인지 여부 (NavArgs 또는 Arguments로 전달받음)
+    private val isNewUser: Boolean by lazy {
+        arguments?.getBoolean("isNewUser", false) ?: false
     }
 
     override fun onCreateView(
@@ -46,6 +57,44 @@ class HomeFragment : Fragment() {
 
         observeQuest()
         performLoadQuest()
+        if (isNewUser) {
+            viewModel.loadMyPets()
+            observeAndShowWelcomePopup()
+        }
+    }
+
+    private fun observeAndShowWelcomePopup() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.petProfileImageUrl.collect { imageUrl ->
+                showWelcomePopup(imageUrl)
+                return@collect // 한 번만 실행
+            }
+        }
+    }
+
+    private fun showWelcomePopup(imageUrl: String?) {
+        val popupBinding = DialogWelcomeBinding.inflate(layoutInflater, binding.root as ViewGroup, true)
+
+        // 반려동물 프로필 이미지 로드
+        if (!imageUrl.isNullOrEmpty()) {
+            Glide.with(this)
+                .load(imageUrl)
+                .circleCrop()
+                .into(popupBinding.ivPetProfile)
+        }
+
+        // 배경 클릭 시 팝업 닫기
+        popupBinding.flPopupBackground.setOnClickListener {
+            popupBinding.root.visibility = View.GONE
+        }
+
+        // 3초 후 자동으로 닫기
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(3000)
+            if (_binding != null) {
+                popupBinding.root.visibility = View.GONE
+            }
+        }
     }
 
     private fun initDate() {

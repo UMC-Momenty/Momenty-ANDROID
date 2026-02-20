@@ -60,11 +60,11 @@ class AuthViewModel @Inject constructor(
     /**
      * 카카오 로그인
      */
-    fun loginWithKakao() {
+    fun loginWithKakao(activityContext: Context) {
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
 
-            when (val result = authRepository.loginWithKakao()) {
+            when (val result = authRepository.loginWithKakao(activityContext)) {
                 is AuthResult.Success -> {
                     _uiState.value = AuthUiState.Success(result.userName)
                 }

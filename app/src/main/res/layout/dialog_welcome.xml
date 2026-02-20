@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fl_popup_background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#80000000">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="280dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_edittext_normal"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/tv_welcome_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="회원가입 완료!"
+            android:textSize="16sp"
+            android:fontFamily="@font/pretendard_semibold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Momenty에 오신 걸 환영해요.\n이제 우리의 추억을 기록할 차례에요!"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/pretendard_regular"
+            app:layout_constraintTop_toBottomOf="@id/tv_welcome_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <ImageView
+            android:id="@+id/iv_pet_profile"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@drawable/img_profile_circle_img"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

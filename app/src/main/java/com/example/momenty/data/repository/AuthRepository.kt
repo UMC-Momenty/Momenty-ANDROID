@@ -117,13 +117,13 @@ class AuthRepository @Inject constructor(
      *
      * @return AuthResult 로그인 성공 또는 실패 결과
      */
-    suspend fun loginWithKakao(): AuthResult {
+    suspend fun loginWithKakao(activityContext: Context): AuthResult {
         return try {
             withTimeout(LOGIN_TIMEOUT_MS) {
                 logLoginAttempt("Kakao", null)
 
                 // 1. 카카오 SDK를 통한 로그인
-                val kakaoToken = kakaoLogin()
+                val kakaoToken = kakaoLogin(activityContext)
                 Log.d(TAG, "카카오 토큰 획득 성공")
 
                 // 2. 사용자 정보 가져오기
@@ -230,7 +230,7 @@ class AuthRepository @Inject constructor(
     /**
      * 카카오 로그인 실행
      */
-    private suspend fun kakaoLogin(): OAuthToken = suspendCoroutine { continuation ->
+    private suspend fun kakaoLogin(activityContext: Context): OAuthToken = suspendCoroutine { continuation ->
         val callback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
             when {
                 error != null -> {
@@ -250,10 +250,10 @@ class AuthRepository @Inject constructor(
         }
 
         // 카카오톡 앱 설치 여부에 따라 로그인 방식 선택
-        if (UserApiClient.instance.isKakaoTalkLoginAvailable(context)) {
-            UserApiClient.instance.loginWithKakaoTalk(context, callback = callback)
+        if (UserApiClient.instance.isKakaoTalkLoginAvailable(activityContext)) {
+            UserApiClient.instance.loginWithKakaoTalk(activityContext, callback = callback)
         } else {
-            UserApiClient.instance.loginWithKakaoAccount(context, callback = callback)
+            UserApiClient.instance.loginWithKakaoAccount(activityContext, callback = callback)
         }
     }
 
