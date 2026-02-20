@@ -34,9 +34,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
         }
         ViewCompat.requestApplyInsets(binding.root)
 
-        binding.btnGoCommunity.setOnClickListener {
-            findNavController().navigate(R.id.action_global_to_community)
-        }
+
 
         val adapter = RecordAdapter { item ->
             val action = RecordFragmentDirections.actionRecordToMomentDetail(

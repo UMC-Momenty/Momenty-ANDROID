@@ -38,11 +38,11 @@ android {
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"$kakaoKey\"")
         buildConfigField("String", "NAVER_CLIENT_ID", "\"$naverClientId\"")
         buildConfigField("String", "NAVER_CLIENT_SECRET", "\"$naverClientSecret\"")
-        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_KEY", "\"$googleWebClientId\"")
         manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = kakaoKey
         manifestPlaceholders["NAVER_CLIENT_ID"] = naverClientId
         manifestPlaceholders["NAVER_CLIENT_SECRET"] = naverClientSecret
-        manifestPlaceholders["GOOGLE_WEB_CLIENT_ID"] = googleWebClientId
+        manifestPlaceholders["GOOGLE_WEB_CLIENT_KEY"] = googleWebClientId
     }
 
     buildTypes {

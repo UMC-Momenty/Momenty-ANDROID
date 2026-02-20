@@ -17,9 +17,9 @@
         android:title="홈" />
 
     <item
-        android:id="@+id/chatbot_graph"
-        android:icon="@drawable/ic_bottom_nav_chatbot"
-        android:title="챗봇" />
+        android:id="@+id/community_graph"
+        android:icon="@drawable/ic_bottom_nav_community"
+        android:title="커뮤니티" />
 
     <item
         android:id="@+id/mypage_graph"

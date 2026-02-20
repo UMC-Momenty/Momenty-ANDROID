@@ -33,12 +33,15 @@
         android:id="@+id/recordWriteFragment"
         android:name="com.example.momenty.domain.record.write.RecordWriteFragment"
         tools:layout="@layout/fragment_record_write">
+
+
+        <deepLink
+            app:uri="momenty://record/write" />
+
         <argument
             android:name="hideBottomNav"
             app:argType="boolean"
             android:defaultValue="true" />
-
-
     </fragment>
 
     <fragment

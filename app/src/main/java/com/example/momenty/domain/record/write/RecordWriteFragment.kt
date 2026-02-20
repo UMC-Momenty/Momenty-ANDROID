@@ -20,6 +20,8 @@ import com.example.momenty.databinding.FragmentRecordWriteBinding
 import com.example.momenty.domain.record.RecordViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.navigation.navOptions
+
 
 @AndroidEntryPoint
 class RecordWriteFragment : Fragment(R.layout.fragment_record_write) {
@@ -124,7 +126,11 @@ class RecordWriteFragment : Fragment(R.layout.fragment_record_write) {
                 imageUris = photos.toList(),
                 contentResolver = requireContext().contentResolver,
                 onSuccess = {
-                    findNavController().navigate(R.id.recordFragment)
+                    val options = navOptions {
+                        popUpTo(R.id.recordFragment) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                    findNavController().navigate(R.id.recordFragment, null, options)
                 },
                 onFail = { e ->
                     e.printStackTrace()

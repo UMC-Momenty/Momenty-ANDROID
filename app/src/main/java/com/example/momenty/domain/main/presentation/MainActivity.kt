@@ -1,14 +1,13 @@
 package com.example.momenty.domain.main.presentation
 
-import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupWithNavController
 import com.example.momenty.R
 import com.example.momenty.data.repository.AuthRepository
 import com.example.momenty.databinding.ActivityMainBinding
@@ -17,19 +16,18 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    @Inject
-    lateinit var tokenManager: TokenManager
-
-    @Inject
-    lateinit var authRepository: AuthRepository
+    @Inject lateinit var tokenManager: TokenManager
+    @Inject lateinit var authRepository: AuthRepository
 
     private lateinit var navController: NavController
+
+
+    private var syncingBottomNav = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +44,32 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
         navController = navHostFragment.navController
 
-        binding.bottomNav.setupWithNavController(navController)
+        binding.bottomNav.setOnItemSelectedListener { item ->
+
+            if (syncingBottomNav) return@setOnItemSelectedListener true
+
+            val options = androidx.navigation.NavOptions.Builder()
+                .setLaunchSingleTop(true)
+                .setRestoreState(true)
+                .setPopUpTo(navController.graph.findStartDestination().id, false)
+                .build()
+
+            return@setOnItemSelectedListener try {
+                navController.navigate(item.itemId, null, options)
+                true
+            } catch (e: IllegalArgumentException) {
+                false
+            }
+        }
+
+        binding.bottomNav.setOnItemReselectedListener { item ->
+            val graph = navController.graph.findNode(item.itemId) as? androidx.navigation.NavGraph
+                ?: return@setOnItemReselectedListener
+
+
+            navController.popBackStack(graph.findStartDestination().id, false)
+        }
+
 
         navController.addOnDestinationChangedListener { _, destination, arguments ->
             val isInAuthGraph = destination.isInGraph(R.id.auth_graph)
@@ -54,28 +77,33 @@ class MainActivity : AppCompatActivity() {
 
             binding.bottomNav.visibility =
                 if (isInAuthGraph || hideBottomNav) View.GONE else View.VISIBLE
+
+
+            if (!isInAuthGraph && !hideBottomNav) {
+                val shouldSelect = getBottomGraphId(destination)
+
+                if (binding.bottomNav.selectedItemId != shouldSelect) {
+                    syncingBottomNav = true
+                    binding.bottomNav.selectedItemId = shouldSelect
+                    syncingBottomNav = false
+                }
+            }
         }
     }
 
-    /**
-     * SplashActivity에서 전달된 Intent 처리
-     */
     private fun handleIntentIfNeeded() {
         val navigateTo = intent.getStringExtra("navigate_to")
 
         when (navigateTo) {
             "home" -> {
-                // home_graph로 이동
                 navController.navigate(R.id.home_graph)
-                binding.bottomNav.selectedItemId = R.id.home_graph
-            }
 
+            }
             "terms" -> {
                 if (navController.currentDestination?.id != R.id.termsFragment) {
                     navController.navigate(R.id.auth_graph)
                 }
             }
-
             "profile" -> {
                 navController.navigate(R.id.auth_graph)
                 navController.navigate(R.id.userProfileFragment)
@@ -90,14 +118,10 @@ class MainActivity : AppCompatActivity() {
     fun logout() {
         lifecycleScope.launch {
             authRepository.logout()
-            // 로그인 화면으로 이동
             navController.navigate(R.id.auth_graph)
         }
     }
 
-    /**
-     * destination이 특정 graph(또는 그 하위)에 속하는지 체크
-     */
     private fun NavDestination.isInGraph(@androidx.annotation.IdRes graphId: Int): Boolean {
         var current: NavDestination? = this
         while (current != null) {
@@ -105,6 +129,18 @@ class MainActivity : AppCompatActivity() {
             current = current.parent
         }
         return false
+    }
+
+
+    private fun getBottomGraphId(destination: NavDestination): Int {
+        return when {
+            destination.isInGraph(R.id.home_graph) -> R.id.home_graph
+            destination.isInGraph(R.id.record_graph) -> R.id.record_graph
+            destination.isInGraph(R.id.calendar_graph) -> R.id.calendar_graph
+            destination.isInGraph(R.id.community_graph) -> R.id.community_graph
+            destination.isInGraph(R.id.mypage_graph) -> R.id.mypage_graph
+            else -> binding.bottomNav.selectedItemId
+        }
     }
 
     companion object {
