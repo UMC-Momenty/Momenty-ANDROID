@@ -27,7 +27,7 @@ object NetworkModule {
     private const val BASE_URL = "https://www.dev-service.shop/"
 
     private val useMockApi: Boolean
-        get() = true
+        get() = false
 
     @Provides
     @Singleton

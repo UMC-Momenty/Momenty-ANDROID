@@ -17,7 +17,7 @@ object RetrofitConfig {
     private const val BASE_URL = "https://www.dev-service.shop/"
 
     // ✨ Mock 모드 활성화 여부 (개발 중: true, 배포 시: false)
-    var useMockApi: Boolean = true
+    var useMockApi: Boolean = false
 
     // HTTP 로깅 인터셉터 (개발 중 API 요청/응답 확인용)
     private val loggingInterceptor = HttpLoggingInterceptor().apply {

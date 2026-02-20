@@ -42,7 +42,7 @@ object RetrofitClient {
      */
     private val mockApiInterceptor by lazy {
         MockApiInterceptor().apply {
-            MockApiInterceptor.isMockEnabled = true
+            MockApiInterceptor.isMockEnabled = false
         }
     }
 
