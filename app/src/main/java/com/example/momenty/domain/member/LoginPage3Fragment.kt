@@ -72,7 +72,7 @@ class LoginPage3Fragment : Fragment() {
     private fun setupClickListeners() {
         // 카카오 로그인 : ViewModel에 위임
         binding.btnKakaoLogin.setOnClickListener {
-            authViewModel.loginWithKakao()
+            authViewModel.loginWithKakao(requireActivity())
         }
 
         // 구글 로그인 : Intent만 실행, 결과는 ViewModel로
