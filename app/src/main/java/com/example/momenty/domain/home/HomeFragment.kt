@@ -14,18 +14,25 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.momenty.databinding.DialogWelcomeBinding
 import com.example.momenty.databinding.FragmentHomeBinding
+import com.example.momenty.global.security.TokenManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
 import kotlin.getValue
 
+@AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
     private val TAG = "HomeFrag"
+
+    @Inject
+    lateinit var tokenManager: TokenManager
 
 
     private val questViewModel: QuestViewModel by activityViewModels {
@@ -52,6 +59,8 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        QuestRetrofitClient.initialize(tokenManager, requireContext())
 
         initDate()
         initClickListeners()

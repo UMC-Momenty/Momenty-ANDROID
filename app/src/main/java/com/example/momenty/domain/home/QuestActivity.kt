@@ -20,14 +20,20 @@ import com.example.momenty.domain.mypage.MyPageViewModel
 import com.example.momenty.domain.mypage.MyPageViewModelFactory
 import com.example.momenty.R
 import com.example.momenty.global.security.TokenManager
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlin.getValue
 
+@AndroidEntryPoint
 class QuestActivity/* @Inject constructor(
     private val tokenManager: TokenManager
 )*/: AppCompatActivity(), ConfirmDialogInterface/*, LoadQuestView, WriteQuestView*/ {
 
     lateinit var binding: ActivityQuestBinding
 
+
+    @Inject
+    lateinit var tokenManager: TokenManager
     private var loadQuestByApi: LoadQuestData ?= null
 
     private var bSuccessApi = false
@@ -55,6 +61,7 @@ class QuestActivity/* @Inject constructor(
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        QuestRetrofitClient.initialize(tokenManager, this)
         binding = ActivityQuestBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
