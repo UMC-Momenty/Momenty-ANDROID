@@ -42,12 +42,12 @@ class CalendarRepository(
             }
 
             if (response?.isSuccessful == true && response.body() != null) {
-                response.body()!!.pets.map { dto ->
+                response.body()!!.pets?.map { dto ->
                     Pet(
                         petId = dto.petId,
                         profile = dto.profile
                     )
-                }
+                } ?: emptyList()
             } else {
                 Log.w(TAG, "Failed to fetch pets: code=${response?.code()}")
                 emptyList()
