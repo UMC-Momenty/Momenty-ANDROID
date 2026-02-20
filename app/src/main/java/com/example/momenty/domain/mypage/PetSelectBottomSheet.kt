@@ -25,8 +25,8 @@ class PetSelectBottomSheet(private val petListData: ArrayList<LoadPetListData>):
         binding = BottomSheetPetSelectBinding.inflate(inflater, container, false)
 
 
-        getPetDatas()
         setRVA()
+        getPetDatas()
 
         return binding.root
     }
@@ -71,7 +71,7 @@ class PetSelectBottomSheet(private val petListData: ArrayList<LoadPetListData>):
     }
 
     private fun setRVA() {
-        val RVAdapter = PetSelectBottomSheetRVA(petDatas) { dismiss() }
+        val RVAdapter = PetSelectBottomSheetRVA(petListData) { dismiss() }
         binding.rvPetSelect.adapter = RVAdapter
         binding.rvPetSelect.layoutManager = LinearLayoutManager(
             context, LinearLayoutManager.VERTICAL, false

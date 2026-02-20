@@ -46,6 +46,7 @@ class MyPageRVA(private val petProfileList: ArrayList<LoadPetListData>,
 
     inner class viewHolder(val binding: ItemMyPagePetProfileBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(data: LoadPetListData) {
+            Log.e(TAG, "$data")
             binding.tvMyPagePetName.text = data.petName
             //binding.ivMyPagePetProfile.setImageResource()
             if (!data.profileImageUrl.isNullOrEmpty()) {
