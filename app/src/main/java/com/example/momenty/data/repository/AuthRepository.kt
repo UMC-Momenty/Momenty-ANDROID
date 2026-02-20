@@ -51,7 +51,7 @@ class AuthRepository @Inject constructor(
      */
     val googleSignInClient: GoogleSignInClient by lazy {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+            .requestIdToken(BuildConfig.GOOGLE_WEB_CLIENT_KEY)
             .requestEmail()
             .build()
         GoogleSignIn.getClient(context, gso)
@@ -84,6 +84,10 @@ class AuthRepository @Inject constructor(
                         accessToken = idToken  // 구글은 idToken 전송
                     )
                 )
+
+                Log.d("BACKEND_LOGIN", "socialLogin response = $response")
+                Log.d("BACKEND_LOGIN", "socialLogin result = ${response.result}")
+
 
                 // 3. 응답 검증
                 if (!response.isSuccess || response.result == null) {
