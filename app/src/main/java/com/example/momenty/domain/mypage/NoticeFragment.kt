@@ -18,12 +18,17 @@ import com.example.momenty.domain.calendar.RetrofitClient
 import com.example.momenty.domain.mypage.RVA.NoticeRVA
 import com.example.momenty.domain.mypage.data.NoticeData
 import com.example.momenty.global.security.TokenManager
+import dagger.hilt.android.AndroidEntryPoint
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
 import kotlin.getValue
 
+@AndroidEntryPoint
 class NoticeFragment: Fragment() {
     lateinit var binding: FragmentNoticeBinding
+
+    @Inject
     lateinit var tokenManager: TokenManager
     private var bSuccessApi = false
 
@@ -58,13 +63,14 @@ class NoticeFragment: Fragment() {
         binding = FragmentNoticeBinding.inflate(inflater, container, false)
 
 
+        setRVA()
+
         observePerformLoadNotice()
         observePerformLoadNoticeDetail()
 
         initListener()
         performLoadNotice()
 
-        setRVA()
 
         return binding.root
     }
@@ -132,7 +138,7 @@ class NoticeFragment: Fragment() {
     private fun observePerformLoadNotice() {
         myPageViewModel.loadNoticeResult.observe(this) { result ->
             result.onSuccess { data ->
-                Toast.makeText(requireActivity(), "공지 로드 성공!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(requireActivity(), "공지 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
                 bSuccessApi = true
 
@@ -142,7 +148,7 @@ class NoticeFragment: Fragment() {
                 bSuccessApi = false
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(requireActivity(), "공지 로드 실패: $message", Toast.LENGTH_LONG).show()
+                //Toast.makeText(requireActivity(), "공지 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "공지 로드 실패: $message")
 
                 //inputDummyData()
@@ -156,17 +162,18 @@ class NoticeFragment: Fragment() {
     }
 
     private fun observePerformLoadNoticeDetail() {
-        myPageViewModel.loadNoticeDetailResult.observe(this) { result ->
+        myPageViewModel.loadNoticeDetailResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess { data ->
-                Toast.makeText(requireActivity(), "공지 세부 로드 성공!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(requireActivity(), "공지 세부 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
 
                 noticeDetailDataListByApi.add(data)
+                binding.rvNotice.adapter?.notifyDataSetChanged()
 
                 bSuccessApi = true
             }.onFailure { error ->
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(requireActivity(), "공지 세부 로드 실패: $message", Toast.LENGTH_LONG).show()
+                //Toast.makeText(requireActivity(), "공지 세부 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "공지 세부 로드 실패: $message")
                 bSuccessApi = false
             }

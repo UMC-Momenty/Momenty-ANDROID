@@ -212,13 +212,13 @@ class QuestActivity/* @Inject constructor(
         questViewModel.writeQuestResult.observe(this) {result ->
             result.onSuccess { data ->
                 bSuccessApi = true
-                Toast.makeText(this, "질문 작성 성공!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(this, "질문 작성 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "작성 데이터: $data")
                 bSuccessApi = false
             }.onFailure { error ->
                 bSuccessApi = false
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(this, "질문 작성 실패: $message", Toast.LENGTH_LONG).show()
+                //Toast.makeText(this, "질문 작성 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "질문 작성 실패: $message")
             }
         }
@@ -226,7 +226,7 @@ class QuestActivity/* @Inject constructor(
         questViewModel.loadQuestResult.observe(this) {result ->
             result.onSuccess { data ->
                 bSuccessApi = true
-                Toast.makeText(this, "질문 로드 성공!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(this, "질문 로드 성공!", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "로드 데이터: $data")
                 loadQuestByApi = data
                 binding.tvWriteQuestionNumber.text = "#${data.questId.toString()}번째 질문"
@@ -236,7 +236,7 @@ class QuestActivity/* @Inject constructor(
             }.onFailure { error ->
                 bSuccessApi = false
                 val message = error.message ?: "알 수 없는 오류"
-                Toast.makeText(this, "질문 로드 실패: $message", Toast.LENGTH_LONG).show()
+                //Toast.makeText(this, "질문 로드 실패: $message", Toast.LENGTH_LONG).show()
                 Log.d(TAG, "질문 로드 실패: $message")
             }
         }
