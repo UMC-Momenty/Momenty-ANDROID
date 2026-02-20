@@ -13,6 +13,6 @@ interface PetApiService {
     /**
      * 사용자의 반려동물 목록 조회
      */
-    @GET("api/users/schedules/pets")
+    @GET("api/pets/my")
     suspend fun getUserPets(): Response<UserPetsResponse>
 }
